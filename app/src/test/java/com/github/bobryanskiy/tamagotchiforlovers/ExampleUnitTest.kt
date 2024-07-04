@@ -1,4 +1,4 @@
-package com.example.tamagotchiforlovers
+package com.github.bobryanskiy.tamagotchiforlovers
 
 import org.junit.Test
 

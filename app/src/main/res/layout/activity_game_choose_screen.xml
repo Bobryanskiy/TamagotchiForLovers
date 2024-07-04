@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".GameChooseScreen" android:background="@color/main_theme">
+
+    <Button
+            android:layout_width="52dp"
+            android:layout_height="60dp" android:id="@+id/backButton"
+            android:onClick="exitGame" style="@style/Widget.Material3.Button.Icon"
+            android:padding="13dp"
+            app:iconSize="28dp"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginTop="30dp" android:textAlignment="center"
+            android:textSize="16sp" app:icon="@android:drawable/ic_menu_revert"
+            app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="30dp" android:background="@null"
+            android:textAppearance="@null" android:backgroundTint="#CE8212" app:iconTint="@color/black"
+    />
+</androidx.constraintlayout.widget.ConstraintLayout>

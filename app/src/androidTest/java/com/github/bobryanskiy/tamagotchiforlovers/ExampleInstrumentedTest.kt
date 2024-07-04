@@ -1,4 +1,4 @@
-package com.example.tamagotchiforlovers
+package com.github.bobryanskiy.tamagotchiforlovers
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

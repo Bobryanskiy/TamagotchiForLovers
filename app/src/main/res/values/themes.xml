@@ -3,7 +3,7 @@
     <style name="Theme.TamagotchiForLovers" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/purple_500</item>
-        <item name="colorPrimaryVariant">#B5C3AA</item>
+        <item name="colorPrimaryVariant">@color/main_theme</item>
         <item name="colorOnPrimary">@color/white</item>
         <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/teal_200</item>
