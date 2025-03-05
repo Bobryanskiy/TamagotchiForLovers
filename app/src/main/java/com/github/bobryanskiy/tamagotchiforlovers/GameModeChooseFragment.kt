@@ -32,4 +32,8 @@ class GameModeChooseFragment : Fragment() {
             view.findNavController().navigateUp()
         }
     }
+
+    fun continueChoose(view: View) {
+
+    }
 }

@@ -36,11 +36,13 @@ jobs:
 
   unit-test:
     name: Perform Unit Testing
-    needs: [lint]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the code
         uses: actions/checkout@v4
+
+      - name: Make Gradle executable
+        run: chmod +x ./gradlew
 
       - name: Run tests
         run: ./gradlew test
