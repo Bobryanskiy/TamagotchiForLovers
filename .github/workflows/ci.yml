@@ -22,9 +22,6 @@ jobs:
 #          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
 #          restore-keys: ${{ runner.os }}-gradle-
 #
-#      - name: Make Gradle executable
-#        run: chmod +x ./gradlew
-#
 #      - name: Run lint
 #        run: ./gradlew lintDebug
 #
@@ -40,9 +37,6 @@ jobs:
 #    steps:
 #      - name: Checkout the code
 #        uses: actions/checkout@v4
-#
-#      - name: Make Gradle executable
-#        run: chmod +x ./gradlew
 #
 #      - name: Run tests
 #        run: ./gradlew test
