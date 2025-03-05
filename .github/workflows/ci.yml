@@ -52,7 +52,7 @@ jobs:
 #    needs: [unit-test]
     strategy:
       matrix:
-        api-level: [24, 29, 34]
+        api-level: [24, 29, 32]
     steps:
       - name: checkout
         uses: actions/checkout@v4
