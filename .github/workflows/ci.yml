@@ -54,7 +54,6 @@ jobs:
 #          path: app/build/reports/test/testDebugUnitTest/
 #
   instrumentation-test:
-  test:
     runs-on: ubuntu-latest
 #    needs: [unit-test]
     strategy:
