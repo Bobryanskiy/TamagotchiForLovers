@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "235751825869",
+    "firebase_url": "https://tamagotchiforlovers-default-rtdb.firebaseio.com",
+    "project_id": "tamagotchiforlovers",
+    "storage_bucket": "tamagotchiforlovers.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:235751825869:android:7c33d8758b517d87036484",
+        "android_client_info": {
+          "package_name": "com.github.bobryanskiy.tamagotchiforlovers"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCzV9GCqzzjte0a5LOWVwY1k7sla4Hy5pE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

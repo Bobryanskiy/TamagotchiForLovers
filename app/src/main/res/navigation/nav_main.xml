@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools" android:id="@+id/my_nav"
+            app:startDestination="@id/difficultyChooseFragment">
+    <fragment android:id="@+id/titleFragment" android:name="com.github.bobryanskiy.tamagotchiforlovers.TitleFragment"
+              android:label="fragment_title" tools:layout="@layout/fragment_title">
+        <action android:id="@+id/action_titleFragment_to_gameModeChooseFragment"
+                app:destination="@id/gameModeChooseFragment"/>
+    </fragment>
+    <fragment android:id="@+id/gameModeChooseFragment"
+              android:name="com.github.bobryanskiy.tamagotchiforlovers.GameModeChooseFragment"
+              android:label="fragment_game_choose" tools:layout="@layout/fragment_game_mode_choose">
+        <action android:id="@+id/action_gameModeChooseFragment_to_difficultyChooseFragment"
+                app:destination="@id/difficultyChooseFragment"/>
+    </fragment>
+    <fragment android:id="@+id/difficultyChooseFragment"
+              android:name="com.github.bobryanskiy.tamagotchiforlovers.DifficultyChooseFragment"
+              android:label="fragment_difficulty_choose" tools:layout="@layout/fragment_difficulty_choose"/>
+</navigation>

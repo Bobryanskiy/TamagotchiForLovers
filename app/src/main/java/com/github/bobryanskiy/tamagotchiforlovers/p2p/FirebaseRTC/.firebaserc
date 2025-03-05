@@ -1,0 +1,9 @@
+{
+  "projects": {
+    "default": "fir-rtc-89b99",
+    "tamagotchi": "tamagotchiforlovers"
+  },
+  "targets": {},
+  "etags": {},
+  "dataconnectEmulatorConfig": {}
+}

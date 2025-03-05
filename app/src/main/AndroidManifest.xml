@@ -13,9 +13,6 @@
             android:theme="@style/Theme.TamagotchiForLovers"
             tools:targetApi="31">
         <activity
-                android:name=".GameChooseScreen"
-                android:exported="false"/>
-        <activity
                 android:name=".TitleScreen"
                 android:exported="true">
             <intent-filter>
