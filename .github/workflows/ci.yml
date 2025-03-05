@@ -36,6 +36,7 @@ jobs:
 
   unit-test:
     name: Perform Unit Testing
+    needs: [lint-test]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the code
