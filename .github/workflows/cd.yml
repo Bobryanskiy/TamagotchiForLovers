@@ -18,7 +18,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: temurin
-          java-version: '1.8'
+          java-version: '17'
 
       - name: Build Release APK
         run: ./gradlew assembleRelease
@@ -38,5 +38,5 @@ jobs:
       - name: Upload Signed APK
         uses: actions/upload-artifact@v4
         with:
-          name: sample-app-signed  # Artifact Name
+          name: tamagotchi-for-lovers  # Artifact Name
           path: app/build/outputs/apk/release/*.apk
