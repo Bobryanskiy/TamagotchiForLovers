@@ -10,7 +10,6 @@ on:
 jobs:
   lint:
     name: Perform lint check
-    needs: [ start ]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the code
