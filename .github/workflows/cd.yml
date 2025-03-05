@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up JDK
         uses: actions/setup-java@v3
@@ -36,7 +36,7 @@ jobs:
           BUILD_TOOLS_VERSION: "35"
 
       - name: Upload Signed APK
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: sample-app-signed  # Artifact Name
           path: app/build/outputs/apk/release/*.apk
