@@ -7,10 +7,11 @@ plugins {
 android {
     namespace = "com.github.bobryanskiy.tamagotchiforlovers"
     compileSdk = 35
+    buildToolsVersion = "35.0.0"
 
     defaultConfig {
         applicationId = "com.github.bobryanskiy.tamagotchiforlovers"
-        minSdk = 28
+        minSdk = 24
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
