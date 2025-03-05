@@ -8,8 +8,14 @@ on:
     branches: [master]
 
 jobs:
+  start:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Make Gradle executable
+        run: chmod +x ./gradlew
 #  lint:
 #    name: Perform lint check
+#    needs: [start]
 #    runs-on: ubuntu-latest
 #    steps:
 #      - name: Checkout the code
@@ -22,9 +28,6 @@ jobs:
 #          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
 #          restore-keys: ${{ runner.os }}-gradle-
 #
-#      - name: Make Gradle executable
-#        run: chmod +x ./gradlew
-#
 #      - name: Run lint
 #        run: ./gradlew lintDebug
 #
@@ -36,13 +39,11 @@ jobs:
 
 #  unit-test:
 #    name: Perform Unit Testing
+#    needs: [start]
 #    runs-on: ubuntu-latest
 #    steps:
 #      - name: Checkout the code
 #        uses: actions/checkout@v4
-#
-#      - name: Make Gradle executable
-#        run: chmod +x ./gradlew
 #
 #      - name: Run tests
 #        run: ./gradlew test
