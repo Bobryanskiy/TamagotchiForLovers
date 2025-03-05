@@ -11,6 +11,9 @@ jobs:
   start:
     runs-on: ubuntu-latest
     steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
       - name: Make Gradle executable
         run: chmod +x ./gradlew
 #  lint:
