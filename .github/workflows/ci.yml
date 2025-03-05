@@ -81,7 +81,6 @@ jobs:
         with:
           api-level: ${{ matrix.api-level }}
           force-avd-creation: false
-          emulator-build: "35.0.0"
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
           script: echo "Generated AVD snapshot for caching."
