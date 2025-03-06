@@ -8,21 +8,6 @@ on:
     branches: [master]
 
 jobs:
-  generate-keystore:
-    name: Generate debug keystore
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout the code
-        uses: actions/checkout@v4
-
-      - name: Generate debug keystore
-        run: |
-          mkdir -p ~/.android
-          keytool -genkey -v -keystore ~/.android/debug.keystore \
-            -storepass android -alias androiddebugkey \
-            -keypass android -keyalg RSA -keysize 2048 -validity 10000 \
-            -dname "CN=Android Debug,O=Android,C=US" -noprompt
-
   lint:
     name: Perform lint check
     runs-on: ubuntu-latest
@@ -51,7 +36,6 @@ jobs:
 
   unit-test:
     name: Perform Unit Testing
-    needs: [generate-keystore]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the code
@@ -126,7 +110,6 @@ jobs:
 
   static-code-analysis:
     name: Perform static code analysis
-    needs: [generate-keystore]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
