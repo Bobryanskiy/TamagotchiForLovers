@@ -1,9 +1,14 @@
+buildscript {
+    val agp_version by extra("8.8.0-alpha05")
+}
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
-    id("com.android.application") version "8.7.3" apply false
+    id("com.android.application") version "8.8.0-alpha05" apply false
+    id("com.android.library") version "8.8.0-alpha05" apply false
     id("org.jetbrains.kotlin.android") version "2.1.10" apply false
     id("com.google.gms.google-services") version "4.4.2" apply false
     id("org.sonarqube") version "6.0.1.5171"
+    id("com.github.ben-manes.versions") version "0.52.0"
 }
 
 sonar {
