@@ -8,8 +8,39 @@ on:
     branches: [master]
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+
+      - name: Generate Debug Keystore
+        run: |
+          mkdir -p android/app
+          cd android/app
+          keytool -genkey -v \
+            -keystore debug.keystore \
+            -storepass android \
+            -alias androiddebugkey \
+            -keypass android \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000
+
+      - name: Build with Gradle
+        run: |
+          cd android
+          ./gradlew assembleDebug
   lint:
     name: Perform lint check
+    needs: [build]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the code
@@ -32,6 +63,7 @@ jobs:
 
   unit-test:
     name: Perform Unit Testing
+    needs: [build]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the code
@@ -106,6 +138,7 @@ jobs:
 
   static-code-analysis:
     name: Perform static code analysis
+    needs: [lint]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
