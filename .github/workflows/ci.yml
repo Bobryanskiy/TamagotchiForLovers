@@ -32,7 +32,8 @@ jobs:
             -keypass android \
             -keyalg RSA \
             -keysize 2048 \
-            -validity 10000
+            -validity 10000 \
+            -dname "CN=Android Debug,O=Android,C=RU"
 
       - name: Build with Gradle
         run: |
