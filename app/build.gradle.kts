@@ -2,6 +2,15 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.gms.google-services")
+    id("org.sonarqube") version "6.0.1.5171"
+}
+
+sonar {
+    properties {
+        property("sonar.projectKey", "Bobryanskiy_TamagotchiForLovers")
+        property("sonar.organization", "bobryanskiy")
+        property("sonar.host.url", "https://sonarcloud.io")
+    }
 }
 
 android {
@@ -57,7 +66,7 @@ java {
 }
 
 dependencies {
-    implementation("org.bouncycastle:bcprov-jdk15on:1.70")
+    implementation("org.bouncycastle:bcprov-jdk18on:1.80")
     implementation("androidx.dynamicanimation:dynamicanimation:1.0.0")
     implementation("com.google.guava:guava:33.4.0-android")
     implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
