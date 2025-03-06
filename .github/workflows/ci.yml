@@ -33,10 +33,11 @@ jobs:
             -keysize 2048 \
             -validity 10000 \
             -dname "CN=Android Debug,O=Android,C=RU" \
-            -storetype JKS
+            -storetype PKCS12
 
       - name: Build with Gradle
         run: |
+          cd ..
           ./gradlew assembleDebug --stacktrace
   lint:
     name: Perform lint check
