@@ -15,6 +15,9 @@ jobs:
       - name: Checkout the code
         uses: actions/checkout@v4
 
+      - name: Debug signing task
+        run: ./gradlew app:validateSigningDebug --info --stacktrace
+
       - name: Gradle cache
         uses: gradle/actions/setup-gradle@v4
 
