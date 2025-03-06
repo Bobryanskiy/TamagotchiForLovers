@@ -80,6 +80,7 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
+            ~/.android/debug.keystore
           key: avd-${{ matrix.api-level }}
 
       - name: create AVD and generate snapshot for caching
