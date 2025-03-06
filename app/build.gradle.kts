@@ -24,9 +24,6 @@ android {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
-        debug {
-            signingConfig = signingConfigs.getByName("debug")
-        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -47,8 +44,6 @@ java {
 }
 
 dependencies {
-    implementation("org.bouncycastle:bcprov-jdk18on:1.80")
-    implementation("org.bouncycastle:bcpkix-jdk18on:1.80")
     implementation("androidx.dynamicanimation:dynamicanimation:1.0.0")
     implementation("com.google.guava:guava:33.4.0-android")
     implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
@@ -63,3 +58,4 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
 }
+
