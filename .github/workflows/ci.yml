@@ -37,6 +37,7 @@ jobs:
 
       - name: Build with Gradle
         run: |
+          cd .
           ./gradlew assembleDebug --stacktrace
   lint:
     name: Perform lint check
