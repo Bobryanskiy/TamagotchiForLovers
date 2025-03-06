@@ -24,13 +24,10 @@ jobs:
       - name: Generate Debug Keystore
         run: |
           cd app
-          keytool -genkey -v \
-            -keystore debug.keystore \
-            -storepass android \
-            -alias androiddebugkey \
-            -keypass android \
-            -keyalg RSA \
-            -keysize 2048 \
+          keytool -importkeystore \
+            -srckeystore debug.keystore \
+            -destkeystore debug.keystore \
+            -deststoretype pkcs12 \
             -validity 10000 \
             -dname "CN=Android Debug,O=Android,C=RU" \
             -storetype JKS
