@@ -32,7 +32,8 @@ jobs:
             -keyalg RSA \
             -keysize 2048 \
             -validity 10000 \
-            -dname "CN=Android Debug,O=Android,C=RU"
+            -dname "CN=Android Debug,O=Android,C=RU" \
+            -storetype JKS
 
       - name: Build with Gradle
         run: |
