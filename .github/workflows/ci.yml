@@ -80,7 +80,7 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-            ~/.android/debug.keystore
+            app/debug.keystore
           key: avd-${{ matrix.api-level }}
 
       - name: create AVD and generate snapshot for caching
@@ -92,7 +92,7 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
           script: |
-            keytool -genkeypair -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=RU" -storetype PKCS12
+            keytool -genkeypair -keystore app/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=RU" -storetype PKCS12
             echo "Generated AVD snapshot for caching."
 
       - name: run tests
