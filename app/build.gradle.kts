@@ -57,7 +57,7 @@ java {
 }
 
 dependencies {
-    implementation("org.bouncycastle:bcprov-jdk18on:1.80")
+    implementation("org.bouncycastle:bcprov-jdk15on:1.70")
     implementation("androidx.dynamicanimation:dynamicanimation:1.0.0")
     implementation("com.google.guava:guava:33.4.0-android")
     implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
