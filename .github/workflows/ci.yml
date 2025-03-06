@@ -103,7 +103,6 @@ jobs:
 
   static-code-analysis:
     name: Perform static code analysis
-    needs: [ instrumentation-test ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
