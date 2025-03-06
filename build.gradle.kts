@@ -3,4 +3,13 @@ plugins {
     id("com.android.application") version "8.7.3" apply false
     id("org.jetbrains.kotlin.android") version "2.1.10" apply false
     id("com.google.gms.google-services") version "4.4.2" apply false
+    id("org.sonarqube") version "6.0.1.5171"
+}
+
+sonar {
+    properties {
+        property("sonar.projectKey", "Bobryanskiy_TamagotchiForLovers")
+        property("sonar.organization", "bobryanskiy")
+        property("sonar.host.url", "https://sonarcloud.io")
+    }
 }
