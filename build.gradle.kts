@@ -1,14 +1,13 @@
 buildscript {
-    val agp_version by extra("8.8.0-alpha05")
     dependencies {
-        classpath("com.android.tools.build:gradle:8.8.0-alpha05")
-        classpath("org.bouncycastle:bcprov-jdk15on:1.70") // Bouncy Castle provider
+        classpath("com.android.tools.build:gradle:8.6.1")
+        classpath("org.bouncycastle:bcprov-jdk18on:1.80") // Bouncy Castle provider
     }
 }
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
-    id("com.android.application") version "8.8.0-alpha05" apply false
-    id("com.android.library") version "8.8.0-alpha05" apply false
+    id("com.android.application") version "8.6.1" apply false
+    id("com.android.library") version "8.6.1" apply false
     id("org.jetbrains.kotlin.android") version "2.1.10" apply false
     id("com.google.gms.google-services") version "4.4.2" apply false
     id("org.sonarqube") version "6.0.1.5171"
