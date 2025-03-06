@@ -39,11 +39,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
     kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = "21"
     }
     dataBinding {
         enable = true
@@ -52,12 +52,11 @@ android {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
 dependencies {
-    implementation("org.bouncycastle:bcprov-jdk18on:1.80")
     implementation("androidx.dynamicanimation:dynamicanimation:1.0.0")
     implementation("com.google.guava:guava:33.4.0-android")
     implementation(platform("com.google.firebase:firebase-bom:33.10.0"))

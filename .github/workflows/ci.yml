@@ -152,46 +152,46 @@ jobs:
 #          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 #        run: ./gradlew build sonar --info
 
-  debug-apk:
-    name: Generate Debug APK
+#  debug-apk:
+#    name: Generate Debug APK
 #    needs: [ static-code-analysis, instrumentation-test ]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout the code
-        uses: actions/checkout@v4
-
-      - name: Generate Debug Keystore
-        run: |
-          cd app
-          keytool -genkeypair \
-            -keystore debug.keystore \
-            -storepass android \
-            -alias androiddebugkey \
-            -keypass android \
-            -keyalg RSA \
-            -keysize 2048 \
-            -validity 10000 \
-            -dname "CN=Android Debug,O=Android,C=RU" \
-            -storetype PKCS12
-
-      - name: Cache Gradle packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
-          restore-keys: ${{ runner.os }}-gradle-
-
-      - name: Set up Java JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      - name: Build debug APK
-        run: ./gradlew assembleDebug --stacktrace
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: sample-app.apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Checkout the code
+#        uses: actions/checkout@v4
+#
+#      - name: Generate Debug Keystore
+#        run: |
+#          cd app
+#          keytool -genkeypair \
+#            -keystore debug.keystore \
+#            -storepass android \
+#            -alias androiddebugkey \
+#            -keypass android \
+#            -keyalg RSA \
+#            -keysize 2048 \
+#            -validity 10000 \
+#            -dname "CN=Android Debug,O=Android,C=RU" \
+#            -storetype PKCS12
+#
+#      - name: Cache Gradle packages
+#        uses: actions/cache@v4
+#        with:
+#          path: ~/.gradle/caches
+#          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+#          restore-keys: ${{ runner.os }}-gradle-
+#
+#      - name: Set up Java JDK 17
+#        uses: actions/setup-java@v4
+#        with:
+#          java-version: '17'
+#          distribution: 'temurin'
+#
+#      - name: Build debug APK
+#        run: ./gradlew assembleDebug --stacktrace
+#
+#      - name: Upload APK
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: TamagotchiForLovers.apk
+#          path: app/build/outputs/apk/debug/app-debug.apk
