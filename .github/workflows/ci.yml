@@ -59,6 +59,11 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
 
       - name: Enable KVM
         run: |
@@ -146,11 +151,6 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: ./gradlew build sonar --info
-      - name: Upload html test report
-        uses: actions/upload-artifact@v4
-        with:
-          name: sonar.html
-          path: app/build/reports/problems-report.html
 
   debug-apk:
     name: Generate Debug APK
