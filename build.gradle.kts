@@ -1,7 +1,7 @@
 buildscript {
     dependencies {
         classpath("com.android.tools.build:gradle:8.6.1")
-        classpath("org.bouncycastle:bcprov-jdk15on:1.70") // Bouncy Castle provider
+        classpath("org.bouncycastle:bcprov-jdk18on:1.80") // Bouncy Castle provider
     }
 }
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
