@@ -19,12 +19,11 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: '17'
-          distribution: 'zulu'
+          distribution: 'temurin'
 
       - name: Generate Debug Keystore
         run: |
-          mkdir -p android/app
-          cd android/app
+          cd app
           keytool -genkey -v \
             -keystore debug.keystore \
             -storepass android \
