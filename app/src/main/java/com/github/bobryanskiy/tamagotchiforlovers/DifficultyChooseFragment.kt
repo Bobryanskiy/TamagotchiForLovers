@@ -2,6 +2,8 @@ package com.github.bobryanskiy.tamagotchiforlovers
 
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
+import android.app.PendingIntent
+import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
 import android.view.*
@@ -13,6 +15,8 @@ import androidx.dynamicanimation.animation.FlingAnimation
 import androidx.dynamicanimation.animation.SpringAnimation
 import androidx.dynamicanimation.animation.SpringForce
 import androidx.fragment.app.Fragment
+import com.github.bobryanskiy.tamagotchiforlovers.notifications.Notifications
+import java.util.Calendar
 
 class DifficultyChooseFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -26,7 +30,19 @@ class DifficultyChooseFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        view.findViewById<View>(R.id.star).also { star ->
+        view.findViewById<Button>(R.id.notb).setOnClickListener {
+            val calendar = Calendar.getInstance().apply {
+                timeInMillis = System.currentTimeMillis()
+                add(Calendar.SECOND, 0)
+            }
+            val intent = Intent(context, GameModeChooseFragment::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+            val pendingIntent: PendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+            context?.let { it1 -> Notifications.PetWantEat.schedule(it1, calendar.timeInMillis, "Привет", "Я проголодался", pendingIntent) }
+        }
+
+        view.findViewById<View>(R.id.star).let { star ->
 
             val rect = Rect()
             val rect2 = Rect()
