@@ -11,11 +11,17 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.navigation.fragment.NavHostFragment
 import com.github.bobryanskiy.tamagotchiforlovers.notifications.Notifications
+import com.google.firebase.firestore.FirebaseFirestore
+
 
 class TitleScreen : AppCompatActivity() {
     private val REQUEST_CODE_POST_NOTIFICATIONS = 1
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Enable Firestore logging
+        FirebaseFirestore.setLoggingEnabled(true)
+
         val notificationManager: NotificationManager =
             getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.notificationChannels.forEach { x ->  notificationManager.deleteNotificationChannel(x.id) }
@@ -29,14 +35,11 @@ class TitleScreen : AppCompatActivity() {
         }
         setContentView(R.layout.activity_title_screen)
 
-        if (false) {
-            val navHostFragment = supportFragmentManager.findFragmentById(R.id.fragmentContainerView) as NavHostFragment
-            val inflater = navHostFragment.navController.navInflater
-            val navGraph = inflater.inflate(R.navigation.nav_main)
-            // TODO
-            navGraph.setStartDestination(R.id.gameModeChooseFragment)
-            navHostFragment.navController.graph = navGraph
-        }
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.fragmentContainerView) as NavHostFragment
+        val graph = navHostFragment.navController.navInflater.inflate(R.navigation.nav_main)
+//        graph.setStartDestination(R.id.difficultyChooseFragment)
+        navHostFragment.navController.setGraph(graph, intent.extras)
+//        setSupportActionBar(findViewById(R.id.toolbar))
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {

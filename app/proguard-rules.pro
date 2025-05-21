@@ -19,3 +19,12 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Keep custom model classes
+-keep class com.github.bobryanskiy.tamagotchiforlovers.firebase.firestore.model.** { *; }
+
+# https://github.com/firebase/FirebaseUI-Android/issues/1175
+-dontwarn okio.**
+-dontwarn retrofit2.Call
+-dontnote retrofit2.Platform$IOS$MainThreadExecutor
+#-keep class android.support.v7.widget.RecyclerView { *; }

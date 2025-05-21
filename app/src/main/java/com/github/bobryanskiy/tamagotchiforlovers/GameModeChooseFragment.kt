@@ -6,7 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.fragment.app.Fragment
-import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import com.google.android.material.textfield.TextInputEditText
 
 class GameModeChooseFragment : Fragment() {
@@ -23,11 +23,11 @@ class GameModeChooseFragment : Fragment() {
         view.findViewById<Button>(R.id.continueButton).setOnClickListener {
             if (view.findViewById<TextInputEditText>(R.id.editTextInput).text.toString() != "") {
                 PET_NAME = R.id.editTextInput.toString()
-                view.findNavController().navigate(R.id.action_gameModeChooseFragment_to_difficultyChooseFragment)
+                findNavController().navigate(R.id.action_gameModeChooseFragment_to_difficultyChooseFragment)
             }
         }
         view.findViewById<Button>(R.id.backButton).setOnClickListener {
-            view.findNavController().navigateUp()
+            findNavController().popBackStack()
         }
     }
 

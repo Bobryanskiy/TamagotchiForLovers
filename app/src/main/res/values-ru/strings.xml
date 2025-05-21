@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Тамагочи</string>
+    <string name="pet_want_eat_text">Я проголодался</string>
+    <string name="notification_channel_desc">Ваш питомец что-то хочет</string>
+    <string name="pet_want_eat_title">Приветик</string>
+    <string name="pet_thirst_title">Привет</string>
+    <string name="pet_thirst_text">Я хочу пить</string>
+</resources>

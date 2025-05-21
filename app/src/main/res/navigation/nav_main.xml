@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:app="http://schemas.android.com/apk/res-auto"
-            xmlns:tools="http://schemas.android.com/tools" android:id="@+id/my_nav"
-            app:startDestination="@id/difficultyChooseFragment">
+            xmlns:tools="http://schemas.android.com/tools" android:id="@+id/nav_main"
+            app:startDestination="@id/titleFragment">
     <fragment android:id="@+id/titleFragment" android:name="com.github.bobryanskiy.tamagotchiforlovers.TitleFragment"
               android:label="fragment_title" tools:layout="@layout/fragment_title">
         <action android:id="@+id/action_titleFragment_to_gameModeChooseFragment"
                 app:destination="@id/gameModeChooseFragment"/>
+        <action android:id="@+id/action_titleFragment_to_loginFragment" app:destination="@id/loginFragment"/>
     </fragment>
     <fragment android:id="@+id/gameModeChooseFragment"
               android:name="com.github.bobryanskiy.tamagotchiforlovers.GameModeChooseFragment"
@@ -17,4 +18,7 @@
     <fragment android:id="@+id/difficultyChooseFragment"
               android:name="com.github.bobryanskiy.tamagotchiforlovers.DifficultyChooseFragment"
               android:label="fragment_difficulty_choose" tools:layout="@layout/fragment_difficulty_choose"/>
+    <fragment android:id="@+id/loginFragment"
+              android:name="com.github.bobryanskiy.tamagotchiforlovers.ui.login.LoginFragment"
+              android:label="fragment_login" tools:layout="@layout/fragment_login"/>
 </navigation>

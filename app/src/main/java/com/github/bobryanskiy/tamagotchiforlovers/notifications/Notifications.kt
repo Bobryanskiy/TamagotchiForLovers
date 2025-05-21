@@ -1,16 +1,66 @@
 package com.github.bobryanskiy.tamagotchiforlovers.notifications
 
-import android.app.*
+import android.app.AlarmManager
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.media.AudioAttributes
 import android.media.RingtoneManager
 import android.util.Log
+import com.github.bobryanskiy.tamagotchiforlovers.R
 
 class Notifications {
-    companion object {
-        const val CHANNEL_NAME_PET_NEED = "tamagotchi.pet.need"
+    var channelName: String = ""
+    var actionName: String = ""
+    var id: Int = -1
+    var titleId: Int = -1
+    var textId: Int = -1
+    fun schedule(context: Context, delayInSeconds: Long, pendingIntent: PendingIntent) {
+        Log.d("NotificationManager", "создано")
+        val intent = Intent(context, NotificationReceiver::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            putExtra("channel_name", channelName)
+            putExtra("request_code", id)
+            putExtra("action_name", actionName)
+            putExtra("title", context.getString(titleId))
+            putExtra("text", context.getString(textId))
+            putExtra("pendingIntent", pendingIntent)
+        }
+        val receiverIntent = PendingIntent.getBroadcast(
+            context,
+            id,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE
+        )
 
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val triggerTime = delayInSeconds
+
+        alarmManager.setExactAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            triggerTime,
+            receiverIntent
+        )
+    }
+
+    private fun getPendingIntent (context: Context): PendingIntent {
+        return PendingIntent.getBroadcast(
+            context,
+            id,
+            Intent(context, NotificationReceiver::class.java),
+            PendingIntent.FLAG_IMMUTABLE
+        )
+    }
+
+    fun cancel(context: Context, requestCode: Int) {
+        (context.getSystemService(Context.ALARM_SERVICE) as AlarmManager).cancel(getPendingIntent(context))
+    }
+
+    companion object {
+        private const val CHANNEL_NAME_PET_NEED = "tamagotchi.pet.need"
         fun createNotificationChannels(context: Context) {
             val soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
 
@@ -25,7 +75,7 @@ class Notifications {
                 "Нужды питомца",
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "Ваш питомец что-то хочет"
+                description = context.getString(R.string.notification_channel_desc)
                 lockscreenVisibility = Notification.VISIBILITY_PUBLIC
                 setSound(soundUri, myAudioAttributes)
                 setShowBadge(true)
@@ -38,86 +88,47 @@ class Notifications {
             notificationManager.createNotificationChannel(petWantChannel)
         }
 
-        private fun schedule(context: Context, delayInSeconds: Long, title: String, text: String, pendingIntent: PendingIntent, actionName: String, requestCode: Int) {
-            Log.d("NotificationManager", "создано")
-            val intent = Intent(context, NotificationReceiver::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                putExtra("channel_name", CHANNEL_NAME_PET_NEED)
-                putExtra("request_code", requestCode)
-                putExtra("action_name", actionName)
-                putExtra("title", title)
-                putExtra("text", text)
-                putExtra("pendingIntent", pendingIntent)
+        val PetWantEat: Notifications
+            get() {
+                val petWantEat = Notifications()
+                petWantEat.actionName = "tamagotchi.pet.need.eat"
+                petWantEat.channelName = "tamagotchi.pet.need"
+                petWantEat.id = 0
+                petWantEat.titleId = R.string.pet_want_eat_title
+                petWantEat.textId = R.string.pet_want_eat_text
+
+                return petWantEat
             }
-            val receiverIntent = PendingIntent.getBroadcast(
-                context,
-                requestCode,
-                intent,
-                PendingIntent.FLAG_IMMUTABLE
-            )
+        val PetThirst: Notifications
+            get() {
+                val petThirst = Notifications()
+                petThirst.actionName = "tamagotchi.pet.need.thirst"
+                petThirst.channelName = "tamagotchi.pet.need"
+                petThirst.id = 1
+                petThirst.titleId = R.string.pet_thirst_title
+                petThirst.textId = R.string.pet_thirst_text
 
-            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-            val triggerTime = delayInSeconds
-
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                triggerTime,
-                receiverIntent
-            )
-        }
-
-        private fun getPendingIntent (context: Context, requestCode: Int): PendingIntent {
-            return PendingIntent.getBroadcast(
-                context,
-                requestCode,
-                Intent(context, NotificationReceiver::class.java),
-                PendingIntent.FLAG_IMMUTABLE
-            )
-        }
-
-        private fun cancel(context: Context, requestCode: Int) {
-            (context.getSystemService(Context.ALARM_SERVICE) as AlarmManager).cancel(getPendingIntent(context, requestCode))
-        }
-    }
-
-    object PetWantEat {
-        private const val ACTION_NAME = "tamagotchi.pet.need.eat"
-        private const val ID = 0
-        fun schedule(context: Context, delayInSeconds: Long, title: String, text: String, pendingIntent: PendingIntent) {
-            schedule(context, delayInSeconds, title, text, pendingIntent, this.ACTION_NAME, this.ID)
-        }
-        fun cancel(context: Context) {
-            cancel(context, this.ID)
-        }
-    }
-    object PetThirst {
-        private const val ACTION_NAME = "tamagotchi.pet.need.thirst"
-        private const val ID = 1
-        fun schedule(context: Context, delayInSeconds: Long, title: String, text: String, pendingIntent: PendingIntent) {
-            schedule(context, delayInSeconds, title, text, pendingIntent, this.ACTION_NAME, this.ID)
-        }
-        fun cancel(context: Context) {
-            cancel(context, this.ID)
-        }
-    }
-    object PetWantPlay {
-        private const val ACTION_NAME = "tamagotchi.pet.need.play"
-        private const val ID = 2
-        fun schedule(context: Context, delayInSeconds: Long, title: String, text: String, pendingIntent: PendingIntent) {
-            schedule(context, delayInSeconds, title, text, pendingIntent, this.ACTION_NAME, this.ID)
-        }
-        fun cancel(context: Context) {
-            cancel(context, this.ID)
-        }
-    }
-    object PetWantSleep {
-        private const val ACTION_NAME = "tamagotchi.pet.need.sleep"
-        private const val ID = 3
-        fun schedule(context: Context, delayInSeconds: Long, title: String, text: String, pendingIntent: PendingIntent) {
-            schedule(context, delayInSeconds, title, text, pendingIntent, this.ACTION_NAME, this.ID)
-        }
-        fun cancel(context: Context) {
-            cancel(context, this.ID)
-        }
+                return petThirst
+            }
+//        object PetWantPlay {
+//            private const val ACTION_NAME = "tamagotchi.pet.need.play"
+//            private const val ID = 2
+//            fun schedule(context: Context, delayInSeconds: Long, title: String, text: String, pendingIntent: PendingIntent) {
+//                schedule(context, delayInSeconds, title, text, pendingIntent, this.ACTION_NAME, this.ID)
+//            }
+//            fun cancel(context: Context) {
+//                cancel(context, this.ID)
+//            }
+//        }
+//        object PetWantSleep {
+//            private const val ACTION_NAME = "tamagotchi.pet.need.sleep"
+//            private const val ID = 3
+//            fun schedule(context: Context, delayInSeconds: Long, title: String, text: String, pendingIntent: PendingIntent) {
+//                schedule(context, delayInSeconds, title, text, pendingIntent, this.ACTION_NAME, this.ID)
+//            }
+//            fun cancel(context: Context) {
+//                cancel(context, this.ID)
+//            }
+//        }
     }
 }
