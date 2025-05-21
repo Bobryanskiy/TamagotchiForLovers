@@ -61,17 +61,6 @@ java {
     }
 }
 
-sonar {
-    properties {
-        property("sonar.projectKey", "Bobryanskiy_TamagotchiForLovers")
-        property("sonar.organization", "bobryanskiy")
-        property("sonar.host.url", "https://sonarcloud.io")
-        property("sonar.profile", "Android Lint")
-        property("sonar.sources", "./src/main/java")
-        property("sonar.androidLint.reportPaths", "app/build/reports/lint-results-sonar.xml")
-    }
-}
-
 dependencies {
     implementation("androidx.work:work-runtime-ktx:2.10.1")
     implementation("androidx.dynamicanimation:dynamicanimation-ktx:1.1.0")
