@@ -1,6 +1,7 @@
 package com.github.bobryanskiy.tamagotchiforlovers.firebase.firestore.util
 
 import com.github.bobryanskiy.tamagotchiforlovers.firebase.firestore.model.Rating
+import java.security.SecureRandom
 import java.util.ArrayList
 import java.util.Random
 import java.util.UUID
@@ -35,7 +36,7 @@ object RatingUtil {
         get() {
             val rating = Rating()
 
-            val random = Random()
+            val random = SecureRandom()
 
             val score = random.nextDouble() * 5.0
             val text = REVIEW_CONTENTS[floor(score).toInt()]

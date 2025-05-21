@@ -3,6 +3,7 @@ plugins {
     id("kotlin-android")
     id("com.google.gms.google-services")
     id("androidx.navigation.safeargs")
+    id("org.sonarqube") version "6.2.0.5505"
 }
 
 android {
@@ -33,7 +34,7 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android.txt"), "test-proguard-rules.pro")
             proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
             signingConfig = signingConfigs.getByName("debug")
@@ -60,6 +61,15 @@ java {
     }
 }
 
+sonar {
+    properties {
+        property("sonar.projectKey", "Bobryanskiy_TamagotchiForLovers")
+        property("sonar.organization", "bobryanskiy")
+        property("sonar.host.url", "https://sonarcloud.io")
+        property("sonar.androidLint.reportPaths", "${project.layout.buildDirectory}/reports/lint-results.xml")
+    }
+}
+
 dependencies {
     implementation("androidx.work:work-runtime-ktx:2.10.1")
     implementation("androidx.dynamicanimation:dynamicanimation-ktx:1.1.0")
@@ -80,7 +90,7 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.2.1")
     implementation("androidx.navigation:navigation-fragment-ktx:2.9.0")
     implementation("androidx.navigation:navigation-ui-ktx:2.9.0")
-    implementation("androidx.annotation:annotation:1.6.0")
+    implementation("androidx.annotation:annotation:1.9.1")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.9.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.0")
     testImplementation("junit:junit:4.13.2")

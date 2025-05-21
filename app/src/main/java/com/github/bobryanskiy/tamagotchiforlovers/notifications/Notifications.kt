@@ -92,7 +92,7 @@ class Notifications {
             get() {
                 val petWantEat = Notifications()
                 petWantEat.actionName = "tamagotchi.pet.need.eat"
-                petWantEat.channelName = "tamagotchi.pet.need"
+                petWantEat.channelName = CHANNEL_NAME_PET_NEED
                 petWantEat.id = 0
                 petWantEat.titleId = R.string.pet_want_eat_title
                 petWantEat.textId = R.string.pet_want_eat_text
@@ -103,7 +103,7 @@ class Notifications {
             get() {
                 val petThirst = Notifications()
                 petThirst.actionName = "tamagotchi.pet.need.thirst"
-                petThirst.channelName = "tamagotchi.pet.need"
+                petThirst.channelName = CHANNEL_NAME_PET_NEED
                 petThirst.id = 1
                 petThirst.titleId = R.string.pet_thirst_title
                 petThirst.textId = R.string.pet_thirst_text
