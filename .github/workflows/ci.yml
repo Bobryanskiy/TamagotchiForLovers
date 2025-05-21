@@ -129,12 +129,13 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle-
       - name: Run SonarQube Analysis
-        uses: SonarSource/sonarqube-scan-action@master
+        uses: SonarSource/sonarqube-scan-action@v3
         with:
-          projectKey: Bobryanskiy_TamagotchiForLovers
-          organization: bobryanskiy
-          login: ${{ secrets.SONAR_TOKEN }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          args: >
+            -Dsonar.projectKey=Bobryanskiy_TamagotchiForLovers
+            -Dsonar.organization=bobryanskiy
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+            -Dsonar.github.oauth=${{ secrets.GITHUB_TOKEN }}
       - name: Upload xml sonar report
         uses: actions/upload-artifact@v4
         with:
