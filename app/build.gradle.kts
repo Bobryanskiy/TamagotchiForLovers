@@ -66,7 +66,9 @@ sonar {
         property("sonar.projectKey", "Bobryanskiy_TamagotchiForLovers")
         property("sonar.organization", "bobryanskiy")
         property("sonar.host.url", "https://sonarcloud.io")
-        property("sonar.androidLint.reportPaths", "app/build/reports/lint-results/lint-results-sonar.xml")
+        property("sonar.profile", "Android Lint")
+        property("sonar.sources", "./src/main/java")
+        property("sonar.androidLint.reportPaths", "app/build/reports/lint-results-sonar.xml")
     }
 }
 

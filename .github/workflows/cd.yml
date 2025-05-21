@@ -33,7 +33,7 @@ jobs:
           keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.KEY_PASSWORD }}
         env:
-          BUILD_TOOLS_VERSION: "35.0.0"
+          BUILD_TOOLS_VERSION: "36.0.0"
 
       - name: Upload Signed APK
         uses: actions/upload-artifact@v4
@@ -66,7 +66,7 @@ jobs:
           keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.KEY_PASSWORD }}
         env:
-          BUILD_TOOLS_VERSION: "35.0.0"
+          BUILD_TOOLS_VERSION: "36.0.0"
 
       - name: Upload Signed AAB
         uses: actions/upload-artifact@v4
