@@ -1,23 +1,36 @@
 package com.github.bobryanskiy.tamagotchiforlovers
 
+import android.app.PendingIntent
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.get
 import androidx.navigation.findNavController
-import com.github.bobryanskiy.tamagotchiforlovers.data.model.FirebaseViewModel
 import com.github.bobryanskiy.tamagotchiforlovers.databinding.FragmentTitleBinding
-import com.github.bobryanskiy.tamagotchiforlovers.firebase.firestore.viewmodel.MainActivityViewModel
-import com.google.firebase.auth.auth
+import com.github.bobryanskiy.tamagotchiforlovers.notifications.Notifications
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
+import java.util.*
 
 class TitleFragment : Fragment() {
+    private val auth: FirebaseAuth = Firebase.auth
     private lateinit var binding: FragmentTitleBinding
 
-    private lateinit var viewModel: MainActivityViewModel
-    private lateinit var firebaseViewModel: FirebaseViewModel
+    private val permissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+//            startWebRTC()
+        } else {
+//            showPermissionDeniedDialog(permission)
+        }
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentTitleBinding.inflate(inflater, container, false)
@@ -27,21 +40,28 @@ class TitleFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // View model
-        viewModel = ViewModelProvider(this).get<MainActivityViewModel>()
-        firebaseViewModel = ViewModelProvider(this)[FirebaseViewModel::class.java]
-
         binding.playButton.setOnClickListener {
-            val currentUser = firebaseViewModel.auth.currentUser
+            if (ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
+                permissionLauncher.launch(android.Manifest.permission.INTERNET)
+            }
+            val currentUser = auth.currentUser
             if (currentUser != null) {
-                view.findNavController().navigate(R.id.action_titleFragment_to_gameModeChooseFragment)
+                view.findNavController().navigate(R.id.action_titleFragment_to_pairFragment)
             } else {
                 view.findNavController().navigate(R.id.action_titleFragment_to_loginFragment)
             }
         }
 
         binding.settingButton.setOnClickListener {
-            
+            val calendar = Calendar.getInstance().apply {
+                timeInMillis = System.currentTimeMillis()
+                add(Calendar.SECOND, 5)
+            }
+            val intent = Intent(context, TitleScreen::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+            val pendingIntent: PendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+            context?.let { it1 -> Notifications.PetWantEat.schedule(it1, calendar.timeInMillis, pendingIntent) }
         }
     }
 }

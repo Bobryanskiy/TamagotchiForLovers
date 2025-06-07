@@ -1,4 +1,4 @@
-package com.github.bobryanskiy.tamagotchiforlovers.data.model
+package com.github.bobryanskiy.tamagotchiforlovers.data.login.model
 
 /**
  * Data class that captures user information for logged in users retrieved from LoginRepository

@@ -12,16 +12,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.Toast
+import androidx.navigation.findNavController
 import com.github.bobryanskiy.tamagotchiforlovers.databinding.FragmentLoginBinding
 
 import com.github.bobryanskiy.tamagotchiforlovers.R
-import com.github.bobryanskiy.tamagotchiforlovers.TitleScreen
-import com.github.bobryanskiy.tamagotchiforlovers.data.model.FirebaseViewModel
+import com.github.bobryanskiy.tamagotchiforlovers.data.login.LoginType
 
 class LoginFragment : Fragment() {
 
     private lateinit var loginViewModel: LoginViewModel
-    private lateinit var firebaseViewModel: FirebaseViewModel
     private var _binding: FragmentLoginBinding? = null
 
     // This property is only valid between onCreateView and
@@ -42,12 +41,12 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        firebaseViewModel = ViewModelProvider(this)[FirebaseViewModel::class.java]
-        loginViewModel = ViewModelProvider(this, LoginViewModelFactory(firebaseViewModel.auth))[LoginViewModel::class.java]
+        loginViewModel = ViewModelProvider(this, LoginViewModelFactory())[LoginViewModel::class.java]
 
         val usernameEditText = binding.username
         val passwordEditText = binding.password
         val loginButton = binding.login
+        val registerButton = binding.register
         val loadingProgressBar = binding.loading
 
         loginViewModel.loginFormState.observe(
@@ -57,6 +56,7 @@ class LoginFragment : Fragment() {
                     return@Observer
                 }
                 loginButton.isEnabled = loginFormState.isDataValid
+                registerButton.isEnabled = loginFormState.isDataValid
                 loginFormState.usernameError?.let {
                     usernameEditText.error = getString(it)
                 }
@@ -99,9 +99,9 @@ class LoginFragment : Fragment() {
         passwordEditText.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 loginViewModel.login(
-                    requireActivity(),
                     usernameEditText.text.toString(),
-                    passwordEditText.text.toString()
+                    passwordEditText.text.toString(),
+                    LoginType.Login
                 )
             }
             false
@@ -110,19 +110,28 @@ class LoginFragment : Fragment() {
         loginButton.setOnClickListener {
             loadingProgressBar.visibility = View.VISIBLE
             loginViewModel.login(
-                requireActivity(),
                 usernameEditText.text.toString(),
-                passwordEditText.text.toString()
+                passwordEditText.text.toString(),
+                LoginType.Login
+            )
+        }
+
+        registerButton.setOnClickListener {
+            loadingProgressBar.visibility = View.VISIBLE
+            loginViewModel.login(
+                usernameEditText.text.toString(),
+                passwordEditText.text.toString(),
+                LoginType.Register
             )
         }
     }
 
     private fun updateUiWithUser(model: LoggedInUserView) {
-
         val welcome = getString(R.string.welcome) + model.displayName
         // TODO : initiate successful logged in experience
         val appContext = context?.applicationContext ?: return
         Toast.makeText(appContext, welcome, Toast.LENGTH_LONG).show()
+        view?.findNavController()?.navigate(R.id.action_loginFragment_to_pairFragment)
     }
 
     private fun showLoginFailed(@StringRes errorString: Int) {

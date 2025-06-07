@@ -1,14 +1,18 @@
 package com.github.bobryanskiy.tamagotchiforlovers
 
+import android.app.AlarmManager
 import android.app.NotificationManager
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
+import android.os.PowerManager
+import android.provider.Settings
 import android.view.MotionEvent
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.net.toUri
 import androidx.navigation.fragment.NavHostFragment
 import com.github.bobryanskiy.tamagotchiforlovers.notifications.Notifications
 import com.google.firebase.firestore.FirebaseFirestore
@@ -27,12 +31,30 @@ class TitleScreen : AppCompatActivity() {
         notificationManager.notificationChannels.forEach { x ->  notificationManager.deleteNotificationChannel(x.id) }
         Notifications.createNotificationChannels(this)
 
-        Log.d("NotificationReceiver", "${Build.VERSION.SDK_INT}")
+        val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !alarmManager.canScheduleExactAlarms()) {
+            val settingsIntent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                data = "package:${packageName}".toUri()
+            }
+            startActivity(settingsIntent)
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), REQUEST_CODE_POST_NOTIFICATIONS)
             }
         }
+        val powerManager = getSystemService(POWER_SERVICE) as PowerManager
+        if (!powerManager.isIgnoringBatteryOptimizations(packageName)) {
+            try {
+                val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                intent.data = "package:$packageName".toUri()
+                startActivity(intent)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+
         setContentView(R.layout.activity_title_screen)
 
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.fragmentContainerView) as NavHostFragment

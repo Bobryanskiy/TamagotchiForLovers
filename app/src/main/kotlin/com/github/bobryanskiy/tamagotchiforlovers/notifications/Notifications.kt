@@ -1,16 +1,13 @@
 package com.github.bobryanskiy.tamagotchiforlovers.notifications
 
-import android.app.AlarmManager
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
+import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.media.AudioAttributes
 import android.media.RingtoneManager
 import android.util.Log
 import com.github.bobryanskiy.tamagotchiforlovers.R
+import com.github.bobryanskiy.tamagotchiforlovers.notifications.receivers.NotificationReceiver
 
 class Notifications {
     var channelName: String = ""
@@ -18,6 +15,7 @@ class Notifications {
     var id: Int = -1
     var titleId: Int = -1
     var textId: Int = -1
+
     fun schedule(context: Context, delayInSeconds: Long, pendingIntent: PendingIntent) {
         Log.d("NotificationManager", "создано")
         val intent = Intent(context, NotificationReceiver::class.java).apply {

@@ -3,7 +3,7 @@
     "project_number": "235751825869",
     "firebase_url": "https://tamagotchiforlovers-default-rtdb.firebaseio.com",
     "project_id": "tamagotchiforlovers",
-    "storage_bucket": "tamagotchiforlovers.appspot.com"
+    "storage_bucket": "tamagotchiforlovers.firebasestorage.app"
   },
   "client": [
     {
@@ -13,7 +13,12 @@
           "package_name": "com.github.bobryanskiy.tamagotchiforlovers"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "235751825869-4ikf6vff3errrnjjtbuik8pqpcsrfb80.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCzV9GCqzzjte0a5LOWVwY1k7sla4Hy5pE"
@@ -21,7 +26,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "235751825869-4ikf6vff3errrnjjtbuik8pqpcsrfb80.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

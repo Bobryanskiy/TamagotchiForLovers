@@ -134,15 +134,8 @@ jobs:
           args: >
             -Dsonar.projectKey=Bobryanskiy_TamagotchiForLovers
             -Dsonar.organization=bobryanskiy
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+            -Dsonar.token=${{ secrets.SONAR_TOKEN }}
             -Dsonar.github.oauth=${{ secrets.GITHUB_TOKEN }}
-            -Dsonar.jsonReportPaths=build/sonar/report.json
-            -Dsonar.xmlReportPaths=build/sonar/report.xml
-      - name: Upload xml sonar report
-        uses: actions/upload-artifact@v4
-        with:
-          name: sonar-report
-          path: build/sonar/
 
   debug-apk:
     name: Generate Debug APK

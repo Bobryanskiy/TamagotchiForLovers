@@ -1,16 +1,14 @@
-package com.github.bobryanskiy.tamagotchiforlovers.data
+package com.github.bobryanskiy.tamagotchiforlovers.data.login
 
-import android.app.Activity
-import com.github.bobryanskiy.tamagotchiforlovers.TitleScreen
-import com.github.bobryanskiy.tamagotchiforlovers.data.model.LoggedInUser
-import com.google.firebase.auth.FirebaseAuth
+import com.github.bobryanskiy.tamagotchiforlovers.data.login.model.LoggedInUser
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 
 /**
  * Class that requests authentication and user information from the remote data source and
  * maintains an in-memory cache of login status and user credentials information.
  */
 
-class LoginRepository(val dataSource: LoginDataSource, val auth: FirebaseAuth) {
+class LoginRepository(val dataSource: LoginDataSource) {
 
     // in-memory cache of the loggedInUser object
     var user: LoggedInUser? = null
@@ -30,12 +28,17 @@ class LoginRepository(val dataSource: LoginDataSource, val auth: FirebaseAuth) {
         dataSource.logout()
     }
 
-    fun login(activity: Activity, auth: FirebaseAuth, username: String, password: String): Result<LoggedInUser> {
+    suspend fun login(username: String, password: String, loginType: LoginType): Result<LoggedInUser> {
         // handle login
-        val result = dataSource.login(activity, auth, username, password)
+        val result = when (loginType) {
+            LoginType.Login -> dataSource.loginViaEmail(username, password)
+            LoginType.Register -> dataSource.registerViaEmail(username, password)
+        }
 
         if (result is Result.Success) {
             setLoggedInUser(result.data)
+        } else if ((result as Result.Error).exception is FirebaseAuthInvalidCredentialsException) {
+            true
         }
 
         return result

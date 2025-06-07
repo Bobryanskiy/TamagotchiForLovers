@@ -1,6 +1,7 @@
-package com.github.bobryanskiy.tamagotchiforlovers.notifications
+package com.github.bobryanskiy.tamagotchiforlovers.notifications.receivers
 
 import android.Manifest
+import android.R
 import android.app.Notification
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
@@ -29,7 +30,7 @@ class NotificationReceiver : BroadcastReceiver() {
 
     fun sendReminderNotificationInternal(context: Context, channelName: String, title: String, text: String, requestCode: Int, pendingIntent: PendingIntent?) {
         val builder = NotificationCompat.Builder(context, channelName)
-            .setSmallIcon(android.R.drawable.ic_dialog_info) // Иконка уведомления
+            .setSmallIcon(R.drawable.ic_dialog_info) // Иконка уведомления
             .setContentTitle(title)
             .setContentText(text)
             .setPriority(NotificationCompat.PRIORITY_MAX)

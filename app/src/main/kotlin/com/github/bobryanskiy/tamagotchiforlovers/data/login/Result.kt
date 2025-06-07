@@ -1,4 +1,4 @@
-package com.github.bobryanskiy.tamagotchiforlovers.data
+package com.github.bobryanskiy.tamagotchiforlovers.data.login
 
 /**
  * A generic class that holds a value with its loading status.

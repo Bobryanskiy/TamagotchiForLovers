@@ -38,6 +38,7 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android.txt"), "test-proguard-rules.pro")
             proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
             signingConfig = signingConfigs.getByName("debug")
+            enableAndroidTestCoverage = true
         }
 //        debug {
 //            signingConfig = signingConfigs.getByName("debug")
@@ -66,14 +67,13 @@ dependencies {
     implementation("androidx.dynamicanimation:dynamicanimation-ktx:1.1.0")
     implementation("com.google.guava:guava:33.4.0-android")
 
-    implementation(platform("com.google.firebase:firebase-bom:33.13.0"))
+    implementation(platform("com.google.firebase:firebase-bom:33.14.0"))
 
     implementation("com.google.android.gms:play-services-auth:21.3.0")
 
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-auth")
-    implementation("com.firebaseui:firebase-ui-auth:9.0.0")
 
     implementation("androidx.core:core-ktx:1.16.0")
     implementation("androidx.appcompat:appcompat:1.7.0")
@@ -84,6 +84,8 @@ dependencies {
     implementation("androidx.annotation:annotation:1.9.1")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.9.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.0")
+    implementation("androidx.legacy:legacy-support-v4:1.0.0")
+    implementation("androidx.fragment:fragment-ktx:1.8.7")
     testImplementation("junit:junit:4.13.2")
 
     androidTestImplementation("junit:junit:4.13.2")
