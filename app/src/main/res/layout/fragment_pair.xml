@@ -1,21 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".PairFragment">
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".ui.pairing.PairFragment">
 
     <Button
-            android:id="@+id/findPairButton"
-            android:text="Найти пару" android:layout_height="226dp" android:layout_width="294dp"
-            app:layout_constraintTop_toBottomOf="@+id/createPairButton"
-            app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintVertical_bias="0.498" app:layout_constraintEnd_toEndOf="parent"/>
-    <Button
             android:id="@+id/createPairButton"
-            android:text="Создать пару" android:layout_height="120dp" android:layout_width="266dp"
-            app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent" android:layout_marginTop="132dp"
-            app:layout_constraintHorizontal_bias="0.496"/>
+            android:text="Создать питомца"
+            app:layout_constraintEnd_toEndOf="@+id/linearLayout4"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" app:layout_constraintStart_toStartOf="@+id/linearLayout4"
+            app:layout_constraintTop_toTopOf="parent" android:layout_marginTop="96dp"/>
+    <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" app:layout_constraintTop_toBottomOf="@+id/createPairButton"
+            app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginEnd="24dp" android:layout_marginStart="24dp" android:layout_marginTop="64dp"
+            android:id="@+id/linearLayout4">
+        <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/code"
+                android:inputType="text|textShortMessage|textCapCharacters|textNoSuggestions" android:hint="Введите код">
+        </EditText>
+        <Button
+                android:id="@+id/joinPairButton"
+                android:enabled="false"
+                android:layout_marginTop="16dp"
+                android:text="Присоединиться" android:layout_height="wrap_content" android:layout_width="match_parent"/>
+        <ProgressBar
+                android:id="@+id/loading"
+                android:visibility="gone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginStart="32dp"
+                android:layout_marginTop="64dp"
+                android:layout_marginEnd="32dp"
+                android:layout_marginBottom="64dp"
+        />
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

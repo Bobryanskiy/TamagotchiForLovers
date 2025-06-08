@@ -11,15 +11,19 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
+import com.github.bobryanskiy.tamagotchiforlovers.data.storage.PairStorage
 import com.github.bobryanskiy.tamagotchiforlovers.databinding.FragmentTitleBinding
 import com.github.bobryanskiy.tamagotchiforlovers.notifications.Notifications
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import java.util.*
 
 class TitleFragment : Fragment() {
     private val auth: FirebaseAuth = Firebase.auth
+    private val firestore: FirebaseFirestore = Firebase.firestore
     private lateinit var binding: FragmentTitleBinding
 
     private val permissionLauncher = registerForActivityResult(
@@ -46,7 +50,25 @@ class TitleFragment : Fragment() {
             }
             val currentUser = auth.currentUser
             if (currentUser != null) {
-                view.findNavController().navigate(R.id.action_titleFragment_to_pairFragment)
+                val pairId = PairStorage(requireContext().applicationContext).getPairId()
+                if (pairId != null) {
+                    view.findNavController().navigate(R.id.action_titleFragment_to_petFragment)
+                } else {
+                    firestore.collection("users").document(currentUser.uid)
+                        .get().addOnSuccessListener { document ->
+                            if (document["pairId"] != null) {
+                                view.findNavController().navigate(R.id.action_titleFragment_to_petFragment)
+                                PairStorage(requireContext().applicationContext).savePairId(document["pairId"] as String)
+                                firestore.collection("pairs").document(document["pairId"] as String)
+                                    .get()
+                                    .addOnSuccessListener { document ->
+
+                                    }
+                            } else view.findNavController().navigate(R.id.action_titleFragment_to_pairFragment)
+                        }.addOnFailureListener {
+                            view.findNavController().navigate(R.id.action_titleFragment_to_loginFragment)
+                        }
+                }
             } else {
                 view.findNavController().navigate(R.id.action_titleFragment_to_loginFragment)
             }

@@ -1,4 +1,6 @@
-package com.github.bobryanskiy.tamagotchiforlovers
+package com.github.bobryanskiy.tamagotchiforlovers.data.pairing.model
+
+import com.github.bobryanskiy.tamagotchiforlovers.PetState
 
 data class PairData(
     var userId1: String = "",

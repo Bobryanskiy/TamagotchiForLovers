@@ -7,6 +7,7 @@
               android:label="fragment_title" tools:layout="@layout/fragment_title">
         <action android:id="@+id/action_titleFragment_to_loginFragment" app:destination="@id/loginFragment"/>
         <action android:id="@+id/action_titleFragment_to_pairFragment" app:destination="@id/pairFragment"/>
+        <action android:id="@+id/action_titleFragment_to_petFragment" app:destination="@id/petFragment"/>
     </fragment>
     <fragment android:id="@+id/gameModeChooseFragment"
               android:name="com.github.bobryanskiy.tamagotchiforlovers.GameModeChooseFragment"
@@ -21,7 +22,12 @@
               android:name="com.github.bobryanskiy.tamagotchiforlovers.ui.login.LoginFragment"
               android:label="fragment_login" tools:layout="@layout/fragment_login">
         <action android:id="@+id/action_loginFragment_to_pairFragment" app:destination="@id/pairFragment"/>
+        <action android:id="@+id/action_loginFragment_to_petFragment" app:destination="@id/petFragment"/>
     </fragment>
-    <fragment android:id="@+id/pairFragment" android:name="com.github.bobryanskiy.tamagotchiforlovers.PairFragment"
-              android:label="fragment_pair" tools:layout="@layout/fragment_pair"/>
+    <fragment android:id="@+id/pairFragment" android:name="com.github.bobryanskiy.tamagotchiforlovers.ui.pairing.PairFragment"
+              android:label="fragment_pair" tools:layout="@layout/fragment_pair">
+        <action android:id="@+id/action_pairFragment_to_petFragment" app:destination="@id/petFragment"/>
+    </fragment>
+    <fragment android:id="@+id/petFragment" android:name="com.github.bobryanskiy.tamagotchiforlovers.PetFragment"
+              android:label="fragment_pet" tools:layout="@layout/fragment_pet"/>
 </navigation>

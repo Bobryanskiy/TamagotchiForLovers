@@ -5,5 +5,6 @@ package com.github.bobryanskiy.tamagotchiforlovers.data.login.model
  */
 data class LoggedInUser(
     val userId: String,
+    val code: String?,
     val displayName: String?
 )

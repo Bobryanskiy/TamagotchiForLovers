@@ -1,6 +1,7 @@
 package com.github.bobryanskiy.tamagotchiforlovers.data.login
 
 import com.github.bobryanskiy.tamagotchiforlovers.data.login.model.LoggedInUser
+import com.github.bobryanskiy.tamagotchiforlovers.util.Result
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 
 /**

@@ -1,9 +1,8 @@
-package com.github.bobryanskiy.tamagotchiforlovers.data
+package com.github.bobryanskiy.tamagotchiforlovers
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.github.bobryanskiy.tamagotchiforlovers.PairData
-import com.github.bobryanskiy.tamagotchiforlovers.PetState
+import com.github.bobryanskiy.tamagotchiforlovers.data.pairing.model.PairData
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.toObject
