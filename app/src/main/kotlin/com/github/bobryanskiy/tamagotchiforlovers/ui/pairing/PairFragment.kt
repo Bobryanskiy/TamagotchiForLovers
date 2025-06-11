@@ -14,6 +14,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import com.github.bobryanskiy.tamagotchiforlovers.R
+import com.github.bobryanskiy.tamagotchiforlovers.TitleFragmentDirections
 import com.github.bobryanskiy.tamagotchiforlovers.databinding.FragmentPairBinding
 
 class PairFragment : Fragment() {
@@ -51,9 +52,12 @@ class PairFragment : Fragment() {
                 pairResult ?: return@Observer
                 Log.d("PAIR", pairResult.toString())
                 binding.loading.visibility = View.GONE
-                if (pairResult.error != null) {
-                    showPairingFailed(pairResult.error)
-                } else updateUi()
+                pairResult.error?.let {
+                    showPairingFailed(it)
+                }
+                pairResult.code?.let {
+                    updateUi(it)
+                }
             }
         )
 
@@ -86,11 +90,12 @@ class PairFragment : Fragment() {
         }
     }
 
-    private fun updateUi() {
+    private fun updateUi(pairId: String) {
         val welcome = getString(R.string.welcome)
         val appContext = context?.applicationContext ?: return
         Toast.makeText(appContext, welcome, Toast.LENGTH_LONG).show()
-        view?.findNavController()?.navigate(R.id.action_pairFragment_to_petFragment)
+        val action = PairFragmentDirections.actionPairFragmentToPetFragment(pairId)
+        view?.findNavController()?.navigate(action)
     }
 
     private fun showPairingFailed(@StringRes errorString: Int) {

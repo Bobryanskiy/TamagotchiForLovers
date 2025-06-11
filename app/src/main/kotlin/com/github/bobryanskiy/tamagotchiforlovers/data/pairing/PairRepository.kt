@@ -6,21 +6,19 @@ import com.github.bobryanskiy.tamagotchiforlovers.util.Result
 
 class PairRepository(private val pairStorage: PairStorage, private val dataSource: PairViaFirebase) {
 
-    fun createNewPair(callback: (Result<PairModel>) -> Unit) {
-        dataSource.createNewPair {
-            if (it is Result.Success) {
-                pairStorage.savePairId(it.data.code)
-            }
-            callback(it)
+    suspend fun createNewPair(): Result<PairModel> {
+        val result = dataSource.createNewPair()
+        if (result is Result.Success) {
+            pairStorage.savePairId(result.data.code)
         }
+        return result
     }
 
-    fun joinPair(pairId: String, callback: (Result<PairModel>) -> Unit) {
-        dataSource.joinPair(pairId) {
-            if (it is Result.Success) {
-                pairStorage.savePairId(it.data.code)
-            }
-            callback(it)
+    suspend fun joinPair(pairId: String): Result<PairModel> {
+        val result = dataSource.joinPair(pairId)
+        if (result is Result.Success) {
+            pairStorage.savePairId(result.data.code)
         }
+        return result
     }
 }

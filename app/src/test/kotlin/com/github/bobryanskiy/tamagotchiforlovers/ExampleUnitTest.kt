@@ -1,5 +1,6 @@
 package com.github.bobryanskiy.tamagotchiforlovers
 
+import com.github.bobryanskiy.tamagotchiforlovers.data.pairing.model.UserData
 import org.junit.Test
 
 import org.junit.Assert.*

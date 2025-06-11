@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
 import com.github.bobryanskiy.tamagotchiforlovers.data.storage.PairStorage
@@ -50,25 +51,21 @@ class TitleFragment : Fragment() {
             }
             val currentUser = auth.currentUser
             if (currentUser != null) {
-                val pairId = PairStorage(requireContext().applicationContext).getPairId()
-                if (pairId != null) {
-                    view.findNavController().navigate(R.id.action_titleFragment_to_petFragment)
-                } else {
-                    firestore.collection("users").document(currentUser.uid)
-                        .get().addOnSuccessListener { document ->
-                            if (document["pairId"] != null) {
-                                view.findNavController().navigate(R.id.action_titleFragment_to_petFragment)
-                                PairStorage(requireContext().applicationContext).savePairId(document["pairId"] as String)
-                                firestore.collection("pairs").document(document["pairId"] as String)
-                                    .get()
-                                    .addOnSuccessListener { document ->
+                firestore.collection("users").document(currentUser.uid)
+                    .get().addOnSuccessListener { document ->
+                        if (document["pairId"] != "") {
+                            val action = TitleFragmentDirections.actionTitleFragmentToPetFragment(document["pairId"].toString())
+                            view.findNavController().navigate(action)
+                            PairStorage(requireContext().applicationContext).savePairId(document["pairId"] as String)
+                            firestore.collection("pairs").document(document["pairId"] as String)
+                                .get()
+                                .addOnSuccessListener { document ->
 
-                                    }
-                            } else view.findNavController().navigate(R.id.action_titleFragment_to_pairFragment)
-                        }.addOnFailureListener {
-                            view.findNavController().navigate(R.id.action_titleFragment_to_loginFragment)
-                        }
-                }
+                                }
+                        } else view.findNavController().navigate(R.id.action_titleFragment_to_pairFragment)
+                    }.addOnFailureListener {
+                        view.findNavController().navigate(R.id.action_titleFragment_to_loginFragment)
+                    }
             } else {
                 view.findNavController().navigate(R.id.action_titleFragment_to_loginFragment)
             }

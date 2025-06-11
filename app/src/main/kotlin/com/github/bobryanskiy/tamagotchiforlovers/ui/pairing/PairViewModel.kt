@@ -19,25 +19,22 @@ class PairViewModel(private val repository: PairRepository) : ViewModel() {
 
     fun createNewPair() {
         viewModelScope.launch {
-            repository.createNewPair {
-                Log.d("PAIR", it.toString())
-                if (it is Result.Success) {
-                    _pairResult.value = PairResult()
-                } else {
-                    _pairResult.value = PairResult(error = R.string.login_failed)
-                }
+            val result = repository.createNewPair()
+            if (result is Result.Success) {
+                _pairResult.value = PairResult(result.data.code)
+            } else {
+                _pairResult.value = PairResult(error = R.string.login_failed)
             }
         }
     }
 
     fun joinExistingPair(pairId: String) {
         viewModelScope.launch {
-            repository.joinPair(pairId) {
-                if (it is Result.Success) {
-                    _pairResult.value = PairResult()
-                } else {
-                    _pairResult.value = PairResult(error = R.string.login_failed)
-                }
+            val result = repository.joinPair(pairId)
+            if (result is Result.Success) {
+                _pairResult.value = PairResult()
+            } else {
+                _pairResult.value = PairResult(error = R.string.login_failed)
             }
         }
     }

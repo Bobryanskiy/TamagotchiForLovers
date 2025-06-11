@@ -11,13 +11,27 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" android:id="@+id/logout"
             app:layout_constraintTop_toTopOf="parent" app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginStart="10dp" android:layout_marginTop="10dp" android:textSize="12sp"
+            android:layout_marginStart="10dp" android:layout_marginTop="30dp" android:textSize="12sp"
             style="@style/Widget.Material3.Button.Icon"/>
     <Button
             android:text="Удалить питомца"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" android:id="@+id/deletePet"
-            android:layout_marginTop="10dp"
-            app:layout_constraintTop_toBottomOf="@+id/logout" app:layout_constraintStart_toStartOf="@+id/logout"
-            android:textSize="12sp" style="@style/Widget.Material3.Button.Icon"/>
+            android:textSize="12sp" style="@style/Widget.Material3.Button.Icon"
+            app:layout_constraintTop_toBottomOf="@+id/switch_pair_visibility" app:layout_constraintStart_toStartOf="@+id/logout"
+            android:layout_marginTop="10dp"/>
+    <Button
+            android:text="Переключить видимость"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:id="@+id/switch_pair_visibility"
+            app:layout_constraintTop_toTopOf="@+id/logout"
+            android:textSize="12sp"
+            style="@style/Widget.Material3.Button.Icon" app:layout_constraintStart_toEndOf="@+id/logout"
+            android:layout_marginStart="30dp"/>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:id="@+id/pairCode"
+            app:layout_constraintStart_toEndOf="@+id/switch_pair_visibility" app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/switch_pair_visibility"
+            app:layout_constraintBottom_toBottomOf="@+id/switch_pair_visibility"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
