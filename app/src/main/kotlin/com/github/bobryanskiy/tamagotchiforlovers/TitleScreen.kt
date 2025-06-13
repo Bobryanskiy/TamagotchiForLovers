@@ -8,13 +8,14 @@ import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
+import android.util.Log
 import android.view.MotionEvent
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.net.toUri
 import androidx.navigation.fragment.NavHostFragment
-import com.github.bobryanskiy.tamagotchiforlovers.notifications.Notifications
+import com.github.bobryanskiy.tamagotchiforlovers.data.notifications.Notifications
 import com.google.firebase.firestore.FirebaseFirestore
 
 
@@ -44,16 +45,6 @@ class TitleScreen : AppCompatActivity() {
                 ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), REQUEST_CODE_POST_NOTIFICATIONS)
             }
         }
-        val powerManager = getSystemService(POWER_SERVICE) as PowerManager
-        if (!powerManager.isIgnoringBatteryOptimizations(packageName)) {
-            try {
-                val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
-                intent.data = "package:$packageName".toUri()
-                startActivity(intent)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
 
         setContentView(R.layout.activity_title_screen)
 
@@ -71,5 +62,10 @@ class TitleScreen : AppCompatActivity() {
             currentFocus!!.clearFocus()
         }
         return super.dispatchTouchEvent(ev)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.d("TEST", "STOPPED")
     }
 }

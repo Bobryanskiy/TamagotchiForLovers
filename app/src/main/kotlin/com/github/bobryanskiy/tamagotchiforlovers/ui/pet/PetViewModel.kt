@@ -1,11 +1,13 @@
-package com.github.bobryanskiy.tamagotchiforlovers
+package com.github.bobryanskiy.tamagotchiforlovers.ui.pet
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.github.bobryanskiy.tamagotchiforlovers.data.pet.model.PetState
+import com.github.bobryanskiy.tamagotchiforlovers.R
 import com.github.bobryanskiy.tamagotchiforlovers.data.login.LoginRepository
-import com.github.bobryanskiy.tamagotchiforlovers.ui.pet.ButtonsResult
+import com.github.bobryanskiy.tamagotchiforlovers.data.pet.PetRepository
 import com.github.bobryanskiy.tamagotchiforlovers.util.Result
 import kotlinx.coroutines.launch
 
@@ -18,19 +20,6 @@ class PetViewModel(private val repository: PetRepository, private val logout: Lo
 
     private val _switchVisibilityResult = MutableLiveData<ButtonsResult>()
     val switchVisibilityResult: LiveData<ButtonsResult> = _switchVisibilityResult
-
-    fun startObservingPetState(pairId: String) {
-        repository.observePetState(pairId)
-        repository.petState.observeForever { state ->
-            _petState.postValue(state)
-        }
-    }
-
-    fun feedPet(pairId: String) {
-        val currentState = _petState.value ?: return
-        val newPetState = currentState.copy(hunger = 100)
-        repository.updatePetState(pairId, newPetState)
-    }
 
     fun logout() {
         logout.logout()
@@ -56,5 +45,9 @@ class PetViewModel(private val repository: PetRepository, private val logout: Lo
                 _switchVisibilityResult.value = ButtonsResult(error = R.string.invalid_password)
             }
         }
+    }
+
+    fun feedPet(petState: PetState) {
+        repository.feedPet(petState)
     }
 }

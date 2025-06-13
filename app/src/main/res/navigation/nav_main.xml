@@ -3,7 +3,7 @@
             xmlns:app="http://schemas.android.com/apk/res-auto"
             xmlns:tools="http://schemas.android.com/tools" android:id="@+id/nav_main"
             app:startDestination="@id/titleFragment">
-    <fragment android:id="@+id/titleFragment" android:name="com.github.bobryanskiy.tamagotchiforlovers.TitleFragment"
+    <fragment android:id="@+id/titleFragment" android:name="com.github.bobryanskiy.tamagotchiforlovers.ui.title.TitleFragment"
               android:label="fragment_title" tools:layout="@layout/fragment_title">
         <action android:id="@+id/action_titleFragment_to_loginFragment" app:destination="@id/loginFragment"/>
         <action android:id="@+id/action_titleFragment_to_pairFragment" app:destination="@id/pairFragment"/>
@@ -28,12 +28,15 @@
               android:label="fragment_pair" tools:layout="@layout/fragment_pair">
         <action android:id="@+id/action_pairFragment_to_petFragment" app:destination="@id/petFragment"/>
     </fragment>
-    <fragment android:id="@+id/petFragment" android:name="com.github.bobryanskiy.tamagotchiforlovers.PetFragment"
+    <fragment android:id="@+id/petFragment" android:name="com.github.bobryanskiy.tamagotchiforlovers.ui.pet.PetFragment"
               android:label="fragment_pet" tools:layout="@layout/fragment_pet">
         <action android:id="@+id/action_petFragment_to_loginFragment" app:destination="@id/loginFragment"/>
         <action android:id="@+id/action_petFragment_to_pairFragment" app:destination="@id/pairFragment"/>
         <argument
                 android:name="pairId"
                 app:argType="string"/>
+        <argument
+                android:name="petState"
+                app:argType="com.github.bobryanskiy.tamagotchiforlovers.data.pet.model.PetState"/>
     </fragment>
 </navigation>

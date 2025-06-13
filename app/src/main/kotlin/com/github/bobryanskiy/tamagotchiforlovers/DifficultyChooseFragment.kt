@@ -15,7 +15,7 @@ import androidx.dynamicanimation.animation.FlingAnimation
 import androidx.dynamicanimation.animation.SpringAnimation
 import androidx.dynamicanimation.animation.SpringForce
 import androidx.fragment.app.Fragment
-import com.github.bobryanskiy.tamagotchiforlovers.notifications.Notifications
+import com.github.bobryanskiy.tamagotchiforlovers.data.notifications.Notifications
 import java.util.Calendar
 
 class DifficultyChooseFragment : Fragment() {

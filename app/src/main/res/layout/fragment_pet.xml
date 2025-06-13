@@ -4,7 +4,7 @@
         xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".PetFragment">
+        tools:context=".ui.pet.PetFragment">
 
     <Button
             android:text="Выйти"
@@ -31,7 +31,71 @@
     <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" android:id="@+id/pairCode"
-            app:layout_constraintStart_toEndOf="@+id/switch_pair_visibility" app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/switch_pair_visibility"
-            app:layout_constraintBottom_toBottomOf="@+id/switch_pair_visibility"/>
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/deletePet"
+            app:layout_constraintBottom_toBottomOf="@+id/deletePet" app:layout_constraintTop_toTopOf="@+id/deletePet"/>
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" android:layout_marginBottom="60dp">
+        <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" android:layout_weight="1" android:gravity="center">
+            <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:id="@+id/hunger_text" android:layout_weight="1"
+                    android:gravity="center"/>
+            <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:id="@+id/eatButton" android:layout_weight="1"
+                    style="@style/Widget.Material3.Button.IconButton.Filled" android:gravity="center"
+                    android:text="корм" android:textSize="14sp"/>
+        </LinearLayout>
+        <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" android:layout_weight="1" android:gravity="center">
+            <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:id="@+id/sleepText" android:layout_weight="1"
+                    android:gravity="center"/>
+            <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:id="@+id/sleepButton" android:layout_weight="1"
+                    style="@style/Widget.Material3.Button.IconButton.Filled" android:gravity="center"
+                    android:textSize="14sp" android:text="спать"/>
+        </LinearLayout>
+        <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" android:layout_weight="1" android:gravity="center">
+            <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:id="@+id/cleanText" android:layout_weight="1"
+                    android:gravity="center"/>
+            <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:id="@+id/cleanButton" android:layout_weight="1"
+                    style="@style/Widget.Material3.Button.IconButton.Filled" android:gravity="center"
+                    android:textSize="14sp" android:text="убраться"/>
+        </LinearLayout>
+        <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" android:layout_weight="1" android:gravity="center">
+            <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:id="@+id/playGamesText" android:layout_weight="1"
+                    android:gravity="center"/>
+            <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:id="@+id/playGamesButton" android:layout_weight="1"
+                    style="@style/Widget.Material3.Button.IconButton.Filled" android:gravity="center"
+                    android:textSize="14sp" android:text="играть"/>
+        </LinearLayout>
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

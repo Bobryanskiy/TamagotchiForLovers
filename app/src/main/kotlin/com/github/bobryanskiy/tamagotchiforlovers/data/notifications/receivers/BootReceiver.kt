@@ -1,4 +1,4 @@
-package com.github.bobryanskiy.tamagotchiforlovers.notifications.receivers
+package com.github.bobryanskiy.tamagotchiforlovers.data.notifications.receivers
 
 import android.content.BroadcastReceiver
 import android.content.Context

@@ -15,6 +15,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import com.github.bobryanskiy.tamagotchiforlovers.R
 import com.github.bobryanskiy.tamagotchiforlovers.data.login.LoginType
+import com.github.bobryanskiy.tamagotchiforlovers.data.storage.PairStorage
+import com.github.bobryanskiy.tamagotchiforlovers.data.storage.PetStorage
 import com.github.bobryanskiy.tamagotchiforlovers.databinding.FragmentLoginBinding
 
 class LoginFragment : Fragment() {
@@ -127,11 +129,12 @@ class LoginFragment : Fragment() {
 
     private fun updateUiWithUser(model: LoggedInUserView) {
         val welcome = getString(R.string.welcome) + (model.displayName ?: "")
-        // TODO : initiate successful logged in experience
+
         val appContext = context?.applicationContext ?: return
         Toast.makeText(appContext, welcome, Toast.LENGTH_LONG).show()
-        view?.findNavController()?.navigate(if (model.isPair) R.id.action_loginFragment_to_petFragment
-        else R.id.action_loginFragment_to_pairFragment)
+        if (model.isPair) view?.findNavController()?.navigate(
+            LoginFragmentDirections.actionLoginFragmentToPetFragment(PairStorage(requireContext()).getPairId()!!, PetStorage(requireContext()).getPetState()))
+        else view?.findNavController()?.navigate(R.id.action_loginFragment_to_pairFragment)
     }
 
     private fun showLoginFailed(@StringRes errorString: Int) {

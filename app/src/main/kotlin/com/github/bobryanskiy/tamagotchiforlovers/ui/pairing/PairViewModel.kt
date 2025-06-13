@@ -1,6 +1,5 @@
 package com.github.bobryanskiy.tamagotchiforlovers.ui.pairing
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -21,7 +20,7 @@ class PairViewModel(private val repository: PairRepository) : ViewModel() {
         viewModelScope.launch {
             val result = repository.createNewPair()
             if (result is Result.Success) {
-                _pairResult.value = PairResult(result.data.code)
+                _pairResult.value = PairResult(result.data)
             } else {
                 _pairResult.value = PairResult(error = R.string.login_failed)
             }

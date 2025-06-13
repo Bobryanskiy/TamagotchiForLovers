@@ -11,7 +11,7 @@ class PairStorage(context: Context) {
     }
 
     fun getPairId(): String? {
-        return sharedPref.getString("pair_id", null)
+        return sharedPref.getString("pair_id", "")
     }
 
     fun clearPairId() {

@@ -1,4 +1,4 @@
-package com.github.bobryanskiy.tamagotchiforlovers
+package com.github.bobryanskiy.tamagotchiforlovers.ui.pet
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,15 +10,15 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
+import com.github.bobryanskiy.tamagotchiforlovers.R
 import com.github.bobryanskiy.tamagotchiforlovers.databinding.FragmentPetBinding
+import com.github.bobryanskiy.tamagotchiforlovers.ui.title.SharedViewModel
+import com.github.bobryanskiy.tamagotchiforlovers.ui.title.SharedViewModelFactory
 
 class PetFragment : Fragment() {
 
-    companion object {
-        fun newInstance() = PetFragment()
-    }
-
     private lateinit var viewModel: PetViewModel
+    private lateinit var sharedViewModel: SharedViewModel
     private var _binding: FragmentPetBinding? = null
     private val binding get() = _binding!!
 
@@ -36,9 +36,9 @@ class PetFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
         binding.pairCode.text = PetFragmentArgs.fromBundle(requireArguments()).pairId
         viewModel = ViewModelProvider(this, factory = PetViewModelFactory(requireContext()))[PetViewModel::class.java]
+        sharedViewModel = ViewModelProvider(requireActivity(), SharedViewModelFactory(requireContext()))[SharedViewModel::class.java]
 
         viewModel.deletePetResult.observe(viewLifecycleOwner, Observer { result ->
             result ?: return@Observer
@@ -59,6 +59,13 @@ class PetFragment : Fragment() {
             }
         })
 
+        sharedViewModel.petState.observe(viewLifecycleOwner, Observer { state ->
+            binding.hungerText.text = state.hunger.toString()
+            binding.cleanText.text = state.cleanliness.toString()
+            binding.sleepText.text = state.tiredness.toString()
+            binding.playGamesText.text = state.happiness.toString()
+        })
+
         binding.logout.setOnClickListener {
             viewModel.logout()
             view.findNavController().navigate(R.id.action_petFragment_to_loginFragment)
@@ -68,6 +75,19 @@ class PetFragment : Fragment() {
         }
         binding.switchPairVisibility.setOnClickListener {
             viewModel.switchVisibility()
+        }
+
+        binding.eatButton.setOnClickListener {
+            viewModel.feedPet(sharedViewModel.petState.value!!)
+        }
+        binding.sleepButton.setOnClickListener {
+
+        }
+        binding.cleanButton.setOnClickListener {
+
+        }
+        binding.playGamesButton.setOnClickListener {
+
         }
     }
 

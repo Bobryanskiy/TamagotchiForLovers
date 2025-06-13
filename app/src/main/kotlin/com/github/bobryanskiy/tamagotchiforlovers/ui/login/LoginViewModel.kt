@@ -25,7 +25,7 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
         viewModelScope.launch {
             val result = loginRepository.login(username, password, loginType)
             if (result is Result.Success) {
-                _loginResult.value = LoginResult(success = LoggedInUserView(isPair = result.data.code != null, displayName = result.data.displayName))
+                _loginResult.value = LoginResult(success = LoggedInUserView(isPair = result.data.code != "", displayName = result.data.displayName))
             } else {
                 _loginResult.value = when ((result as Result.Error).exception) {
                     is FirebaseAuthInvalidCredentialsException -> LoginResult(error = R.string.wrong_login_data)

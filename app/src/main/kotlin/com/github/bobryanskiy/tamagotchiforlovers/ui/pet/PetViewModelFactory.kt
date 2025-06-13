@@ -1,10 +1,11 @@
-package com.github.bobryanskiy.tamagotchiforlovers
+package com.github.bobryanskiy.tamagotchiforlovers.ui.pet
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.github.bobryanskiy.tamagotchiforlovers.data.login.LoginDataSource
 import com.github.bobryanskiy.tamagotchiforlovers.data.login.LoginRepository
+import com.github.bobryanskiy.tamagotchiforlovers.data.pet.PetRepository
 import com.github.bobryanskiy.tamagotchiforlovers.data.storage.PairStorage
 import com.github.bobryanskiy.tamagotchiforlovers.data.storage.PetStorage
 
@@ -12,7 +13,10 @@ class PetViewModelFactory(private val context: Context) : ViewModelProvider.Fact
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(PetViewModel::class.java)) {
-            return PetViewModel(repository = PetRepository(petStorage = PetStorage(context.applicationContext), pairStorage = PairStorage(context.applicationContext)), logout = LoginRepository(dataSource = LoginDataSource())) as T
+            return PetViewModel(repository = PetRepository(
+                petStorage = PetStorage(context.applicationContext),
+                pairStorage = PairStorage(context.applicationContext)
+            ), logout = LoginRepository(dataSource = LoginDataSource())) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

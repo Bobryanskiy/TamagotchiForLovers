@@ -1,8 +1,9 @@
-package com.github.bobryanskiy.tamagotchiforlovers
+package com.github.bobryanskiy.tamagotchiforlovers.data.pet
 
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.github.bobryanskiy.tamagotchiforlovers.data.pet.model.PetState
 import com.github.bobryanskiy.tamagotchiforlovers.data.pairing.model.PairData
 import com.github.bobryanskiy.tamagotchiforlovers.data.pairing.model.UserData
 import com.github.bobryanskiy.tamagotchiforlovers.data.storage.PairStorage
@@ -21,23 +22,42 @@ private const val TAG = "Tamagotchi.Pet"
 class PetRepository (private val petStorage: PetStorage, private val pairStorage: PairStorage) {
     private val auth: FirebaseAuth = Firebase.auth
     private val firestore: FirebaseFirestore = Firebase.firestore
-    private val _petState = MutableLiveData<PetState>()
-    val petState: LiveData<PetState> = _petState
 
-    fun observePetState(pairId: String) {
-        firestore.collection("pairs").document(pairId)
-            .addSnapshotListener { snapshot, e ->
-                if (e != null) return@addSnapshotListener
-                if (snapshot != null && snapshot.exists()) {
-                    val pairData = snapshot.toObject<PairData>()
-                    _petState.postValue(pairData?.petState ?: PetState())
-                }
-            }
+    fun feedPet(petState: PetState) {
+        petState.health += 5
+        petState.tiredness += 10
+        petState.hunger -= 30
+        petState.happiness += 10
+        petState.lastUpdateTime = System.currentTimeMillis()
+        petState.health = petState.health.coerceIn(0..100)
+        petState.tiredness = petState.tiredness.coerceIn(0..100)
+        petState.hunger = petState.hunger.coerceIn(0..100)
+        petState.happiness = petState.happiness.coerceIn(0..100)
+        petStorage.savePetState(petState)
     }
 
-    fun updatePetState(pairId: String, newPetState: PetState) {
-        firestore.collection("pairs").document(pairId)
-            .update("petState", newPetState)
+    fun cleanPet(petState: PetState) {
+        petState.health + 15
+        petState.tiredness + 0
+        petState.hunger - 0
+        petState.happiness + 10
+        petStorage.savePetState(petState)
+    }
+
+    fun sleepPet(petState: PetState) {
+        if (!petState.isSleeping) {
+            petState.startSleepTime = System.currentTimeMillis()
+        }
+        petState.isSleeping = !petState.isSleeping
+        petStorage.savePetState(petState)
+    }
+
+    fun playPet(petState: PetState) {
+        petState.health += 5
+        petState.tiredness += 15
+        petState.hunger += 15
+        petState.happiness += 30
+        petStorage.savePetState(petState)
     }
 
     suspend fun deletePet(): Result<Unit> {

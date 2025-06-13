@@ -1,4 +1,4 @@
-package com.github.bobryanskiy.tamagotchiforlovers.notifications
+package com.github.bobryanskiy.tamagotchiforlovers.data.notifications
 
 import android.app.*
 import android.content.Context
@@ -7,7 +7,7 @@ import android.media.AudioAttributes
 import android.media.RingtoneManager
 import android.util.Log
 import com.github.bobryanskiy.tamagotchiforlovers.R
-import com.github.bobryanskiy.tamagotchiforlovers.notifications.receivers.NotificationReceiver
+import com.github.bobryanskiy.tamagotchiforlovers.data.notifications.receivers.NotificationReceiver
 
 class Notifications {
     var channelName: String = ""
