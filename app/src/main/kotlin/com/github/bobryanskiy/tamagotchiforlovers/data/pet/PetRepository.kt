@@ -23,43 +23,6 @@ class PetRepository (private val petStorage: PetStorage, private val pairStorage
     private val auth: FirebaseAuth = Firebase.auth
     private val firestore: FirebaseFirestore = Firebase.firestore
 
-    fun feedPet(petState: PetState) {
-        petState.health += 5
-        petState.tiredness += 10
-        petState.hunger -= 30
-        petState.happiness += 10
-        petState.lastUpdateTime = System.currentTimeMillis()
-        petState.health = petState.health.coerceIn(0..100)
-        petState.tiredness = petState.tiredness.coerceIn(0..100)
-        petState.hunger = petState.hunger.coerceIn(0..100)
-        petState.happiness = petState.happiness.coerceIn(0..100)
-        petStorage.savePetState(petState)
-    }
-
-    fun cleanPet(petState: PetState) {
-        petState.health + 15
-        petState.tiredness + 0
-        petState.hunger - 0
-        petState.happiness + 10
-        petStorage.savePetState(petState)
-    }
-
-    fun sleepPet(petState: PetState) {
-        if (!petState.isSleeping) {
-            petState.startSleepTime = System.currentTimeMillis()
-        }
-        petState.isSleeping = !petState.isSleeping
-        petStorage.savePetState(petState)
-    }
-
-    fun playPet(petState: PetState) {
-        petState.health += 5
-        petState.tiredness += 15
-        petState.hunger += 15
-        petState.happiness += 30
-        petStorage.savePetState(petState)
-    }
-
     suspend fun deletePet(): Result<Unit> {
         return try {
             val currentUser = auth.currentUser!!.uid
@@ -99,7 +62,7 @@ class PetRepository (private val petStorage: PetStorage, private val pairStorage
                 throw Exception("Pair was not found")
             }
             firestore.collection("pairs").document(pairId).update("isOpen", !pair.isOpen).await()
-            Log.d(TAG, "Successfully deleted pet")
+            Log.d(TAG, "Successfully switched visibility")
             Result.Success(Unit)
         } catch (e: Exception) {
             Log.d(TAG, "Error deleting pet: $e")

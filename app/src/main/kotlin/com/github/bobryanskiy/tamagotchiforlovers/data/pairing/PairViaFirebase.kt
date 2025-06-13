@@ -18,7 +18,7 @@ import kotlinx.coroutines.tasks.await
 
 private const val TAG = "Tamagotchi.Pairing"
 
-class PairViaFirebase(private val petStorage: PetStorage) {
+class PairViaFirebase {
     private val auth: FirebaseAuth = Firebase.auth
     private val firestore: FirebaseFirestore = Firebase.firestore
 
@@ -36,7 +36,6 @@ class PairViaFirebase(private val petStorage: PetStorage) {
                 transaction.update(userRef, "pairId", pairId)
                 PairModel(pairId, PetState())
             }.await()
-            petStorage.savePetState(pairModel.petState)
             Log.d(TAG, "Successfully created new pair")
             Result.Success(pairModel)
         } catch (e: Exception) {
@@ -54,12 +53,12 @@ class PairViaFirebase(private val petStorage: PetStorage) {
             val pairResult: Result<PairModel> = firestore.runTransaction { transaction ->
                 val doc = transaction[pairRef]
                 var petState: PetState?
-                if (doc.exists() && doc["userId2"] == null) {
-                    petState = doc.toObject<PetState>()
+                if (doc.exists() && doc["userId2"] == "") {
+                    petState = doc.toObject<PairData>()?.petState
                     transaction.update(pairRef, "userId2", currentUser)
                     transaction[userRef] = UserData(pairId)
                 } else {
-                    return@runTransaction Result.Error(Exception("Pair does not exist or already has two users"))
+                    throw Exception("Pair does not exist or already has two users")
                 }
                 Result.Success(PairModel(pairId, petState!!))
             }.await()

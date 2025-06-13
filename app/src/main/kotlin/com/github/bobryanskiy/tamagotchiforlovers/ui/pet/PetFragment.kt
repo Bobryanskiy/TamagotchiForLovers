@@ -36,7 +36,8 @@ class PetFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.pairCode.text = PetFragmentArgs.fromBundle(requireArguments()).pairId
+        val pairId = PetFragmentArgs.fromBundle(requireArguments()).pairId
+        binding.pairCode.text = pairId
         viewModel = ViewModelProvider(this, factory = PetViewModelFactory(requireContext()))[PetViewModel::class.java]
         sharedViewModel = ViewModelProvider(requireActivity(), SharedViewModelFactory(requireContext()))[SharedViewModel::class.java]
 
@@ -78,7 +79,7 @@ class PetFragment : Fragment() {
         }
 
         binding.eatButton.setOnClickListener {
-            viewModel.feedPet(sharedViewModel.petState.value!!)
+            sharedViewModel.feedPet(pairId)
         }
         binding.sleepButton.setOnClickListener {
 

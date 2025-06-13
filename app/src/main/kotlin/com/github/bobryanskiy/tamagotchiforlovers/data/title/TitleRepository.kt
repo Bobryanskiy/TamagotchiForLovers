@@ -8,7 +8,6 @@ import com.github.bobryanskiy.tamagotchiforlovers.data.pet.model.PetState
 import com.github.bobryanskiy.tamagotchiforlovers.data.storage.PairStorage
 import com.github.bobryanskiy.tamagotchiforlovers.data.storage.PetStorage
 import com.github.bobryanskiy.tamagotchiforlovers.data.title.model.UserPetInfo
-import com.github.bobryanskiy.tamagotchiforlovers.ui.title.TitleFragmentDirections
 import com.github.bobryanskiy.tamagotchiforlovers.util.Result
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
@@ -48,7 +47,7 @@ class TitleRepository(private val pairStorage: PairStorage, private val petStora
             }.await()
             if (pairId != null) pairStorage.savePairId(pairId)
             if (petState == null) petStorage.getPetState()
-            result ?: Result.Success(UserPetInfo(pairId = pairId, petState = petState!!, action = true, dest = R.id.action_titleFragment_to_petFragment))
+            result ?: Result.Success(UserPetInfo(pairId = pairId, petState = petState, action = true, dest = R.id.action_titleFragment_to_petFragment))
         } catch (e: Exception) {
             Log.e("TitleRepository", e.toString())
             Result.Error(e)

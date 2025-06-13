@@ -2,7 +2,9 @@ package com.github.bobryanskiy.tamagotchiforlovers.data.login
 
 import android.util.Log
 import com.github.bobryanskiy.tamagotchiforlovers.data.login.model.LoggedInUser
+import com.github.bobryanskiy.tamagotchiforlovers.data.pairing.model.PairData
 import com.github.bobryanskiy.tamagotchiforlovers.data.pairing.model.UserData
+import com.github.bobryanskiy.tamagotchiforlovers.data.pet.model.PetState
 import com.github.bobryanskiy.tamagotchiforlovers.util.Result
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
@@ -24,11 +26,16 @@ class LoginDataSource {
             val task = auth.signInWithEmailAndPassword(username, password).await()
             val user = task.user!!
             Log.d("EmailPassword", "signInWithEmail:success")
-            val doc = firestore.collection("users").document(user.uid).get().await()
-            // TODO : СДЕЛАТЬ ПОЛУЧЕНИЕ ДАННЫХ ИЗ ПАРЫ - транзакция
-            val userData = doc.toObject<UserData>()
-            val code = userData!!.pairId
-            Result.Success(LoggedInUser(user.uid, code, user.displayName))
+            val doc = firestore.collection("users").document(user.uid)
+            val doc2 = firestore.collection("pairs")
+            val transactionData = firestore.runTransaction { transaction ->
+                val userData = transaction[doc].toObject<UserData>()
+                if (userData == null) throw Exception("User data is null")
+                val pairData = transaction[doc2.document(userData.pairId)].toObject<PairData>()
+                Pair(pairData, userData)
+            }.await()
+            Result.Success(LoggedInUser(user.uid, transactionData.second.pairId,
+                transactionData.first?.petState ?: PetState(), user.displayName))
         } catch (e: Exception) {
             Log.e("EmailPassword", "signInWithEmail:failure", e)
             Result.Error(e)
@@ -41,7 +48,7 @@ class LoginDataSource {
             val task = auth.createUserWithEmailAndPassword(username, password).await()
             val user = task.user!!
             firestore.collection("users").document(user.uid).set(UserData()).await()
-            Result.Success(LoggedInUser(user.uid, null, user.displayName))
+            Result.Success(LoggedInUser(user.uid, "", PetState(), user.displayName))
         } catch (e: Exception) {
             Log.e("EmailPassword", "createAccountWithEmail:failure", e)
             Result.Error(e)

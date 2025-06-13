@@ -7,6 +7,7 @@ import android.media.AudioAttributes
 import android.media.RingtoneManager
 import android.util.Log
 import com.github.bobryanskiy.tamagotchiforlovers.R
+import com.github.bobryanskiy.tamagotchiforlovers.TitleScreen
 import com.github.bobryanskiy.tamagotchiforlovers.data.notifications.receivers.NotificationReceiver
 
 class Notifications {
@@ -16,7 +17,11 @@ class Notifications {
     var titleId: Int = -1
     var textId: Int = -1
 
-    fun schedule(context: Context, delayInSeconds: Long, pendingIntent: PendingIntent) {
+    fun schedule(context: Context, delayInSeconds: Long) {
+        val intentf = Intent(context, TitleScreen::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        val pendingIntent: PendingIntent = PendingIntent.getActivity(context, 0, intentf, PendingIntent.FLAG_IMMUTABLE)
         Log.d("NotificationManager", "создано")
         val intent = Intent(context, NotificationReceiver::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK

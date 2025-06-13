@@ -31,7 +31,7 @@ class PairViewModel(private val repository: PairRepository) : ViewModel() {
         viewModelScope.launch {
             val result = repository.joinPair(pairId)
             if (result is Result.Success) {
-                _pairResult.value = PairResult()
+                _pairResult.value = PairResult(result.data)
             } else {
                 _pairResult.value = PairResult(error = R.string.login_failed)
             }

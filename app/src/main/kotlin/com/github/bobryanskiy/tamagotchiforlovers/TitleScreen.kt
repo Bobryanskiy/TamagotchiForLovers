@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
 import android.view.MotionEvent
@@ -17,6 +16,7 @@ import androidx.core.net.toUri
 import androidx.navigation.fragment.NavHostFragment
 import com.github.bobryanskiy.tamagotchiforlovers.data.notifications.Notifications
 import com.google.firebase.firestore.FirebaseFirestore
+import java.util.*
 
 
 class TitleScreen : AppCompatActivity() {
@@ -66,6 +66,11 @@ class TitleScreen : AppCompatActivity() {
 
     override fun onStop() {
         super.onStop()
+        val calendar = Calendar.getInstance().apply {
+            timeInMillis = System.currentTimeMillis()
+            add(Calendar.MINUTE, 1)
+        }
+        Notifications.PetWantEat.schedule(this, calendar.timeInMillis)
         Log.d("TEST", "STOPPED")
     }
 }

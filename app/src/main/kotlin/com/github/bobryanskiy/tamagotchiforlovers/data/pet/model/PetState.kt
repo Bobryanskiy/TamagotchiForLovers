@@ -4,7 +4,7 @@ import android.os.Parcel
 import android.os.Parcelable
 
 data class PetState(
-    var hunger: Int = 0,
+    var hunger: Int = 100,
     var happiness: Int = 0,
     var health: Int = 100,
     var tiredness: Int = 0,

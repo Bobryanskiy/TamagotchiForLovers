@@ -18,6 +18,8 @@ import com.github.bobryanskiy.tamagotchiforlovers.data.login.LoginType
 import com.github.bobryanskiy.tamagotchiforlovers.data.storage.PairStorage
 import com.github.bobryanskiy.tamagotchiforlovers.data.storage.PetStorage
 import com.github.bobryanskiy.tamagotchiforlovers.databinding.FragmentLoginBinding
+import com.github.bobryanskiy.tamagotchiforlovers.ui.title.SharedViewModel
+import com.github.bobryanskiy.tamagotchiforlovers.ui.title.SharedViewModelFactory
 
 class LoginFragment : Fragment() {
 
@@ -132,8 +134,12 @@ class LoginFragment : Fragment() {
 
         val appContext = context?.applicationContext ?: return
         Toast.makeText(appContext, welcome, Toast.LENGTH_LONG).show()
-        if (model.isPair) view?.findNavController()?.navigate(
-            LoginFragmentDirections.actionLoginFragmentToPetFragment(PairStorage(requireContext()).getPairId()!!, PetStorage(requireContext()).getPetState()))
+        if (model.pairCode != "") {
+            val sharedViewModel = ViewModelProvider(requireActivity(), factory = SharedViewModelFactory(requireContext()))[SharedViewModel::class.java]
+            sharedViewModel.petStateSet(model.petState)
+            view?.findNavController()?.navigate(
+                LoginFragmentDirections.actionLoginFragmentToPetFragment(model.pairCode, model.petState))
+        }
         else view?.findNavController()?.navigate(R.id.action_loginFragment_to_pairFragment)
     }
 

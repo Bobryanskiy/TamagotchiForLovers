@@ -10,7 +10,8 @@
         android:paddingLeft="@dimen/fragment_horizontal_margin"
         android:paddingRight="@dimen/fragment_horizontal_margin"
         android:paddingTop="@dimen/fragment_vertical_margin"
-        tools:context=".ui.login.LoginFragment">
+        tools:context=".ui.login.LoginFragment"
+        android:background="@color/main_theme">
 
     <LinearLayout
             android:orientation="vertical"

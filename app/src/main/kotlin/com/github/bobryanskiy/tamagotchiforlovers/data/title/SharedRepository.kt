@@ -1,10 +1,7 @@
 package com.github.bobryanskiy.tamagotchiforlovers.data.title
 
-import android.util.Log
 import com.github.bobryanskiy.tamagotchiforlovers.data.pet.model.PetState
 import com.github.bobryanskiy.tamagotchiforlovers.data.storage.PetStorage
-import com.github.bobryanskiy.tamagotchiforlovers.data.title.model.ResultListener
-import com.github.bobryanskiy.tamagotchiforlovers.util.Result
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -12,31 +9,54 @@ import com.google.firebase.ktx.Firebase
 class SharedRepository(private val petStorage: PetStorage) {
     private val firestore: FirebaseFirestore = Firebase.firestore
 
-    fun subscribeToFirestore(pairId: String): Result<ResultListener> {
-        return try {
-            val petDocument = firestore.collection("pets").document(pairId)
-            var petState: PetState = petStorage.getPetState()
-            petDocument.addSnapshotListener { snapshot, e ->
-                if (e != null) {
-                    Log.e("Firestore", "Listener Error", e)
-                    return@addSnapshotListener
-                }
-
-                if (snapshot != null && snapshot.exists()) {
-                    val updatedState = snapshot.toObject(PetState::class.java)
-                    updatedState?.let {
-                        petState = it
-                        saveToSharedPreferences(it)
-                    }
-                }
-            }
-            Result.Success(ResultListener(petState))
-        } catch (e: Exception) {
-            Result.Error(e)
-        }
+    fun saveToSharedPreferences(petState: PetState) {
+        petStorage.savePetState(petState)
     }
 
-    private fun saveToSharedPreferences(petState: PetState) {
-        petStorage.savePetState(petState)
+
+    fun feedPet(petState: PetState) {
+        petState.health += 5
+        petState.tiredness += 10
+        petState.hunger -= 30
+        petState.happiness += 10
+        petState.lastUpdateTime = System.currentTimeMillis()
+        petState.health = petState.health.coerceIn(0..100)
+        petState.tiredness = petState.tiredness.coerceIn(0..100)
+        petState.hunger = petState.hunger.coerceIn(0..100)
+        petState.happiness = petState.happiness.coerceIn(0..100)
+        saveToSharedPreferences(petState)
+    }
+
+    fun cleanPet(petState: PetState) {
+        petState.health + 15
+        petState.tiredness + 0
+        petState.hunger - 0
+        petState.happiness + 10
+        saveToSharedPreferences(petState)
+    }
+
+    fun sleepPet(petState: PetState) {
+        if (!petState.isSleeping) {
+            petState.startSleepTime = System.currentTimeMillis()
+        }
+        petState.isSleeping = !petState.isSleeping
+        saveToSharedPreferences(petState)
+    }
+
+    fun playPet(petState: PetState) {
+        petState.health += 5
+        petState.tiredness += 15
+        petState.hunger += 15
+        petState.happiness += 30
+        saveToSharedPreferences(petState)
+    }
+
+    fun feedPetSimple(petState: PetState?, pairId: String): PetState? {
+        return petState?.apply {
+            hunger -= 30
+            hunger = hunger.coerceIn(0..100)
+            firestore.collection("pairs").document(pairId).update("petState.hunger", hunger)
+//            saveToSharedPreferences(this)
+        }
     }
 }

@@ -4,7 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.bobryanskiy.tamagotchiforlovers.data.pet.model.PetState
 import com.github.bobryanskiy.tamagotchiforlovers.R
 import com.github.bobryanskiy.tamagotchiforlovers.data.login.LoginRepository
 import com.github.bobryanskiy.tamagotchiforlovers.data.pet.PetRepository
@@ -12,9 +11,6 @@ import com.github.bobryanskiy.tamagotchiforlovers.util.Result
 import kotlinx.coroutines.launch
 
 class PetViewModel(private val repository: PetRepository, private val logout: LoginRepository) : ViewModel() {
-    private val _petState = MutableLiveData<PetState>()
-    val petState: LiveData<PetState> = _petState
-
     private val _deletePetResult = MutableLiveData<ButtonsResult>()
     val deletePetResult: LiveData<ButtonsResult> = _deletePetResult
 
@@ -45,9 +41,5 @@ class PetViewModel(private val repository: PetRepository, private val logout: Lo
                 _switchVisibilityResult.value = ButtonsResult(error = R.string.invalid_password)
             }
         }
-    }
-
-    fun feedPet(petState: PetState) {
-        repository.feedPet(petState)
     }
 }

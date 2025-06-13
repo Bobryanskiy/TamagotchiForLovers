@@ -16,6 +16,8 @@ import androidx.navigation.findNavController
 import com.github.bobryanskiy.tamagotchiforlovers.R
 import com.github.bobryanskiy.tamagotchiforlovers.data.pet.model.PetState
 import com.github.bobryanskiy.tamagotchiforlovers.databinding.FragmentPairBinding
+import com.github.bobryanskiy.tamagotchiforlovers.ui.title.SharedViewModel
+import com.github.bobryanskiy.tamagotchiforlovers.ui.title.SharedViewModelFactory
 
 class PairFragment : Fragment() {
 
@@ -36,6 +38,7 @@ class PairFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         viewModel = ViewModelProvider(this, factory = PairViewModelFactory(requireContext()))[PairViewModel::class.java]
+        val sharedViewModel = ViewModelProvider(requireActivity(), factory = SharedViewModelFactory(requireContext()))[SharedViewModel::class.java]
 
         viewModel.joinForm.observe(
             viewLifecycleOwner,
@@ -56,6 +59,8 @@ class PairFragment : Fragment() {
                     showPairingFailed(it)
                 }
                 pairResult.pairModel?.let {
+                    sharedViewModel.subscribeToFirestore(it.code)
+                    sharedViewModel.petStateSet(it.petState)
                     updateUi(it.code, it.petState)
                 }
             }
