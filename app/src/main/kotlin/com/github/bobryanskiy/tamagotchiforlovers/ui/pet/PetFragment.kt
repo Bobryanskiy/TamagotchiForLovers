@@ -1,5 +1,6 @@
 package com.github.bobryanskiy.tamagotchiforlovers.ui.pet
 
+import android.app.Application
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,9 +12,12 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import com.github.bobryanskiy.tamagotchiforlovers.R
+import com.github.bobryanskiy.tamagotchiforlovers.data.PetConstants.PetConstants.HUNGER_RATE
+import com.github.bobryanskiy.tamagotchiforlovers.data.notifications.Notifications
 import com.github.bobryanskiy.tamagotchiforlovers.databinding.FragmentPetBinding
 import com.github.bobryanskiy.tamagotchiforlovers.ui.title.SharedViewModel
 import com.github.bobryanskiy.tamagotchiforlovers.ui.title.SharedViewModelFactory
+import com.github.bobryanskiy.tamagotchiforlovers.util.NetworkConnectionLiveData
 
 class PetFragment : Fragment() {
 
@@ -39,7 +43,7 @@ class PetFragment : Fragment() {
         val pairId = PetFragmentArgs.fromBundle(requireArguments()).pairId
         binding.pairCode.text = pairId
         viewModel = ViewModelProvider(this, factory = PetViewModelFactory(requireContext()))[PetViewModel::class.java]
-        sharedViewModel = ViewModelProvider(requireActivity(), SharedViewModelFactory(requireContext()))[SharedViewModel::class.java]
+        sharedViewModel = ViewModelProvider(requireActivity(), SharedViewModelFactory(requireContext().applicationContext as Application))[SharedViewModel::class.java]
 
         viewModel.deletePetResult.observe(viewLifecycleOwner, Observer { result ->
             result ?: return@Observer
@@ -62,9 +66,9 @@ class PetFragment : Fragment() {
 
         sharedViewModel.petState.observe(viewLifecycleOwner, Observer { state ->
             binding.hungerText.text = state.hunger.toString()
-            binding.cleanText.text = state.cleanliness.toString()
-            binding.sleepText.text = state.tiredness.toString()
-            binding.playGamesText.text = state.happiness.toString()
+//            binding.cleanText.text = state.cleanliness.toString()
+//            binding.sleepText.text = state.tiredness.toString()
+//            binding.playGamesText.text = state.happiness.toString()
         })
 
         binding.logout.setOnClickListener {
@@ -78,18 +82,26 @@ class PetFragment : Fragment() {
             viewModel.switchVisibility()
         }
 
+        var isOnline = false
+        val connectionLiveData = NetworkConnectionLiveData(requireContext())
+        connectionLiveData.observe(viewLifecycleOwner, Observer { isNetworkAvailable ->
+            isNetworkAvailable?.let {
+                isOnline = isNetworkAvailable
+            }
+        })
+
         binding.eatButton.setOnClickListener {
-            sharedViewModel.feedPet(pairId)
+            sharedViewModel.feedPet(pairId, isOnline)
         }
-        binding.sleepButton.setOnClickListener {
-
-        }
-        binding.cleanButton.setOnClickListener {
-
-        }
-        binding.playGamesButton.setOnClickListener {
-
-        }
+//        binding.sleepButton.setOnClickListener {
+//
+//        }
+//        binding.cleanButton.setOnClickListener {
+//
+//        }
+//        binding.playGamesButton.setOnClickListener {
+//
+//        }
     }
 
     private fun showDeletePetSuccess(@StringRes successString: Int) {

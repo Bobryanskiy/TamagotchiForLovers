@@ -1,5 +1,6 @@
 package com.github.bobryanskiy.tamagotchiforlovers.ui.login
 
+import android.app.Application
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -135,7 +136,7 @@ class LoginFragment : Fragment() {
         val appContext = context?.applicationContext ?: return
         Toast.makeText(appContext, welcome, Toast.LENGTH_LONG).show()
         if (model.pairCode != "") {
-            val sharedViewModel = ViewModelProvider(requireActivity(), factory = SharedViewModelFactory(requireContext()))[SharedViewModel::class.java]
+            val sharedViewModel = ViewModelProvider(requireActivity(), factory = SharedViewModelFactory(requireContext().applicationContext as Application))[SharedViewModel::class.java]
             sharedViewModel.petStateSet(model.petState)
             view?.findNavController()?.navigate(
                 LoginFragmentDirections.actionLoginFragmentToPetFragment(model.pairCode, model.petState))

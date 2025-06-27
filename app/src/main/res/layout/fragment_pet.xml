@@ -8,21 +8,21 @@
         android:background="@color/main_theme">
 
     <Button
-            android:text="Выйти"
+            android:text="@string/pet_exit_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" android:id="@+id/logout"
             app:layout_constraintTop_toTopOf="parent" app:layout_constraintStart_toStartOf="parent"
             android:layout_marginStart="10dp" android:layout_marginTop="30dp" android:textSize="12sp"
             style="@style/Widget.Material3.Button.Icon"/>
     <Button
-            android:text="Удалить питомца"
+            android:text="@string/pet_delete_pet_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" android:id="@+id/deletePet"
             android:textSize="12sp" style="@style/Widget.Material3.Button.Icon"
             app:layout_constraintTop_toBottomOf="@+id/switch_pair_visibility" app:layout_constraintStart_toStartOf="@+id/logout"
             android:layout_marginTop="10dp"/>
     <Button
-            android:text="Переключить видимость"
+            android:text="@string/pet_switch_visibility_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" android:id="@+id/switch_pair_visibility"
             app:layout_constraintTop_toTopOf="@+id/logout"
@@ -36,67 +36,77 @@
             app:layout_constraintStart_toEndOf="@+id/deletePet"
             app:layout_constraintBottom_toBottomOf="@+id/deletePet" app:layout_constraintTop_toTopOf="@+id/deletePet"/>
     <LinearLayout
-            android:orientation="horizontal"
+            android:baselineAligned="false" android:orientation="horizontal"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" android:layout_marginBottom="60dp">
+            app:layout_constraintStart_toStartOf="parent" android:layout_marginBottom="60dp"
+            android:id="@+id/linearLayout5">
         <LinearLayout
                 android:orientation="vertical"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="match_parent" android:layout_weight="1" android:gravity="center">
             <TextView
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" android:id="@+id/hunger_text" android:layout_weight="1"
+                    android:layout_height="wrap_content" android:id="@+id/hunger_text"
                     android:gravity="center"/>
             <Button
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" android:id="@+id/eatButton" android:layout_weight="1"
+                    android:layout_height="wrap_content" android:id="@+id/eatButton"
                     style="@style/Widget.Material3.Button.IconButton.Filled" android:gravity="center"
-                    android:text="корм" android:textSize="14sp"/>
+                    android:text="@string/pet_feed_button" android:textSize="14sp"/>
         </LinearLayout>
-        <LinearLayout
-                android:orientation="vertical"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" android:layout_weight="1" android:gravity="center">
-            <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" android:id="@+id/sleepText" android:layout_weight="1"
-                    android:gravity="center"/>
-            <Button
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" android:id="@+id/sleepButton" android:layout_weight="1"
-                    style="@style/Widget.Material3.Button.IconButton.Filled" android:gravity="center"
-                    android:textSize="14sp" android:text="спать"/>
-        </LinearLayout>
-        <LinearLayout
-                android:orientation="vertical"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" android:layout_weight="1" android:gravity="center">
-            <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" android:id="@+id/cleanText" android:layout_weight="1"
-                    android:gravity="center"/>
-            <Button
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" android:id="@+id/cleanButton" android:layout_weight="1"
-                    style="@style/Widget.Material3.Button.IconButton.Filled" android:gravity="center"
-                    android:textSize="14sp" android:text="убраться"/>
-        </LinearLayout>
-        <LinearLayout
-                android:orientation="vertical"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" android:layout_weight="1" android:gravity="center">
-            <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" android:id="@+id/playGamesText" android:layout_weight="1"
-                    android:gravity="center"/>
-            <Button
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" android:id="@+id/playGamesButton" android:layout_weight="1"
-                    style="@style/Widget.Material3.Button.IconButton.Filled" android:gravity="center"
-                    android:textSize="14sp" android:text="играть"/>
-        </LinearLayout>
+        <!--        <LinearLayout-->
+        <!--                android:orientation="vertical"-->
+        <!--                android:layout_width="match_parent"-->
+        <!--                android:layout_height="match_parent" android:layout_weight="1" android:gravity="center">-->
+        <!--            <TextView-->
+        <!--                    android:layout_width="match_parent"-->
+        <!--                    android:layout_height="wrap_content" android:id="@+id/sleepText"-->
+        <!--                    android:gravity="center"/>-->
+        <!--            <Button-->
+        <!--                    android:layout_width="match_parent"-->
+        <!--                    android:layout_height="wrap_content" android:id="@+id/sleepButton"-->
+        <!--                    style="@style/Widget.Material3.Button.IconButton.Filled" android:gravity="center"-->
+        <!--                    android:textSize="14sp" android:text="спать"/>-->
+        <!--        </LinearLayout>-->
+        <!--        <LinearLayout-->
+        <!--                android:orientation="vertical"-->
+        <!--                android:layout_width="match_parent"-->
+        <!--                android:layout_height="match_parent" android:layout_weight="1" android:gravity="center">-->
+        <!--            <TextView-->
+        <!--                    android:layout_width="match_parent"-->
+        <!--                    android:layout_height="wrap_content" android:id="@+id/cleanText"-->
+        <!--                    android:gravity="center"/>-->
+        <!--            <Button-->
+        <!--                    android:layout_width="match_parent"-->
+        <!--                    android:layout_height="wrap_content" android:id="@+id/cleanButton"-->
+        <!--                    style="@style/Widget.Material3.Button.IconButton.Filled" android:gravity="center"-->
+        <!--                    android:textSize="14sp" android:text="убраться"/>-->
+        <!--        </LinearLayout>-->
+        <!--        <LinearLayout-->
+        <!--                android:orientation="vertical"-->
+        <!--                android:layout_width="match_parent"-->
+        <!--                android:layout_height="match_parent" android:layout_weight="1" android:gravity="center">-->
+        <!--            <TextView-->
+        <!--                    android:layout_width="match_parent"-->
+        <!--                    android:layout_height="wrap_content" android:id="@+id/playGamesText"-->
+        <!--                    android:gravity="center"/>-->
+        <!--            <Button-->
+        <!--                    android:layout_width="match_parent"-->
+        <!--                    android:layout_height="wrap_content" android:id="@+id/playGamesButton"-->
+        <!--                    style="@style/Widget.Material3.Button.IconButton.Filled" android:gravity="center"-->
+        <!--                    android:textSize="14sp" android:text="играть"/>-->
+        <!--        </LinearLayout>-->
     </LinearLayout>
+    <ImageView
+            android:contentDescription="Image of cat" android:src="@drawable/pet"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:id="@+id/imageView2"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" android:scaleX="0.5" android:scaleY="0.5"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintTop_toBottomOf="@+id/deletePet"
+            app:layout_constraintBottom_toTopOf="@+id/linearLayout5"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

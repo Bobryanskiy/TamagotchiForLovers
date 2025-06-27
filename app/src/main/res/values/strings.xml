@@ -17,4 +17,18 @@
     <string name="wrong_login_data">Wrong username or password</string>
     <string name="wrong_username">Username doesn\'t exist</string>
     <string name="action_register">Register</string>
+    <string name="pet_deleted_success">Pet deleted successfully</string>
+    <string name="pet_deleted_error">Pet deletion error</string>
+    <string name="switch_visibility_success">Visibility switched successfully</string>
+    <string name="switch_visibility_error">"Switch visibility error "</string>
+    <string name="title_play_error">Some error happened</string>
+    <string name="creating_pair_error">Creating pair error</string>
+    <string name="joining_pair_error">Joining pair error</string>
+    <string name="title_exit_button">Exit</string>
+    <string name="title_settings_botton">Settings</string>
+    <string name="title_play_button">Play</string>
+    <string name="pet_feed_button">Feed</string>
+    <string name="pet_exit_button">Log out</string>
+    <string name="pet_delete_pet_button">Delete pet</string>
+    <string name="pet_switch_visibility_button">Switch visibility</string>
 </resources>

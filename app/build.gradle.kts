@@ -63,7 +63,7 @@ java {
 }
 
 dependencies {
-    implementation("androidx.work:work-runtime-ktx:2.10.1")
+    implementation("androidx.work:work-runtime-ktx:2.10.2")
     implementation("androidx.dynamicanimation:dynamicanimation-ktx:1.1.0")
     implementation("com.google.guava:guava:33.4.0-android")
 
@@ -71,6 +71,7 @@ dependencies {
 
     implementation("com.google.android.gms:play-services-auth:21.3.0")
 
+    implementation("com.google.firebase:firebase-config")
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-auth")
@@ -88,7 +89,7 @@ dependencies {
     implementation("androidx.legacy:legacy-support-v4:1.0.0")
     implementation("androidx.fragment:fragment-ktx:1.8.8")
 
-    androidTestImplementation("junit:junit:4.13.2")
+    testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
 }

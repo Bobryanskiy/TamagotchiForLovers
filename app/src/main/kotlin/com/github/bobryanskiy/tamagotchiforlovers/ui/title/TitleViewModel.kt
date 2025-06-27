@@ -13,12 +13,12 @@ class TitleViewModel(private val repository: TitleRepository) : ViewModel() {
     private val _playResult = MutableLiveData<UserPetInfoResult>()
     val playResult: LiveData<UserPetInfoResult> = _playResult
 
-    fun playButton() {
+    fun playButton(isOnline: Boolean) {
         viewModelScope.launch {
-            val result = repository.playButton()
+            val result = repository.playButton(isOnline)
             if (result is Result.Success) {
                 _playResult.value = UserPetInfoResult(success = result.data)
-            } else _playResult.value = UserPetInfoResult(error = R.string.login_failed)
+            } else _playResult.value = UserPetInfoResult(error = R.string.title_play_error)
         }
     }
 }

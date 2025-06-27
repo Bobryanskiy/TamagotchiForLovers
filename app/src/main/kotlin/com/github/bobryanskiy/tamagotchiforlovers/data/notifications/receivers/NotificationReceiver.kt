@@ -23,6 +23,7 @@ class NotificationReceiver : BroadcastReceiver() {
         } else {
             intent.getParcelableExtra("pendingIntent")
         }
+        // TODO : перед отправкой уведомления обновить данные из облака и проверить на актуальность уведомления
         sendReminderNotificationInternal(context, intent.getStringExtra("channel_name").toString(),
             intent.getStringExtra("title").toString(), intent.getStringExtra("text").toString(),
             intent.getIntExtra("request_code", -1), pendingIntent)
@@ -62,13 +63,8 @@ class NotificationReceiver : BroadcastReceiver() {
                     PowerManager.SCREEN_DIM_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP,
                     "tamagotchi:notificationLock"
                 )
-                wl.acquire(3000) //set your time in milliseconds
+                wl.acquire(3000)
             }
         }
     }
-
-//    fun cancelNotification(context: Context, channelName: String) {
-//        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-//        notificationManager.cancel(MyNotificationReceiver.NOTIFICATION_ID)
-//    }
 }

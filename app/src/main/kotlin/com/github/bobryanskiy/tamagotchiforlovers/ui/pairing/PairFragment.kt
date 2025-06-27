@@ -1,5 +1,6 @@
 package com.github.bobryanskiy.tamagotchiforlovers.ui.pairing
 
+import android.app.Application
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -38,7 +39,7 @@ class PairFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         viewModel = ViewModelProvider(this, factory = PairViewModelFactory(requireContext()))[PairViewModel::class.java]
-        val sharedViewModel = ViewModelProvider(requireActivity(), factory = SharedViewModelFactory(requireContext()))[SharedViewModel::class.java]
+        val sharedViewModel = ViewModelProvider(requireActivity(), factory = SharedViewModelFactory(requireContext().applicationContext as Application))[SharedViewModel::class.java]
 
         viewModel.joinForm.observe(
             viewLifecycleOwner,

@@ -17,4 +17,18 @@
     <string name="wrong_login_data">Неверное имя или пароль</string>
     <string name="wrong_username">Имя не существует</string>
     <string name="action_register">Зарегистрироваться</string>
+    <string name="pet_deleted_success">Питомец успешно удален</string>
+    <string name="pet_deleted_error">Произошла ошибка при удалении питомца</string>
+    <string name="switch_visibility_success">Видимость успешно переключена</string>
+    <string name="switch_visibility_error">Ошибка при переключении видимости</string>
+    <string name="title_play_error">Произошла ошибка</string>
+    <string name="creating_pair_error">Произошла ошибка при создании пары</string>
+    <string name="joining_pair_error">Произошла ошибка при присоединении к существующей паре</string>
+    <string name="title_play_button">Играть</string>
+    <string name="title_settings_botton">Настройки</string>
+    <string name="title_exit_button">Выход</string>
+    <string name="pet_feed_button">Покормить</string>
+    <string name="pet_switch_visibility_button">Переключить видимость</string>
+    <string name="pet_delete_pet_button">Удалить питомца</string>
+    <string name="pet_exit_button">Выйти</string>
 </resources>

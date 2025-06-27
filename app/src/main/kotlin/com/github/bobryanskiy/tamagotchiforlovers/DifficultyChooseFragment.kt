@@ -35,11 +35,7 @@ class DifficultyChooseFragment : Fragment() {
                 timeInMillis = System.currentTimeMillis()
                 add(Calendar.SECOND, 0)
             }
-            val intent = Intent(context, TitleScreen::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            }
-            val pendingIntent: PendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
-            context?.let { it1 -> Notifications.PetWantEat.schedule(it1, calendar.timeInMillis, pendingIntent) }
+//            context?.let { it1 -> Notifications.PetWantEat.schedule(it1, calendar.timeInMillis) }
         }
 
         view.findViewById<View>(R.id.star).let { star ->

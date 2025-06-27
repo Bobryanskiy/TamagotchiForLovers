@@ -7,7 +7,6 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.view.MotionEvent
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
@@ -16,7 +15,6 @@ import androidx.core.net.toUri
 import androidx.navigation.fragment.NavHostFragment
 import com.github.bobryanskiy.tamagotchiforlovers.data.notifications.Notifications
 import com.google.firebase.firestore.FirebaseFirestore
-import java.util.*
 
 
 class TitleScreen : AppCompatActivity() {
@@ -32,13 +30,13 @@ class TitleScreen : AppCompatActivity() {
         notificationManager.notificationChannels.forEach { x ->  notificationManager.deleteNotificationChannel(x.id) }
         Notifications.createNotificationChannels(this)
 
-        val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !alarmManager.canScheduleExactAlarms()) {
-            val settingsIntent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
-                data = "package:${packageName}".toUri()
-            }
-            startActivity(settingsIntent)
-        }
+//        val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !alarmManager.canScheduleExactAlarms()) {
+//            val settingsIntent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+//                data = "package:${packageName}".toUri()
+//            }
+//            startActivity(settingsIntent)
+//        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
@@ -66,11 +64,11 @@ class TitleScreen : AppCompatActivity() {
 
     override fun onStop() {
         super.onStop()
-        val calendar = Calendar.getInstance().apply {
-            timeInMillis = System.currentTimeMillis()
-            add(Calendar.MINUTE, 1)
-        }
-        Notifications.PetWantEat.schedule(this, calendar.timeInMillis)
-        Log.d("TEST", "STOPPED")
+//        val calendar = Calendar.getInstance().apply {
+//            timeInMillis = System.currentTimeMillis()
+//            add(Calendar.MINUTE, 1)
+//        }
+//        Notifications.PetWantEat.schedule(this, calendar.timeInMillis)
+//        Log.d("TEST", "STOPPED")
     }
 }

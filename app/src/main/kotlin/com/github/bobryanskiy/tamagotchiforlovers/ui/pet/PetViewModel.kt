@@ -25,9 +25,9 @@ class PetViewModel(private val repository: PetRepository, private val logout: Lo
         viewModelScope.launch {
             val result = repository.deletePet()
             if (result is Result.Success) {
-                _deletePetResult.value = ButtonsResult(success = R.string.welcome)
+                _deletePetResult.value = ButtonsResult(success = R.string.pet_deleted_success)
             } else {
-                _deletePetResult.value = ButtonsResult(error = R.string.invalid_password)
+                _deletePetResult.value = ButtonsResult(error = R.string.pet_deleted_error)
             }
         }
     }
@@ -36,9 +36,9 @@ class PetViewModel(private val repository: PetRepository, private val logout: Lo
         viewModelScope.launch {
             val result = repository.switchVisibility()
             if (result is Result.Success) {
-                _switchVisibilityResult.value = ButtonsResult(success = R.string.welcome)
+                _switchVisibilityResult.value = ButtonsResult(success = R.string.switch_visibility_success)
             } else {
-                _switchVisibilityResult.value = ButtonsResult(error = R.string.invalid_password)
+                _switchVisibilityResult.value = ButtonsResult(error = R.string.switch_visibility_error)
             }
         }
     }

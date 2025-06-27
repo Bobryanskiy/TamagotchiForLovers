@@ -9,6 +9,7 @@ import android.util.Log
 import com.github.bobryanskiy.tamagotchiforlovers.R
 import com.github.bobryanskiy.tamagotchiforlovers.TitleScreen
 import com.github.bobryanskiy.tamagotchiforlovers.data.notifications.receivers.NotificationReceiver
+import java.util.Calendar
 
 class Notifications {
     var channelName: String = ""
@@ -17,7 +18,11 @@ class Notifications {
     var titleId: Int = -1
     var textId: Int = -1
 
-    fun schedule(context: Context, delayInSeconds: Long) {
+    fun schedule(context: Context, delayInMinutes: Int) {
+        val calendar = Calendar.getInstance().apply {
+            timeInMillis = System.currentTimeMillis()
+            add(Calendar.MINUTE, delayInMinutes)
+        }
         val intentf = Intent(context, TitleScreen::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
@@ -40,11 +45,13 @@ class Notifications {
         )
 
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val triggerTime = delayInSeconds
+        val triggerTime = calendar.timeInMillis
 
-        alarmManager.setExactAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP,
-            triggerTime,
+        alarmManager.setAlarmClock(
+            AlarmManager.AlarmClockInfo(
+                triggerTime,
+                receiverIntent
+            ),
             receiverIntent
         )
     }
@@ -58,7 +65,7 @@ class Notifications {
         )
     }
 
-    fun cancel(context: Context, requestCode: Int) {
+    fun cancel(context: Context) {
         (context.getSystemService(Context.ALARM_SERVICE) as AlarmManager).cancel(getPendingIntent(context))
     }
 

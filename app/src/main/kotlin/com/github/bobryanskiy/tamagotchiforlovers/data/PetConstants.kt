@@ -2,6 +2,7 @@ package com.github.bobryanskiy.tamagotchiforlovers.data
 
 import java.util.Calendar
 
+// TODO : сделать с помощью RemoteConfig
 class PetConstants {
     object PetConstants {
         // Пороги для уведомлений
@@ -10,7 +11,7 @@ class PetConstants {
         const val HAPPINESS_THRESHOLD = 20
         const val HEALTH_THRESHOLD = 30
 
-        // Скорость изменения параметров (в единицах/час)
+        // Скорость изменения параметров (в единицах/минуту)
         const val HUNGER_RATE = 4
         const val TIREDNESS_RATE = 4
         const val HAPPINESS_RATE = -2

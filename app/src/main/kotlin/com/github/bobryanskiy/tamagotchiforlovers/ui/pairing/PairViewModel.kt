@@ -22,7 +22,7 @@ class PairViewModel(private val repository: PairRepository) : ViewModel() {
             if (result is Result.Success) {
                 _pairResult.value = PairResult(result.data)
             } else {
-                _pairResult.value = PairResult(error = R.string.login_failed)
+                _pairResult.value = PairResult(error = R.string.creating_pair_error)
             }
         }
     }
@@ -33,7 +33,7 @@ class PairViewModel(private val repository: PairRepository) : ViewModel() {
             if (result is Result.Success) {
                 _pairResult.value = PairResult(result.data)
             } else {
-                _pairResult.value = PairResult(error = R.string.login_failed)
+                _pairResult.value = PairResult(error = R.string.joining_pair_error)
             }
         }
     }
