@@ -137,6 +137,7 @@ class LoginFragment : Fragment() {
         Toast.makeText(appContext, welcome, Toast.LENGTH_LONG).show()
         if (model.pairCode != "") {
             val sharedViewModel = ViewModelProvider(requireActivity(), factory = SharedViewModelFactory(requireContext().applicationContext as Application))[SharedViewModel::class.java]
+            sharedViewModel.subscribeToFirestore(model.pairCode)
             sharedViewModel.petStateSet(model.petState)
             view?.findNavController()?.navigate(
                 LoginFragmentDirections.actionLoginFragmentToPetFragment(model.pairCode, model.petState))

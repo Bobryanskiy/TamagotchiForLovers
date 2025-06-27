@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.annotation.StringRes
+import androidx.core.content.ContentProviderCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -73,6 +74,7 @@ class PetFragment : Fragment() {
 
         binding.logout.setOnClickListener {
             viewModel.logout()
+            Notifications.PetWantEat.cancel(requireContext())
             view.findNavController().navigate(R.id.action_petFragment_to_loginFragment)
         }
         binding.deletePet.setOnClickListener {
