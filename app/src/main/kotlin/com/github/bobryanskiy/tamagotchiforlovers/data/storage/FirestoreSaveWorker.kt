@@ -3,8 +3,8 @@ package com.github.bobryanskiy.tamagotchiforlovers.data.storage
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.tasks.await
 
 class FirestoreSaveWorker(context: Context, params: WorkerParameters) :

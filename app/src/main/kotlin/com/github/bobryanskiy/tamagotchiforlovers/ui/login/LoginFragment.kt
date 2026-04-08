@@ -16,8 +16,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import com.github.bobryanskiy.tamagotchiforlovers.R
 import com.github.bobryanskiy.tamagotchiforlovers.data.login.LoginType
-import com.github.bobryanskiy.tamagotchiforlovers.data.storage.PairStorage
-import com.github.bobryanskiy.tamagotchiforlovers.data.storage.PetStorage
 import com.github.bobryanskiy.tamagotchiforlovers.databinding.FragmentLoginBinding
 import com.github.bobryanskiy.tamagotchiforlovers.ui.title.SharedViewModel
 import com.github.bobryanskiy.tamagotchiforlovers.ui.title.SharedViewModelFactory

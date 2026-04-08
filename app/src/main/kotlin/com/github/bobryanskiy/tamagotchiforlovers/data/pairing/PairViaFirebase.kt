@@ -5,15 +5,14 @@ import com.github.bobryanskiy.tamagotchiforlovers.data.pairing.model.PairData
 import com.github.bobryanskiy.tamagotchiforlovers.data.pairing.model.PairModel
 import com.github.bobryanskiy.tamagotchiforlovers.data.pairing.model.UserData
 import com.github.bobryanskiy.tamagotchiforlovers.data.pet.model.PetState
-import com.github.bobryanskiy.tamagotchiforlovers.data.storage.PetStorage
 import com.github.bobryanskiy.tamagotchiforlovers.util.Result
 import com.github.bobryanskiy.tamagotchiforlovers.util.Util
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.auth
+import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
-import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.tasks.await
 
 private const val TAG = "Tamagotchi.Pairing"

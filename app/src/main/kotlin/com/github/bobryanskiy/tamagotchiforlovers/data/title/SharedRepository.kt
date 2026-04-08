@@ -2,9 +2,9 @@ package com.github.bobryanskiy.tamagotchiforlovers.data.title
 
 import com.github.bobryanskiy.tamagotchiforlovers.data.pet.model.PetState
 import com.github.bobryanskiy.tamagotchiforlovers.data.storage.PetStorage
+import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.tasks.await
 
 class SharedRepository(private val petStorage: PetStorage) {

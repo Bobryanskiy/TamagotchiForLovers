@@ -12,18 +12,23 @@ import com.github.bobryanskiy.tamagotchiforlovers.data.notifications.Notificatio
 import com.github.bobryanskiy.tamagotchiforlovers.data.pairing.model.PairData
 import com.github.bobryanskiy.tamagotchiforlovers.data.pet.model.PetState
 import com.github.bobryanskiy.tamagotchiforlovers.data.title.SharedRepository
-import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
-import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.launch
 
 class SharedViewModel(application: Application, private val repository: SharedRepository) : AndroidViewModel(application) {
     private val _petState = MutableLiveData<PetState>()
     val petState: LiveData<PetState> = _petState
 
+    companion object {
+        lateinit var listener: ListenerRegistration
+    }
+
     fun subscribeToFirestore(pairId: String) {
         val petDocument = Firebase.firestore.collection("pairs").document(pairId)
-        petDocument.addSnapshotListener { snapshot, e ->
+        listener = petDocument.addSnapshotListener { snapshot, e ->
             if (e != null) {
                 Log.e("Firestore", "Listener Error", e)
                 return@addSnapshotListener
