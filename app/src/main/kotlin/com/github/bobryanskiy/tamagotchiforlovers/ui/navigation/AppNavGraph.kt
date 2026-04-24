@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.github.bobryanskiy.tamagotchiforlovers.ui.screens.CreatePetScreen
 import com.github.bobryanskiy.tamagotchiforlovers.ui.screens.GameOverScreen
+import com.github.bobryanskiy.tamagotchiforlovers.ui.screens.JoinSessionScreen
 import com.github.bobryanskiy.tamagotchiforlovers.ui.screens.LobbyContainer
 import com.github.bobryanskiy.tamagotchiforlovers.ui.screens.StartContainer
 import com.github.bobryanskiy.tamagotchiforlovers.ui.screens.GameContainer
@@ -26,6 +27,10 @@ fun AppNavGraph(
 
         composable("lobby") {
             LobbyContainer(navController = navController)
+        }
+
+        composable("join") {
+            JoinSessionScreen(navController = navController)
         }
 
         composable("game") {
