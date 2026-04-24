@@ -22,7 +22,11 @@ fun AppNavGraph(
         }
 
         composable("create_pet") {
-            CreatePetScreen(navController = navController)
+            CreatePetScreen(navController = navController, forPair = false)
+        }
+
+        composable("create_pair") {
+            CreatePetScreen(navController = navController, forPair = true)
         }
 
         composable("lobby") {

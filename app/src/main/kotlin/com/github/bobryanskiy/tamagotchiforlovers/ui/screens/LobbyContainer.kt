@@ -37,7 +37,9 @@ fun LobbyContainer(
     // Авто-переход в игру, если статус сменился на ACTIVE
     LaunchedEffect(pair?.status) {
         if (pair?.status == PairStatus.ACTIVE) {
-            navController.navigate("game")
+            navController.navigate("game") {
+                popUpTo("lobby") { inclusive = true }
+            }
         }
     }
 

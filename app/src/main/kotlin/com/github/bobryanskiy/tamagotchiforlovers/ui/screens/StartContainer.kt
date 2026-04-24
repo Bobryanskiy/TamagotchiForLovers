@@ -19,6 +19,12 @@ fun StartContainer(
     val pairState by pairViewModel.uiState.collectAsState()
     val petState by petViewModel.uiState.collectAsState()
 
+    // Обновляем состояние при возврате на экран start
+    LaunchedEffect(Unit) {
+        // Принудительно обновляем состояние пары при входе на экран
+        pairViewModel.refreshPairState()
+    }
+
     LaunchedEffect(Unit) {
         pairViewModel.uiEvent.collect { event ->
             when (event) {
@@ -44,7 +50,11 @@ fun StartContainer(
     StartScreen(
         hasActiveSession = hasActivePet || hasActivePair,
         onNewGame = {
-            navController.navigate("create_pet")
+            if (hasActivePet && !hasActivePair) {
+                navController.navigate("create_pair")
+            } else {
+                navController.navigate("create_pet")
+            }
         },
         onContinue = {
             if (isGameActive) {

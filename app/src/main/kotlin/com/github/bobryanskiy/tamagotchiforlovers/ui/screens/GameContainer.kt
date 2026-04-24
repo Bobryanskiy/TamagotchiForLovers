@@ -17,6 +17,7 @@ fun GameContainer(
 ) {
     // 1. Собираем состояние ТОЛЬКО здесь
     val pet by viewModel.uiState.collectAsState()
+    val pair by pairViewModel.uiState.collectAsState()
 
     // 2. Обрабатываем события навигации внутри контейнера
     LaunchedEffect(Unit) {
@@ -36,10 +37,27 @@ fun GameContainer(
         }
     }
 
+    // Обработка событий от PairViewModel
+    LaunchedEffect(Unit) {
+        pairViewModel.uiEvent.collect { event ->
+            when (event) {
+                is PairViewModel.UiEvent.NavigateToLobby -> {
+                    navController.navigate("lobby") {
+                        popUpTo("game") { inclusive = false }
+                    }
+                }
+                else -> {}
+            }
+        }
+    }
+
     // 3. Рисуем экран
     GameScreen(
         pet = pet,
         onAction = viewModel::onAction,
-        onAbandon = viewModel::abandonPet
+        onAbandon = viewModel::abandonPet,
+        onCreatePair = {
+            navController.navigate("create_pair")
+        }
     )
 }
