@@ -10,6 +10,7 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetStats
 fun PetDto.toDomain(petId: String): Pet {
     val p = profile ?: ProfileDto()
     val s = stats ?: StatsDto()
+    val updatedAtMillis = s.updatedAt?.toDate()?.time
 
     return Pet(
         id = petId,
@@ -22,6 +23,6 @@ fun PetDto.toDomain(petId: String): Pet {
             recoveryEndTime = p.recoveryEndTime,
             abandonedAt = p.abandonedAt
         ),
-        stats = PetStats(s.hunger, s.energy, s.cleanliness, s.happiness, s.updatedAt)
+        stats = PetStats(s.hunger, s.energy, s.cleanliness, s.happiness, updatedAtMillis)
     )
 }

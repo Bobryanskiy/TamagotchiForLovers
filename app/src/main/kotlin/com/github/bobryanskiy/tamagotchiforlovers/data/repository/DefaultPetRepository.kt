@@ -130,10 +130,11 @@ class DefaultPetRepository @Inject constructor(
             PetAction.Rest -> "stats.energy" to 30
         }
 
+        val now = System.currentTimeMillis()
         firestore.collection("pets").document(petId)
             .update(
                 field, FieldValue.increment(delta.toLong()),
-                "stats.updatedAt", FieldValue.serverTimestamp()
+                "stats.updatedAt", now
             ).await()
         DomainResult.Success(Unit)
     } catch (e: Throwable) {
