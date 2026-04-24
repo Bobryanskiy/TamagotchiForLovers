@@ -1,9 +1,10 @@
 package com.github.bobryanskiy.tamagotchiforlovers.ui.screens
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.PairViewModel
 import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.PetViewModel
@@ -18,20 +19,41 @@ fun StartContainer(
     val pairState by pairViewModel.uiState.collectAsState()
     val petState by petViewModel.uiState.collectAsState()
 
-    // Определяем, есть ли активная сессия
-    val hasActiveSession = pairState != null || petState != null
+    LaunchedEffect(Unit) {
+        pairViewModel.uiEvent.collect { event ->
+            when (event) {
+                is PairViewModel.UiEvent.NavigateToGame -> {
+                    navController.navigate("game") {
+                        popUpTo("start") { inclusive = false }
+                    }
+                }
+                is PairViewModel.UiEvent.NavigateToLobby -> {
+                    navController.navigate("lobby") {
+                        popUpTo("start") { inclusive = false }
+                    }
+                }
+                else -> {}
+            }
+        }
+    }
+
+    val hasActivePet = petState != null
+    val hasActivePair = pairState != null
     val isGameActive = pairState?.status?.name == "ACTIVE"
 
     StartScreen(
-        hasActiveSession = hasActiveSession,
+        hasActiveSession = hasActivePet || hasActivePair,
         onNewGame = {
             navController.navigate("create_pet")
         },
         onContinue = {
             if (isGameActive) {
                 navController.navigate("game")
-            } else {
+            } else if (hasActivePair) {
                 navController.navigate("lobby")
+            } else if (hasActivePet) {
+                // Если есть питомец, но нет пары - идём в игру
+                navController.navigate("game")
             }
         }
     )

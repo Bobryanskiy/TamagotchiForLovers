@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PairStatus
 import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.PairViewModel

@@ -17,6 +17,7 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.CalculatePetAle
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.EvaluatePetCriticalStateUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -52,16 +53,26 @@ class PetViewModel @Inject constructor(
     init {
         Log.d("DEBUG_PET", "=== INIT STARTED ===")
         viewModelScope.launch {
+            loadPetFromSession()
+        }
+    }
+
+    /** Пытается загрузить питомца из сессии с повторами */
+    private suspend fun loadPetFromSession(retries: Int = 3, delayMs: Long = 100) {
+        repeat(retries) { attempt ->
             val firstId = sessionStorage.activePetId.first()
-            Log.d("DEBUG_PET", "activePetId.first() = $firstId")
+            Log.d("DEBUG_PET", "Attempt ${attempt + 1}/$retries: activePetId.first() = $firstId")
 
             if (firstId != null) {
                 Log.d("DEBUG_PET", "Calling loadPet($firstId)")
                 loadPet(firstId)
+                return
             } else {
-                Log.d("DEBUG_PET", "activePetId is NULL - not loading")
+                Log.d("DEBUG_PET", "activePetId is NULL - waiting ${delayMs}ms before retry")
+                delay(delayMs)
             }
         }
+        Log.w("DEBUG_PET", "Failed to load pet after $retries attempts")
     }
 
     private fun loadPet(petId: String) {

@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.bobryanskiy.tamagotchiforlovers.data.local.AppSessionStorage
 import com.github.bobryanskiy.tamagotchiforlovers.data.notification.NotificationScheduler
-import com.github.bobryanskiy.tamagotchiforlovers.domain.error.PetError
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pair
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PairStatus
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PairRepository
@@ -70,7 +69,7 @@ class PairViewModel @Inject constructor(
                         when (pair.status) {
                             PairStatus.ACTIVE -> {
                                 // Пара активна → синхронизируем petId для PetViewModel
-                                pair.currentPetId.let { petId ->
+                                pair.currentPetId.let { _ ->
                                     _uiEvent.emit(UiEvent.NavigateToGame)
                                 }
                             }
@@ -82,7 +81,6 @@ class PairViewModel @Inject constructor(
                                 // Игра завершена → чистим сессию и ведём на главную
                                 handleSessionClosed()
                             }
-                            else -> {} // PENDING → остаёмся в лобби
                         }
                     }
                 }
@@ -173,8 +171,7 @@ class PairViewModel @Inject constructor(
     fun leaveSession() {
         val pair = _uiState.value ?: return
         viewModelScope.launch {
-            // В реальном проекте userId берётся из AuthRepository.currentUser.uid
-            val currentUserId = pair.userId1 ?: return@launch
+            val currentUserId = pair.userId1
             val result = pairRepository.leaveSession(pair.id, currentUserId)
             if (result is DomainResult.Success) {
                 handleSessionClosed()

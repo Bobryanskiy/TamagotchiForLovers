@@ -112,8 +112,9 @@ class DefaultPetRepository @Inject constructor(
     }
 
     override suspend fun abandonPet(petId: String): DomainResult<Unit> = try {
+        val now = System.currentTimeMillis()
         firestore.collection("pets").document(petId)
-            .update("profile.abandonedAt", FieldValue.serverTimestamp())
+            .update("profile.abandonedAt", now)
             .await()
         DomainResult.Success(Unit)
     } catch (e: Throwable) {
