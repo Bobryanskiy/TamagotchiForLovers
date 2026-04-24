@@ -21,7 +21,8 @@ import androidx.compose.ui.unit.dp
 fun StartScreen(
     hasActiveSession: Boolean,
     onNewGame: () -> Unit,
-    onContinue: () -> Unit
+    onContinue: () -> Unit,
+    onJoinGame: () -> Unit
 ) {
     Scaffold { padding ->
         Column(
@@ -39,8 +40,14 @@ fun StartScreen(
                 Spacer(Modifier.height(12.dp))
             }
 
-            OutlinedButton(onClick = onNewGame, modifier = Modifier.fillMaxWidth()) {
-                Text("Новая игра")
+            Button(onClick = onNewGame, modifier = Modifier.fillMaxWidth()) {
+                Text("Создать новую игру")
+            }
+            
+            Spacer(Modifier.height(12.dp))
+            
+            OutlinedButton(onClick = onJoinGame, modifier = Modifier.fillMaxWidth()) {
+                Text("Присоединиться к игре")
             }
         }
     }
