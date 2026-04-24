@@ -38,7 +38,7 @@ fun GameScreen(
             TopAppBar(
                 title = { Text(pet?.profile?.name ?: "Питомец") },
                 actions = {
-                    IconButton(onClick = onAbandon) { Text("🚪") }
+                    IconButton(onClick = onAbandon) { Text("Удалить") }
                 }
             )
         }
