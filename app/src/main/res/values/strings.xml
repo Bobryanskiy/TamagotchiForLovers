@@ -37,4 +37,21 @@
     <string name="join_session_button">Connect</string>
     <string name="error_pair_not_found">Game session not found or code is invalid</string>
     <string name="error_pair_already_joined">You have already joined a session</string>
+
+    <!-- Pair Error Messages -->
+    <string name="error_pair_guest_only">Only guest can perform this action</string>
+    <string name="error_pair_creator_only">Only creator can perform this action</string>
+    <string name="error_pair_session_not_active">Session is not active</string>
+    <string name="error_pair_already_ended">Session has already ended</string>
+    <string name="error_pair_invalid_input">Invalid input data</string>
+    <string name="error_pair_invalid_request">Invalid request</string>
+    <string name="error_pair_network">Network error. Please check your connection</string>
+    <string name="error_pair_unknown">Unknown error occurred</string>
+
+    <!-- Pet Error Messages -->
+    <string name="error_pet_invalid_input">Invalid pet data</string>
+    <string name="error_pet_action_not_allowed">This action is not allowed</string>
+    <string name="error_pet_not_found">Pet not found</string>
+    <string name="error_pet_network">Network error. Please check your connection</string>
+    <string name="error_pet_unknown">Unknown error occurred</string>
 </resources>
