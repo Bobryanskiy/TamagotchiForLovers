@@ -5,12 +5,20 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.bobryanskiy.tamagotchiforlovers.data.local.AppSessionStorage
 import com.github.bobryanskiy.tamagotchiforlovers.data.notification.NotificationScheduler
+import com.github.bobryanskiy.tamagotchiforlovers.domain.error.PairError
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pair
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PairStatus
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PairRepository
-import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PetRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.UserRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
+import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.AcceptPlayerUseCase
+import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.CreatePairUseCase
+import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.CreatePetUseCase
+import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.EndSessionUseCase
+import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.GenerateInviteKeyUseCase
+import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.KickPlayerUseCase
+import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.LeaveSessionUseCase
+import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.RequestJoinUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,10 +34,17 @@ import javax.inject.Inject
 @HiltViewModel
 class PairViewModel @Inject constructor(
     private val pairRepository: PairRepository,
-    private val petRepository: PetRepository,
     private val userRepository: UserRepository,
     private val sessionStorage: AppSessionStorage,
-    private val notificationScheduler: NotificationScheduler
+    private val notificationScheduler: NotificationScheduler,
+    private val createPetUseCase: CreatePetUseCase,
+    private val createPairUseCase: CreatePairUseCase,
+    private val generateInviteKeyUseCase: GenerateInviteKeyUseCase,
+    private val acceptPlayerUseCase: AcceptPlayerUseCase,
+    private val kickPlayerUseCase: KickPlayerUseCase,
+    private val leaveSessionUseCase: LeaveSessionUseCase,
+    private val endSessionUseCase: EndSessionUseCase,
+    private val requestJoinUseCase: RequestJoinUseCase
 ) : ViewModel() {
 
     // 🟢 Состояние для UI (Пара или null)
@@ -97,17 +112,15 @@ class PairViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            val petResult = petRepository.createPet(petName, ownerUserId)
-            if (petResult is DomainResult.Success) {
-                val petId = petResult.data
-
-                // Сохраняем в сессию
-                sessionStorage.setActivePetId(petId)
-
-                // Идём на экран игры
-                _uiEvent.emit(UiEvent.NavigateToGame)
-            } else {
-                _uiEvent.emit(UiEvent.ShowError("Не удалось создать питомца"))
+            when (val result = createPetUseCase(petName, ownerUserId)) {
+                is DomainResult.Success -> {
+                    val petId = result.data
+                    sessionStorage.setActivePetId(petId)
+                    _uiEvent.emit(UiEvent.NavigateToGame)
+                }
+                is DomainResult.Failure -> {
+                    _uiEvent.emit(UiEvent.ShowError("Не удалось создать питомца"))
+                }
             }
         }
     }
@@ -122,83 +135,180 @@ class PairViewModel @Inject constructor(
             return
         }
         viewModelScope.launch {
-            // 1. Создаём питомца
-            val petResult = petRepository.createPet(petName, ownerUserId)
+            // 1. Создаём питомца через UseCase
+            val petResult = createPetUseCase(petName, ownerUserId)
             if (petResult is DomainResult.Failure) {
                 _uiEvent.emit(UiEvent.ShowError("Не удалось создать питомца"))
                 return@launch
             }
             val petId = (petResult as DomainResult.Success).data
 
-            // 2. Создаём пару
-            val pairResult = pairRepository.createPair(ownerUserId, pairName, petId)
-            if (pairResult is DomainResult.Success) {
-                val newPairId = pairResult.data
-                loadPair(newPairId)
-                _uiEvent.emit(UiEvent.NavigateToLobby)
-            } else {
-                _uiEvent.emit(UiEvent.ShowError("Ошибка создания пары"))
+            // 2. Создаём пару через UseCase
+            when (val pairResult = createPairUseCase(ownerUserId, pairName, petId)) {
+                is DomainResult.Success -> {
+                    val newPairId = pairResult.data
+                    loadPair(newPairId)
+                    _uiEvent.emit(UiEvent.NavigateToLobby)
+                }
+                is DomainResult.Failure -> {
+                    _uiEvent.emit(UiEvent.ShowError("Ошибка создания пары"))
+                }
             }
         }
     }
 
-    // 🔑 Генерация кода приглашения
+    // 🔑 Генерация кода приглашения через UseCase
     fun generateInviteCode() {
         val pairId = currentPairId ?: return
+        val pair = _uiState.value ?: return
         viewModelScope.launch {
-            val result = pairRepository.generateInviteKey(pairId)
-            if (result is DomainResult.Success) {
-                _uiEvent.emit(UiEvent.InviteCodeGenerated(result.data))
-            } else {
-                _uiEvent.emit(UiEvent.ShowError("Не удалось сгенерировать код"))
+            when (val result = generateInviteKeyUseCase(pairId, pair)) {
+                is DomainResult.Success -> {
+                    _uiEvent.emit(UiEvent.InviteCodeGenerated(result.data))
+                }
+                is DomainResult.Failure -> {
+                    val msg = when (result.error) {
+                        is PairError.SessionNotActive -> "Сессия не активна"
+                        is PairError.InvalidInput -> "Неверный ID пары"
+                        else -> "Не удалось сгенерировать код"
+                    }
+                    _uiEvent.emit(UiEvent.ShowError(msg))
+                }
             }
         }
     }
 
-    // 🤝 Принятие игрока (хост)
+    // 🤝 Принятие игрока (хост) через UseCase
     fun acceptRequest(guestId: String) {
         val pairId = currentPairId ?: return
+        val pair = _uiState.value ?: return
         viewModelScope.launch {
-            val result = pairRepository.acceptPlayer(pairId, guestId)
-            if (result is DomainResult.Failure) {
-                _uiEvent.emit(UiEvent.ShowError("Не удалось принять игрока"))
+            when (val result = acceptPlayerUseCase(pairId, pair, guestId)) {
+                is DomainResult.Failure -> {
+                    val msg = when (result.error) {
+                        is PairError.SessionNotActive -> "Сессия не активна"
+                        is PairError.InvalidRequest -> "Неверный запрос"
+                        is PairError.InvalidInput -> "Неверные данные"
+                        else -> "Не удалось принять игрока"
+                    }
+                    _uiEvent.emit(UiEvent.ShowError(msg))
+                }
+                is DomainResult.Success -> {
+                    // Успех обработается автоматически через collect (статус сменится на ACTIVE)
+                }
             }
-            // Успех обработается автоматически через collect (статус сменится на ACTIVE)
         }
     }
 
-    // 🚪 Выход из сессии
+    // 🚪 Выход из сессии через UseCase
     fun leaveSession() {
         val pair = _uiState.value ?: return
+        val pairId = currentPairId ?: return
+        val currentUserId = userRepository.getCurrentUserId() ?: return
         viewModelScope.launch {
-            val currentUserId = pair.userId1
-            val result = pairRepository.leaveSession(pair.id, currentUserId)
-            if (result is DomainResult.Success) {
-                handleSessionClosed()
-            } else {
-                _uiEvent.emit(UiEvent.ShowError("Не удалось покинуть сессию"))
+            when (val result = leaveSessionUseCase(pairId, pair, currentUserId)) {
+                is DomainResult.Success -> {
+                    handleSessionClosed()
+                }
+                is DomainResult.Failure -> {
+                    val msg = when (result.error) {
+                        is PairError.SessionNotActive -> "Сессия не активна"
+                        is PairError.GuestOnly -> "Только гость может выйти"
+                        is PairError.InvalidInput -> "Неверные данные"
+                        else -> "Не удалось покинуть сессию"
+                    }
+                    _uiEvent.emit(UiEvent.ShowError(msg))
+                }
             }
         }
     }
 
-    // 👢 Исключение второго игрока
+    // 🔑 Присоединение к сессии по коду приглашения (гость)
+    fun joinSession(inviteCode: String) {
+        val currentUserId = userRepository.getCurrentUserId()
+        if (currentUserId == null) {
+            viewModelScope.launch {
+                _uiEvent.emit(UiEvent.ShowError("Пользователь не авторизован"))
+            }
+            return
+        }
+        
+        viewModelScope.launch {
+            // 1. Находим пару по коду приглашения
+            val pairResult = pairRepository.findPairByInviteKey(inviteCode)
+            when (pairResult) {
+                is DomainResult.Success -> {
+                    val pair = pairResult.data
+                    // 2. Отправляем запрос на присоединение через UseCase
+                    when (val joinResult = requestJoinUseCase(pair.id, currentUserId)) {
+                        is DomainResult.Success -> {
+                            // Загружаем пару для наблюдения
+                            loadPair(pair.id)
+                            _uiEvent.emit(UiEvent.NavigateToLobby)
+                        }
+                        is DomainResult.Failure -> {
+                            val msg = when (joinResult.error) {
+                                is PairError.SessionNotActive -> "Сессия не активна"
+                                is PairError.AlreadyJoined -> "Вы уже в этой сессии"
+                                is PairError.InvalidInput -> "Неверный код приглашения"
+                                else -> "Не удалось присоединиться"
+                            }
+                            _uiEvent.emit(UiEvent.ShowError(msg))
+                        }
+                    }
+                }
+                is DomainResult.Failure -> {
+                    _uiEvent.emit(UiEvent.ShowError("Код приглашения не найден"))
+                }
+            }
+        }
+    }
+
+    // 👢 Исключение второго игрока через UseCase
     fun kickPlayer() {
         val pair = _uiState.value ?: return
+        val pairId = currentPairId ?: return
+        val creatorId = userRepository.getCurrentUserId() ?: return
+        val kickedUserId = pair.userId2 ?: return
         viewModelScope.launch {
-            val result = pairRepository.kickPlayer(pair.id, pair.userId2 ?: "")
-            if (result is DomainResult.Failure) {
-                _uiEvent.emit(UiEvent.ShowError("Не удалось исключить игрока"))
+            when (val result = kickPlayerUseCase(pairId, pair, kickedUserId, creatorId)) {
+                is DomainResult.Failure -> {
+                    val msg = when (result.error) {
+                        is PairError.SessionNotActive -> "Сессия не активна"
+                        is PairError.CreatorOnly -> "Только создатель может исключить"
+                        is PairError.InvalidRequest -> "Неверный запрос"
+                        is PairError.InvalidInput -> "Неверные данные"
+                        else -> "Не удалось исключить игрока"
+                    }
+                    _uiEvent.emit(UiEvent.ShowError(msg))
+                }
+                is DomainResult.Success -> {
+                    // Успех обработается через observePair
+                }
             }
         }
     }
 
-    // 🏁 Принудительное завершение игры
+    // 🏁 Принудительное завершение игры через UseCase
     fun endGame() {
+        val pair = _uiState.value ?: return
         val pairId = currentPairId ?: return
+        val creatorId = userRepository.getCurrentUserId() ?: return
         viewModelScope.launch {
-            val result = pairRepository.endSession(pairId)
-            if (result is DomainResult.Success) {
-                handleSessionClosed()
+            when (val result = endSessionUseCase(pairId, pair, creatorId)) {
+                is DomainResult.Success -> {
+                    handleSessionClosed()
+                }
+                is DomainResult.Failure -> {
+                    val msg = when (result.error) {
+                        is PairError.CreatorOnly -> "Только создатель может завершить"
+                        is PairError.AlreadyEnded -> "Сессия уже завершена"
+                        is PairError.SessionNotActive -> "Сессия не активна"
+                        is PairError.InvalidInput -> "Неверные данные"
+                        else -> "Не удалось завершить игру"
+                    }
+                    _uiEvent.emit(UiEvent.ShowError(msg))
+                }
             }
         }
     }
