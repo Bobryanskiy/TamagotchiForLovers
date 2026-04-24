@@ -146,6 +146,7 @@ class DefaultPairRepository @Inject constructor(
             
             transaction.update(ref, "pendingRequest", mapOf("guestId" to guestId, "requestedAt" to System.currentTimeMillis()))
         }.await()
+        userRepository.updateUserSession(guestId, null, pairId)
         DomainResult.Success(Unit)
     } catch (e: Throwable) {
         if (e is CancellationException) throw e

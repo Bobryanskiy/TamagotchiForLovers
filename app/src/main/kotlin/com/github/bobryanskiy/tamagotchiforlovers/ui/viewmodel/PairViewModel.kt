@@ -15,8 +15,6 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PairStatus
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PairRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.UserRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
-import com.github.bobryanskiy.tamagotchiforlovers.domain.result.onFailure
-import com.github.bobryanskiy.tamagotchiforlovers.domain.result.onSuccess
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.AcceptPlayerUseCase
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.CreatePairUseCase
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.CreatePetUseCase
@@ -317,15 +315,28 @@ class PairViewModel @Inject constructor(
 
     fun joinSession(inviteCode: String) {
         viewModelScope.launch {
-            requestJoinUseCase(inviteCode)
-                .onSuccess {
-                    _uiEvent.emit(UiEvent.NavigateToLobby)
+            when (val result = requestJoinUseCase(inviteCode)) {
+                is DomainResult.Success -> {
+                    // После успешного присоединения находим пару по коду и начинаем её отслеживать
+                    val pairResult = pairRepository.findPairByInviteKey(inviteCode)
+                    if (pairResult is DomainResult.Success) {
+                        val pairId = pairResult.data.id
+                        // Сначала обновляем sessionStorage, чтобы при рестарте пара восстановилась
+                        sessionStorage.setActivePairId(pairId)
+                        // Принудительно загружаем пару, чтобы запустить observePair
+                        loadPair(pairId)
+                        // Эмитим событие навигации сразу, не дожидаясь обновления от Firestore
+                        _uiEvent.emit(UiEvent.NavigateToLobby)
+                    } else {
+                        _uiEvent.emit(UiEvent.ShowError("Не удалось найти сессию"))
+                    }
                 }
-                .onFailure { error ->
+                is DomainResult.Failure -> {
                     // Маппинг происходит здесь, в UI слое
-                    val errorMessageRes = error.mapToResource()
+                    val errorMessageRes = result.error.mapToResource()
                     _uiEvent.emit(UiEvent.ShowErrorResource(errorMessageRes))
                 }
+            }
         }
     }
 

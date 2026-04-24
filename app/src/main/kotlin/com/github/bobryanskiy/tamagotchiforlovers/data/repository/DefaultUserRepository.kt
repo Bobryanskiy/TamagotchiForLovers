@@ -30,11 +30,12 @@ class DefaultUserRepository @Inject constructor(
     }
 
     override suspend fun updateUserSession(uid: String, petId: String?, pairId: String?) {
+        val updates = mutableMapOf<String, Any?>()
+        if (petId != null) updates["activePetId"] = petId else updates["activePetId"] = null
+        if (pairId != null) updates["activePairId"] = pairId else updates["activePairId"] = null
+
         firestore.collection("users").document(uid)
-            .update(
-                "activePetId", petId,
-                "activePairId", pairId
-            )
+            .set(updates, com.google.firebase.firestore.SetOptions.merge())
             .await()
     }
 
