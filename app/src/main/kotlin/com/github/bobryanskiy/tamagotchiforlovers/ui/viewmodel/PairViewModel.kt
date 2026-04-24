@@ -3,9 +3,12 @@ package com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.github.bobryanskiy.tamagotchiforlovers.R
 import com.github.bobryanskiy.tamagotchiforlovers.data.local.AppSessionStorage
 import com.github.bobryanskiy.tamagotchiforlovers.data.notification.NotificationScheduler
+import com.github.bobryanskiy.tamagotchiforlovers.domain.error.DomainError
 import com.github.bobryanskiy.tamagotchiforlovers.domain.error.PairError
+import com.github.bobryanskiy.tamagotchiforlovers.domain.error.PetError
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pair
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PairStatus
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PairRepository
@@ -223,47 +226,6 @@ class PairViewModel @Inject constructor(
         }
     }
 
-    // 🔑 Присоединение к сессии по коду приглашения (гость)
-    fun joinSession(inviteCode: String) {
-        val currentUserId = userRepository.getCurrentUserId()
-        if (currentUserId == null) {
-            viewModelScope.launch {
-                _uiEvent.emit(UiEvent.ShowError("Пользователь не авторизован"))
-            }
-            return
-        }
-        
-        viewModelScope.launch {
-            // 1. Находим пару по коду приглашения
-            val pairResult = pairRepository.findPairByInviteKey(inviteCode)
-            when (pairResult) {
-                is DomainResult.Success -> {
-                    val pair = pairResult.data
-                    // 2. Отправляем запрос на присоединение через UseCase
-                    when (val joinResult = requestJoinUseCase(pair.id, currentUserId)) {
-                        is DomainResult.Success -> {
-                            // Загружаем пару для наблюдения
-                            loadPair(pair.id)
-                            _uiEvent.emit(UiEvent.NavigateToLobby)
-                        }
-                        is DomainResult.Failure -> {
-                            val msg = when (joinResult.error) {
-                                is PairError.SessionNotActive -> "Сессия не активна"
-                                is PairError.AlreadyJoined -> "Вы уже в этой сессии"
-                                is PairError.InvalidInput -> "Неверный код приглашения"
-                                else -> "Не удалось присоединиться"
-                            }
-                            _uiEvent.emit(UiEvent.ShowError(msg))
-                        }
-                    }
-                }
-                is DomainResult.Failure -> {
-                    _uiEvent.emit(UiEvent.ShowError("Код приглашения не найден"))
-                }
-            }
-        }
-    }
-
     // 👢 Исключение второго игрока через UseCase
     fun kickPlayer() {
         val pair = _uiState.value ?: return
@@ -319,6 +281,39 @@ class PairViewModel @Inject constructor(
         // Отменяем алармы питомца, если он был привязан
         _uiState.value?.currentPetId?.let { notificationScheduler.cancelAlertsForPet(it) }
         _uiEvent.emit(UiEvent.NavigateToHome)
+    }
+
+    fun joinSession(inviteCode: String) {
+        viewModelScope.launch {
+            requestJoinUseCase(inviteCode)
+                .onSuccess {
+                    _uiEvent.emit(UiEvent.NavigateToLobby)
+                }
+                .onFailure { error ->
+                    // Маппинг происходит здесь, в UI слое
+                    val errorMessageRes = error.mapToResource()
+                    _uiEvent.emit(UiEvent.ShowError(errorMessageRes))
+                }
+        }
+    }
+
+    // Extension функция внутри ViewModel или отдельный файл в ui пакете
+    private fun DomainError.mapToResource(): Int = when (this) {
+        is PairError -> when (this) {
+            is PairError.GuestOnly -> R.string.error_pair_guest_only
+            is PairError.CreatorOnly -> R.string.error_pair_creator_only
+            is PairError.SessionNotActive -> R.string.error_pair_session_not_active
+            is PairError.AlreadyEnded -> R.string.error_pair_already_ended
+            is PairError.AlreadyJoined -> R.string.error_pair_already_joined
+            is PairError.InvalidInput -> R.string.error_pair_invalid_input
+            is PairError.InvalidRequest -> R.string.error_pair_invalid_request
+            is PairError.NotFound -> R.string.error_pair_not_found
+        }
+        is PetError -> when (this) {
+            is PetError.InvalidInput -> R.string.error_pet_invalid_input
+            is PetError.ActionNotAllowed -> R.string.error_pet_action_not_allowed
+            is PetError.NotFound -> R.string.error_pet_not_found
+        }
     }
 
     sealed class UiEvent {
