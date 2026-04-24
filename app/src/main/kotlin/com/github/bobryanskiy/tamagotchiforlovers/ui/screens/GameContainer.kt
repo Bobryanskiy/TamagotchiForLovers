@@ -6,12 +6,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.PairViewModel
 import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.PetViewModel
 
 @Composable
 fun GameContainer(
     navController: NavController,
-    viewModel: PetViewModel = hiltViewModel()
+    viewModel: PetViewModel = hiltViewModel(),
+    pairViewModel: PairViewModel = hiltViewModel()
 ) {
     // 1. Собираем состояние ТОЛЬКО здесь
     val pet by viewModel.uiState.collectAsState()

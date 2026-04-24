@@ -45,6 +45,7 @@ fun LobbyContainer(
     LobbyScreen(
         pair = pair,
         onAccept = viewModel::acceptRequest,
-        onLeave = viewModel::leaveSession
+        onLeave = viewModel::leaveSession,
+        onGenerateCode = viewModel::generateInviteCode
     )
 }

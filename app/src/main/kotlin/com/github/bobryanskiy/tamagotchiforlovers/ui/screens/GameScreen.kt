@@ -31,7 +31,8 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetCriticalStatus
 fun GameScreen(
     pet: Pet?,
     onAction: (PetAction) -> Unit,
-    onAbandon: () -> Unit
+    onAbandon: () -> Unit,
+    onCreatePair: () -> Unit = {}
 ) {
     Scaffold(
         topBar = {
@@ -98,6 +99,13 @@ fun GameScreen(
             ) {
                 ActionButton("Помыть", PetAction.Clean, isBlocked, onAction, Modifier.weight(1f))
                 ActionButton("Уложить", PetAction.Rest, isBlocked, onAction, Modifier.weight(1f))
+            }
+            Spacer(Modifier.height(24.dp))
+            Button(
+                onClick = onCreatePair,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Создать пару")
             }
         }
     }

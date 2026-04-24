@@ -26,7 +26,8 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pair
 fun LobbyScreen(
     pair: Pair?,
     onAccept: (String) -> Unit,
-    onLeave: () -> Unit
+    onLeave: () -> Unit,
+    onGenerateCode: () -> Unit = {}
 ) {
     Scaffold(
         topBar = { TopAppBar(title = { Text("Лобби") }) }
@@ -50,6 +51,14 @@ fun LobbyScreen(
                     }
                 } else {
                     Text("Ожидание второго игрока...", style = MaterialTheme.typography.bodyMedium)
+
+                    // Кнопка для генерации кода, если его ещё нет
+                    if (pair.inviteKey == null && pair.userId2 == null) {
+                        Spacer(Modifier.height(12.dp))
+                        Button(onClick = onGenerateCode, modifier = Modifier.fillMaxWidth()) {
+                            Text("Сгенерировать код приглашения")
+                        }
+                    }
                 }
 
                 Spacer(Modifier.height(12.dp))

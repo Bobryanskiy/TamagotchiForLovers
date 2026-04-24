@@ -71,7 +71,11 @@ fun CreatePetScreen(
             ) { Text("Создать питомца") }
 
             Spacer(Modifier.height(12.dp))
-            TextButton(onClick = { navController.popBackStack() }) { Text("Назад") }
+            TextButton(onClick = {
+                navController.navigate("start") {
+                    popUpTo("start") { inclusive = true }
+                }
+            }) { Text("Назад") }
         }
     }
 }
