@@ -29,6 +29,9 @@ fun LobbyContainer(
                         popUpTo("start") { inclusive = true }
                     }
                 }
+                is PairViewModel.UiEvent.InviteCodeGenerated -> {
+                    // Код уже отображается в UI через обновление pair.inviteKey
+                }
                 else -> {}
             }
         }
