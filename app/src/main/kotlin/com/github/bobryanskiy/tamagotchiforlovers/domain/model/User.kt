@@ -1,5 +1,8 @@
 package com.github.bobryanskiy.tamagotchiforlovers.domain.model
 
 data class User(
-    val id: String
+    val uid: String,
+    val activePetId: String?,
+    val activePairId: String?,
+    val createdAt: Long
 )

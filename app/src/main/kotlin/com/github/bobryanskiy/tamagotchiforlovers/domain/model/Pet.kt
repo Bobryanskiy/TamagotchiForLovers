@@ -1,7 +1,5 @@
 package com.github.bobryanskiy.tamagotchiforlovers.domain.model
 
-import kotlin.time.Instant
-
 data class Pet(
     val id: String,
     val profile: PetProfile,
@@ -12,7 +10,11 @@ data class Pet(
 data class PetProfile(
     val name: String,
     val ownerUserId: String,
-    val createdAt: Long
+    val currentPairId: String?,
+    val createdAt: Long,
+    val criticalStatus: PetCriticalStatus,
+    val recoveryEndTime: Long?,
+    val abandonedAt: Long?
 )
 
 data class PetStats(
@@ -20,7 +22,7 @@ data class PetStats(
     val energy: Int,
     val cleanliness: Int,
     val happiness: Int,
-    val updateAt: Long,
+    val updatedAt: Long,
 )
 
 //data class PetProgression(

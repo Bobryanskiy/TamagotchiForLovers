@@ -1,7 +1,5 @@
 package com.github.bobryanskiy.tamagotchiforlovers.domain.model
 
-import kotlin.time.Instant
-
 data class Pair(
     val id: String,
     val name: String?,
@@ -11,8 +9,8 @@ data class Pair(
     val status: PairStatus,
     val inviteKey: InviteKey?,
     val pendingRequest: PendingRequest? = null,
-    val createdAt: Instant,
-    val endedAt: Long
+    val createdAt: Long,
+    val endedAt: Long?
 )
 
 data class InviteKey(

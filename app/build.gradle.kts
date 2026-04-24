@@ -5,8 +5,6 @@ plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
     alias(libs.plugins.room)
-
-    id("androidx.navigation.safeargs") //delete
 }
 
 android {
@@ -42,7 +40,6 @@ android {
     }
     buildFeatures {
         compose = true
-        viewBinding = true //delete
     }
 }
 
@@ -87,6 +84,7 @@ dependencies {
 
     implementation(libs.hilt.android.core)
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.datastore)
     ksp(libs.hilt.compiler)
 
     implementation(libs.androidx.room.runtime)

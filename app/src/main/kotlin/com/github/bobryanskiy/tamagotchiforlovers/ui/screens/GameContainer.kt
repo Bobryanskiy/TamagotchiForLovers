@@ -1,0 +1,43 @@
+package com.github.bobryanskiy.tamagotchiforlovers.ui.screens
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.PetViewModel
+
+@Composable
+fun GameContainer(
+    navController: NavController,
+    viewModel: PetViewModel = hiltViewModel()
+) {
+    // 1. Собираем состояние ТОЛЬКО здесь
+    val pet by viewModel.uiState.collectAsState()
+
+    // 2. Обрабатываем события навигации внутри контейнера
+    LaunchedEffect(Unit) {
+        viewModel.uiEvent.collect { event ->
+            when (event) {
+                is PetViewModel.UiEvent.NavigateToGameOver -> {
+                    // Передаем статус через аргументы или просто идем на экран проигрыша
+                    navController.navigate("game_over")
+                }
+                is PetViewModel.UiEvent.NavigateToHome -> {
+                    navController.navigate("start") {
+                        popUpTo("start") { inclusive = true }
+                    }
+                }
+                else -> {}
+            }
+        }
+    }
+
+    // 3. Рисуем экран
+    GameScreen(
+        pet = pet,
+        onAction = viewModel::onAction,
+        onAbandon = viewModel::abandonPet
+    )
+}
