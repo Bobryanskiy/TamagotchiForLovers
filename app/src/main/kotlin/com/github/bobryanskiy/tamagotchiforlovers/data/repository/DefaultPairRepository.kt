@@ -40,6 +40,8 @@ class DefaultPairRepository @Inject constructor(
     private val cacheLock = Any()
     private val scope = CoroutineScope(ioDispatcher + SupervisorJob() + CoroutineName("PairRepo"))
 
+    override suspend fun getCurrentUserId(): String? = userRepository.getCurrentUserId()
+
     override fun observePair(pairId: String): Flow<Pair?> = synchronized(cacheLock) {
         pairFlowCache.getOrPut(pairId) {
             callbackFlow {

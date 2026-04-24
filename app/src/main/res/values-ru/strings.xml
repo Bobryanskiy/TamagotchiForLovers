@@ -37,4 +37,21 @@
     <string name="join_session_button">Подключиться</string>
     <string name="error_pair_not_found">Игровая сессия не найдена или код неверен</string>
     <string name="error_pair_already_joined">Вы уже присоединились к сессии</string>
+
+    <!-- Pair Error Messages -->
+    <string name="error_pair_guest_only">Только гость может выполнить это действие</string>
+    <string name="error_pair_creator_only">Только создатель может выполнить это действие</string>
+    <string name="error_pair_session_not_active">Сессия не активна</string>
+    <string name="error_pair_already_ended">Сессия уже завершена</string>
+    <string name="error_pair_invalid_input">Неверные входные данные</string>
+    <string name="error_pair_invalid_request">Неверный запрос</string>
+    <string name="error_pair_network">Ошибка сети. Проверьте подключение</string>
+    <string name="error_pair_unknown">Произошла неизвестная ошибка</string>
+
+    <!-- Pet Error Messages -->
+    <string name="error_pet_invalid_input">Неверные данные питомца</string>
+    <string name="error_pet_action_not_allowed">Это действие запрещено</string>
+    <string name="error_pet_not_found">Питомец не найден</string>
+    <string name="error_pet_network">Ошибка сети. Проверьте подключение</string>
+    <string name="error_pet_unknown">Произошла неизвестная ошибка</string>
 </resources>

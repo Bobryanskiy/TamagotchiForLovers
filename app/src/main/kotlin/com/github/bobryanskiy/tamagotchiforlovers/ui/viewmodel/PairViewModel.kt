@@ -1,6 +1,7 @@
 package com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel
 
 import android.util.Log
+import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.bobryanskiy.tamagotchiforlovers.R
@@ -14,6 +15,8 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PairStatus
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PairRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.UserRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
+import com.github.bobryanskiy.tamagotchiforlovers.domain.result.onFailure
+import com.github.bobryanskiy.tamagotchiforlovers.domain.result.onSuccess
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.AcceptPlayerUseCase
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.CreatePairUseCase
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.CreatePetUseCase
@@ -292,7 +295,7 @@ class PairViewModel @Inject constructor(
                 .onFailure { error ->
                     // Маппинг происходит здесь, в UI слое
                     val errorMessageRes = error.mapToResource()
-                    _uiEvent.emit(UiEvent.ShowError(errorMessageRes))
+                    _uiEvent.emit(UiEvent.ShowErrorResource(errorMessageRes))
                 }
         }
     }
@@ -308,16 +311,21 @@ class PairViewModel @Inject constructor(
             is PairError.InvalidInput -> R.string.error_pair_invalid_input
             is PairError.InvalidRequest -> R.string.error_pair_invalid_request
             is PairError.NotFound -> R.string.error_pair_not_found
+            is PairError.Network -> R.string.error_pair_network
+            is PairError.Unknown -> R.string.error_pair_unknown
         }
         is PetError -> when (this) {
             is PetError.InvalidInput -> R.string.error_pet_invalid_input
             is PetError.ActionNotAllowed -> R.string.error_pet_action_not_allowed
             is PetError.NotFound -> R.string.error_pet_not_found
+            is PetError.Network -> R.string.error_pet_network
+            is PetError.Unknown -> R.string.error_pet_unknown
         }
     }
 
     sealed class UiEvent {
         data class ShowError(val message: String) : UiEvent()
+        data class ShowErrorResource(@param:StringRes val messageIdRes: Int) : UiEvent()
         data class InviteCodeGenerated(val code: String) : UiEvent()
         object NavigateToLobby : UiEvent()
         object NavigateToGame : UiEvent()

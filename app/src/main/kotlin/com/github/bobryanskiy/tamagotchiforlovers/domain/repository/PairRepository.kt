@@ -14,4 +14,6 @@ interface PairRepository {
     suspend fun leaveSession(pairId: String, guestId: String): DomainResult<Unit>
     suspend fun kickPlayer(pairId: String, kickedId: String): DomainResult<Unit>
     suspend fun endSession(pairId: String): DomainResult<Unit>
+
+    suspend fun getCurrentUserId(): String?
 }
