@@ -14,23 +14,42 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.PairViewModel
 import java.util.UUID
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreatePetScreen(
-    viewModel: PairViewModel = hiltViewModel(),
-    onBack: () -> Unit
+    navController: NavController,
+    viewModel: PairViewModel = hiltViewModel()
 ) {
     var name by remember { mutableStateOf("") }
+
+    // Обработка событий навигации
+    LaunchedEffect(Unit) {
+        viewModel.uiEvent.collect { event ->
+            when (event) {
+                is PairViewModel.UiEvent.NavigateToGame -> {
+                    navController.navigate("game") {
+                        popUpTo("create_pet") { inclusive = true }
+                    }
+                }
+                is PairViewModel.UiEvent.ShowError -> {
+                    // Можно показать Snackbar или Toast
+                }
+                else -> {}
+            }
+        }
+    }
 
     Scaffold(
         topBar = { TopAppBar(title = { Text("Создание питомца") }) }
@@ -51,10 +70,10 @@ fun CreatePetScreen(
                 },
                 enabled = name.isNotBlank(),
                 modifier = Modifier.fillMaxWidth()
-            ) { Text("Создать и найти пару") }
+            ) { Text("Создать питомца") }
 
             Spacer(Modifier.height(12.dp))
-            TextButton(onClick = onBack) { Text("Назад") }
+            TextButton(onClick = { navController.popBackStack() }) { Text("Назад") }
         }
     }
 }

@@ -16,7 +16,8 @@ class CalculatePetAlertsUseCase @Inject constructor() {
     )
 
     operator fun invoke(pet: Pet, now: Long = System.currentTimeMillis()): List<AlertSchedule> {
-        val elapsedMin = max(0f, (now - pet.stats.updatedAt) / 60_000f)
+        val lastUpdate = pet.stats.updatedAt ?: now
+        val elapsedMin = max(0f, (now - lastUpdate) / 60_000f)
         val schedules = mutableListOf<AlertSchedule>()
 
         val configs = listOf(

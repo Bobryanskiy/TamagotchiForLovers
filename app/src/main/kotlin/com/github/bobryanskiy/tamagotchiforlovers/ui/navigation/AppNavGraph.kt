@@ -21,9 +21,7 @@ fun AppNavGraph(
         }
 
         composable("create_pet") {
-            CreatePetScreen(
-                onBack = { navController.popBackStack() }
-            )
+            CreatePetScreen(navController = navController)
         }
 
         composable("lobby") {

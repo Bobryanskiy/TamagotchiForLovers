@@ -20,7 +20,7 @@ fun PetDto.toDomain(petId: String): Pet {
             createdAt = p.createdAt,
             criticalStatus = p.criticalStatus,
             recoveryEndTime = p.recoveryEndTime,
-            abandonedAt = p.abandonedAt?.toDate()?.time
+            abandonedAt = p.abandonedAt
         ),
         stats = PetStats(s.hunger, s.energy, s.cleanliness, s.happiness, s.updatedAt)
     )

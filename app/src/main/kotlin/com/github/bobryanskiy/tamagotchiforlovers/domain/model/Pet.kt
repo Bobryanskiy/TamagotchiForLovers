@@ -22,7 +22,7 @@ data class PetStats(
     val energy: Int,
     val cleanliness: Int,
     val happiness: Int,
-    val updatedAt: Long,
+    val updatedAt: Long?,
 )
 
 //data class PetProgression(
