@@ -159,14 +159,20 @@ class DefaultPairRepository @Inject constructor(
     override suspend fun acceptPlayer(pairId: String, guestId: String): DomainResult<Unit> = try {
         val pairDoc = firestore.collection("pairs").document(pairId).get().await()
         val petId = pairDoc.getString("currentPetId") ?: return DomainResult.Failure(PairError.NotFound)
+        val guestUserDoc = firestore.collection("users").document(guestId).get().await()
         firestore.collection("pairs").document(pairId).update(mapOf(
             "userId2" to guestId,
+            "currentPetId" to petId,
             "status" to PairStatus.ACTIVE.name,
             "inviteKey" to null,
             "pendingRequest" to null,
             "updatedAt" to System.currentTimeMillis()
         )).await()
         userRepository.updateUserSession(guestId, petId, pairId)
+        val hostId = pairDoc.getString("userId1")
+        if (hostId != null) {
+            userRepository.updateUserSession(hostId, petId, pairId)
+        }
         DomainResult.Success(Unit)
     } catch (e: Throwable) {
         if (e is CancellationException) throw e

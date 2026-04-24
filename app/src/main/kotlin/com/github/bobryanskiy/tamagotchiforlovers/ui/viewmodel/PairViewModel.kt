@@ -286,6 +286,35 @@ class PairViewModel @Inject constructor(
         _uiEvent.emit(UiEvent.NavigateToHome)
     }
 
+    // 🔗 Создание пары для существующего питомца (без ввода имени питомца)
+    fun createPairForExistingPet(petId: String, pairName: String) {
+        val ownerUserId = userRepository.getCurrentUserId()
+        if (ownerUserId == null) {
+            viewModelScope.launch {
+                _uiEvent.emit(UiEvent.ShowError("Пользователь не авторизован"))
+            }
+            return
+        }
+        viewModelScope.launch {
+            when (val pairResult = createPairUseCase(ownerUserId, pairName, petId)) {
+                is DomainResult.Success -> {
+                    val newPairId = pairResult.data
+                    loadPair(newPairId)
+                    _uiEvent.emit(UiEvent.NavigateToLobby)
+                }
+                is DomainResult.Failure -> {
+                    _uiEvent.emit(UiEvent.ShowError("Ошибка создания пары"))
+                }
+            }
+        }
+    }
+
+    // 🔄 Метод для принудительного обновления состояния пары
+    fun refreshPairState() {
+        val pairId = currentPairId ?: return
+        loadPair(pairId)
+    }
+
     fun joinSession(inviteCode: String) {
         viewModelScope.launch {
             requestJoinUseCase(inviteCode)
