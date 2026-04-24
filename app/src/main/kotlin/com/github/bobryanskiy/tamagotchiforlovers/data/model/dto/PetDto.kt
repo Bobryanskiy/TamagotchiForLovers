@@ -1,7 +1,6 @@
 package com.github.bobryanskiy.tamagotchiforlovers.data.model.dto
 
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetCriticalStatus
-import com.google.firebase.Timestamp
 
 data class PetDto(
     val profile: ProfileDto? = null,
@@ -23,5 +22,5 @@ data class StatsDto(
     val energy: Int = 50,
     val cleanliness: Int = 50,
     val happiness: Int = 50,
-    val updatedAt: Timestamp? = null
+    val updatedAt: Long? = null
 )
