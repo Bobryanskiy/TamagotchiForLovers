@@ -55,6 +55,9 @@ fun StartContainer(
                 // Если есть питомец, но нет пары - идём в игру
                 navController.navigate("game")
             }
+        },
+        onJoinGame = {
+            navController.navigate("join")
         }
     )
 }

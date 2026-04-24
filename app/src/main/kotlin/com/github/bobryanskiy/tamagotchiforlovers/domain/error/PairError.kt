@@ -5,6 +5,7 @@ sealed class PairError : DomainError {
     object CreatorOnly : PairError()
     object SessionNotActive : PairError()
     object AlreadyEnded : PairError()
+    object AlreadyJoined : PairError()
     object InvalidInput : PairError()
     object InvalidRequest : PairError()
     object NotFound : PairError()

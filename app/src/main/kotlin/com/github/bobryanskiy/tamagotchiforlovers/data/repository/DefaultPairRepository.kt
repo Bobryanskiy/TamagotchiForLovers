@@ -103,18 +103,55 @@ class DefaultPairRepository @Inject constructor(
         DomainResult.Failure(mapToPairError(e))
     }
 
+    override suspend fun findPairByInviteKey(inviteKey: String): DomainResult<Pair> = try {
+        val snapshot = firestore.collection("pairs")
+            .whereEqualTo("inviteKey.code", inviteKey.uppercase())
+            .limit(1)
+            .get()
+            .await()
+        
+        if (snapshot.isEmpty) {
+            return DomainResult.Failure(PairError.NotFound)
+        }
+        
+        val doc = snapshot.documents.first()
+        val dto = doc.toObject<PairDto>() ?: return DomainResult.Failure(PairError.NotFound)
+        val pair = dto.toDomain(doc.id)
+        
+        // Проверяем, не истёк ли срок действия кода
+        val inviteKeyMap = doc.get("inviteKey") as? Map<*, *>
+        val expiresAt = inviteKeyMap?.get("expiresAt") as? Long
+        if (expiresAt != null && System.currentTimeMillis() > expiresAt) {
+            return DomainResult.Failure(PairError.InvalidRequest)
+        }
+        
+        DomainResult.Success(pair)
+    } catch (e: Throwable) {
+        if (e is CancellationException) throw e
+        DomainResult.Failure(mapToPairError(e))
+    }
+
     override suspend fun requestJoin(pairId: String, guestId: String): DomainResult<Unit> = try {
         firestore.runTransaction { transaction ->
             val ref = firestore.collection("pairs").document(pairId)
             val snapshot = transaction.get(ref)
             if (!snapshot.exists()) throw IllegalArgumentException("Пара не найдена")
             if (snapshot.getString("userId2") != null) throw IllegalStateException("Пара уже заполнена")
+            
+            // Проверяем, не является ли гость уже участником пары
+            val userId1 = snapshot.getString("userId1")
+            if (guestId == userId1) throw IllegalStateException("Вы уже являетесь создателем этой пары")
+            
             transaction.update(ref, "pendingRequest", mapOf("guestId" to guestId, "requestedAt" to System.currentTimeMillis()))
         }.await()
         DomainResult.Success(Unit)
     } catch (e: Throwable) {
         if (e is CancellationException) throw e
-        DomainResult.Failure(mapToPairError(e))
+        val error = when (e) {
+            is IllegalStateException -> PairError.AlreadyJoined
+            else -> mapToPairError(e)
+        }
+        DomainResult.Failure(error)
     }
 
     override suspend fun acceptPlayer(pairId: String, guestId: String): DomainResult<Unit> = try {

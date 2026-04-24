@@ -3,6 +3,8 @@ package com.github.bobryanskiy.tamagotchiforlovers.data.repository
 import android.util.Log
 import com.github.bobryanskiy.tamagotchiforlovers.data.exception.RepositoryException
 import com.github.bobryanskiy.tamagotchiforlovers.data.model.dto.PetDto
+import com.github.bobryanskiy.tamagotchiforlovers.data.model.dto.ProfileDto
+import com.github.bobryanskiy.tamagotchiforlovers.data.model.dto.StatsDto
 import com.github.bobryanskiy.tamagotchiforlovers.data.model.mapper.toDomain
 import com.github.bobryanskiy.tamagotchiforlovers.di.IoDispatcher
 import com.github.bobryanskiy.tamagotchiforlovers.domain.error.PetError
@@ -10,8 +12,6 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pet
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetAction
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetCriticalState
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetCriticalStatus
-import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetProfile
-import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetStats
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PetRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.UserRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
@@ -72,29 +72,23 @@ class DefaultPetRepository @Inject constructor(
         val petId = firestore.collection("pets").document().id
         val now = System.currentTimeMillis()
 
-        val newPet = Pet(
-            id = petId,
-            profile = PetProfile(
-                name = name,
-                ownerUserId = ownerUserId,
-                createdAt = System.currentTimeMillis(),
-                criticalStatus = PetCriticalStatus.NORMAL,
-                recoveryEndTime = null,
-                abandonedAt = null,
-                currentPairId = null
-            ),
-            stats = PetStats(
-                hunger = 80,
-                energy = 80,
-                cleanliness = 80,
-                happiness = 80,
-                updatedAt = System.currentTimeMillis()
-            )
-        )
-
         val docData = mapOf(
-            "profile" to mapOf("name" to name.trim(), "ownerUserId" to ownerUserId, "createdAt" to now),
-            "stats" to mapOf("hunger" to 50, "energy" to 50, "cleanliness" to 50, "happiness" to 50, "updatedAt" to now)
+            "profile" to mapOf(
+                "name" to name.trim(),
+                "ownerUserId" to ownerUserId,
+                "createdAt" to now,
+                "criticalStatus" to PetCriticalStatus.NORMAL.name,
+                "recoveryEndTime" to null,
+                "abandonedAt" to null,
+                "currentPairId" to null
+            ),
+            "stats" to mapOf(
+                "hunger" to 80,
+                "energy" to 80,
+                "cleanliness" to 80,
+                "happiness" to 80,
+                "updatedAt" to now
+            )
         )
 
         firestore.collection("pets").document(petId).set(docData).await()
