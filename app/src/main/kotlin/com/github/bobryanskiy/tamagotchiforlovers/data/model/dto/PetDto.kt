@@ -1,7 +1,5 @@
 package com.github.bobryanskiy.tamagotchiforlovers.data.model.dto
 
-import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetCriticalStatus
-
 data class PetDto(
     val profile: ProfileDto? = null,
     val stats: StatsDto? = null,
@@ -12,7 +10,7 @@ data class ProfileDto(
     val ownerUserId: String = "",
     val currentPairId: String? = null,
     val createdAt: Long = 0L,
-    val criticalStatus: PetCriticalStatus = PetCriticalStatus.NORMAL,
+    val criticalStatus: String = "NORMAL",
     val recoveryEndTime: Long? = null,
     val abandonedAt: Long? = null
 )
