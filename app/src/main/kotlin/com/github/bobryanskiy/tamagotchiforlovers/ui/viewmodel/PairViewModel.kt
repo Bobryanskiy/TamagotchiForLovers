@@ -84,6 +84,13 @@ class PairViewModel @Inject constructor(
                         // Сохраняем активную пару
                         sessionStorage.setActivePairId(pair.id)
 
+                        // Сохраняем activePetId для загрузки питомца в PetViewModel
+                        pair.currentPetId.let { petId ->
+                            viewModelScope.launch {
+                                sessionStorage.setActivePetId(petId)
+                            }
+                        }
+
                         // Авто-реакция на изменение статуса
                         when (pair.status) {
                             PairStatus.ACTIVE -> {
@@ -151,12 +158,56 @@ class PairViewModel @Inject constructor(
             when (val pairResult = createPairUseCase(ownerUserId, pairName, petId)) {
                 is DomainResult.Success -> {
                     val newPairId = pairResult.data
-                    loadPair(newPairId)
+                    // Сохраняем ID пары в sessionStorage до загрузки
+                    sessionStorage.setActivePairId(newPairId)
+                    // Сохраняем activePetId для загрузки питомца
+                    sessionStorage.setActivePetId(petId)
+                    // Загружаем пару и ждём первого обновления состояния перед навигацией
+                    loadPairAndNavigate(newPairId)
                     _uiEvent.emit(UiEvent.NavigateToLobby)
                 }
                 is DomainResult.Failure -> {
                     _uiEvent.emit(UiEvent.ShowError("Ошибка создания пары"))
                 }
+            }
+        }
+    }
+
+    private suspend fun loadPairAndNavigate(pairId: String) {
+        // Сначала запускаем observePair в фоне
+        viewModelScope.launch {
+            pairRepository.observePair(pairId)
+                .catch { e ->
+                    Log.e("TAMAGOTCHI", "Failed to observe pair $pairId", e)
+                    _uiEvent.emit(UiEvent.ShowError("Ошибка загрузки сессии"))
+                }
+                .collect { pair ->
+                    if (pair != null) {
+                        _uiState.value = pair
+                        sessionStorage.setActivePairId(pair.id)
+                        pair.currentPetId?.let { petId ->
+                            sessionStorage.setActivePetId(petId)
+                        }
+                        // После первого успешного получения пары — навигация
+                        _uiEvent.emit(UiEvent.NavigateToLobby)
+                        // Далее продолжаем наблюдать за изменениями (статус, игроки и т.д.)
+                        handlePairUpdates(pair)
+                    }
+                }
+        }
+    }
+
+    private suspend fun handlePairUpdates(pair: Pair) {
+        when (pair.status) {
+            PairStatus.ACTIVE -> {
+                _uiEvent.emit(UiEvent.NavigateToGame)
+            }
+            PairStatus.PENDING -> {
+                if (pair.userId1 == userRepository.getCurrentUserId() && pair.inviteKey == null)
+                    generateInviteCode()
+            }
+            PairStatus.ENDED -> {
+                handleSessionClosed()
             }
         }
     }
@@ -198,7 +249,9 @@ class PairViewModel @Inject constructor(
                     _uiEvent.emit(UiEvent.ShowError(msg))
                 }
                 is DomainResult.Success -> {
-                    // Успех обработается автоматически через collect (статус сменится на ACTIVE)
+                    // Сохраняем activePetId для гостя, чтобы PetViewModel мог загрузить питомца
+                    val petId = pair.currentPetId
+                    sessionStorage.setActivePetId(petId)
                 }
             }
         }
@@ -297,8 +350,10 @@ class PairViewModel @Inject constructor(
             when (val pairResult = createPairUseCase(ownerUserId, pairName, petId)) {
                 is DomainResult.Success -> {
                     val newPairId = pairResult.data
-                    loadPair(newPairId)
-                    _uiEvent.emit(UiEvent.NavigateToLobby)
+                    sessionStorage.setActivePairId(newPairId)
+                    sessionStorage.setActivePetId(petId)
+                    // Загружаем пару и ждём первого обновления состояния перед навигацией
+                    loadPairAndNavigate(newPairId)
                 }
                 is DomainResult.Failure -> {
                     _uiEvent.emit(UiEvent.ShowError("Ошибка создания пары"))
@@ -321,8 +376,10 @@ class PairViewModel @Inject constructor(
                     val pairResult = pairRepository.findPairByInviteKey(inviteCode)
                     if (pairResult is DomainResult.Success) {
                         val pairId = pairResult.data.id
+                        val petId = pairResult.data.currentPetId
                         // Сначала обновляем sessionStorage, чтобы при рестарте пара восстановилась
                         sessionStorage.setActivePairId(pairId)
+                        sessionStorage.setActivePetId(petId)
                         // Принудительно загружаем пару, чтобы запустить observePair
                         loadPair(pairId)
                         // Эмитим событие навигации сразу, не дожидаясь обновления от Firestore

@@ -11,6 +11,7 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetAction
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetCriticalStatus
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PairRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PetRepository
+import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.UserRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.ApplyPetActionUseCase
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.CalculatePetAlertsUseCase
@@ -33,6 +34,7 @@ import javax.inject.Inject
 class PetViewModel @Inject constructor(
     private val petRepository: PetRepository,
     private val pairRepository: PairRepository,
+    private val userRepository: UserRepository,
     private val sessionStorage: AppSessionStorage,
     private val scheduler: NotificationScheduler,
     private val applyActionUseCase: ApplyPetActionUseCase,
@@ -58,7 +60,7 @@ class PetViewModel @Inject constructor(
     }
 
     /** Пытается загрузить питомца из сессии с повторами */
-    private suspend fun loadPetFromSession(retries: Int = 3, delayMs: Long = 100) {
+    private suspend fun loadPetFromSession(retries: Int = 5, delayMs: Long = 200) {
         repeat(retries) { attempt ->
             val firstId = sessionStorage.activePetId.first()
             Log.d("DEBUG_PET", "Attempt ${attempt + 1}/$retries: activePetId.first() = $firstId")
@@ -73,6 +75,20 @@ class PetViewModel @Inject constructor(
             }
         }
         Log.w("DEBUG_PET", "Failed to load pet after $retries attempts")
+
+        Log.w("DEBUG_PET", "Failed to load pet after $retries attempts")
+
+        // Дополнительно пробуем загрузить через observeUser, если activePetId так и не появился
+        val userId = userRepository.getCurrentUserId()
+        if (userId != null) {
+            userRepository.observeUser(userId).collect { user ->
+                val userPetId = user?.activePetId
+                Log.d("DEBUG_PET", "observeUser returned user with activePetId: $userPetId")
+                if (userPetId != null) {
+                    loadPet(userPetId)
+                }
+            }
+        }
     }
 
     private fun loadPet(petId: String) {
