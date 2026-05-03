@@ -2,12 +2,14 @@ package com.github.bobryanskiy.tamagotchiforlovers.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -22,9 +24,21 @@ fun StartScreen(
     hasActiveSession: Boolean,
     onNewGame: () -> Unit,
     onContinue: () -> Unit,
-    onJoinGame: () -> Unit
+    onJoinGame: () -> Unit,
+    onAccountClick: () -> Unit = {}
 ) {
-    Scaffold { padding ->
+    Scaffold(
+        topBar = {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(end = 8.dp),
+                horizontalArrangement = Arrangement.End
+            ) {
+                IconButton(onClick = onAccountClick) {
+                    Text("👤", style = MaterialTheme.typography.titleMedium)
+                }
+            }
+        }
+    ) { padding ->
         Column(
             modifier = Modifier.padding(padding).fillMaxSize().padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
