@@ -22,14 +22,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pet
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetAction
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetCriticalStatus
+import com.github.bobryanskiy.tamagotchiforlovers.ui.state.GameUiState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GameScreen(
-    pet: Pet?,
+    state: GameUiState,
     onAction: (PetAction) -> Unit,
     onAbandon: () -> Unit,
     onCreatePair: () -> Unit = {}
@@ -37,14 +37,14 @@ fun GameScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(pet?.profile?.name ?: "Питомец") },
+                title = { Text(state.petName.ifEmpty { "Питомец" }) },
                 actions = {
                     IconButton(onClick = onAbandon) { Text("Удалить") }
                 }
             )
         }
     ) { padding ->
-        if (pet == null) {
+        if (state.isLoading) {
             Box(
                 modifier = Modifier.padding(padding).fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -60,7 +60,7 @@ fun GameScreen(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            val statusText = when (pet.profile.criticalStatus) {
+            val statusText = when (state.criticalStatus) {
                 PetCriticalStatus.NORMAL -> "✅ В порядке"
                 PetCriticalStatus.SICK -> "🤒 Болеет (статы падают ×2)"
                 PetCriticalStatus.COLLAPSED -> "😴 Спит (ждём восстановления)"
@@ -73,32 +73,26 @@ fun GameScreen(
             )
             Spacer(Modifier.height(16.dp))
 
-            StatBar("🍖 Голод", pet.stats.hunger)
-            StatBar("⚡ Энергия", pet.stats.energy)
-            StatBar("🛁 Чистота", pet.stats.cleanliness)
-            StatBar("🎈 Настроение", pet.stats.happiness)
+            StatBar("🍖 Голод", state.hunger)
+            StatBar("⚡ Энергия", state.energy)
+            StatBar("🛁 Чистота", state.cleanliness)
+            StatBar("🎈 Настроение", state.happiness)
             Spacer(Modifier.height(24.dp))
-
-            val isBlocked = pet.profile.criticalStatus in listOf(
-                PetCriticalStatus.COLLAPSED,
-                PetCriticalStatus.DEAD,
-                PetCriticalStatus.ESCAPED
-            )
 
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                ActionButton("Покормить", PetAction.Feed, isBlocked, onAction, Modifier.weight(1f))
-                ActionButton("Поиграть", PetAction.Play, isBlocked, onAction, Modifier.weight(1f))
+                ActionButton("Покормить", PetAction.Feed, state.isActionsBlocked, onAction, Modifier.weight(1f))
+                ActionButton("Поиграть", PetAction.Play, state.isActionsBlocked, onAction, Modifier.weight(1f))
             }
             Spacer(Modifier.height(8.dp))
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                ActionButton("Помыть", PetAction.Clean, isBlocked, onAction, Modifier.weight(1f))
-                ActionButton("Уложить", PetAction.Rest, isBlocked, onAction, Modifier.weight(1f))
+                ActionButton("Помыть", PetAction.Clean, state.isActionsBlocked, onAction, Modifier.weight(1f))
+                ActionButton("Уложить", PetAction.Rest, state.isActionsBlocked, onAction, Modifier.weight(1f))
             }
             Spacer(Modifier.height(24.dp))
             Button(
