@@ -1,4 +1,4 @@
-package com.example.petgame.ui.screens.connection
+package com.github.bobryanskiy.tamagotchiforlovers.ui.screens.connection
 
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel

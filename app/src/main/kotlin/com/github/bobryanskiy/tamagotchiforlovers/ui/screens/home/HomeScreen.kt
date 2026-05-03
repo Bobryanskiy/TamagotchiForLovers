@@ -1,6 +1,7 @@
-package com.example.petgame.ui.screens.home
+package com.github.bobryanskiy.tamagotchiforlovers.ui.screens.home
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -31,7 +32,7 @@ fun HomeScreen(
                 actions = {
                     IconButton(onClick = onLoginClick) {
                         Icon(
-                            imageVector = androidx.compose.material.icons.Icons.Default.Person,
+                            imageVector = Icons.Default.Person,
                             contentDescription = "Войти в аккаунт"
                         )
                     }

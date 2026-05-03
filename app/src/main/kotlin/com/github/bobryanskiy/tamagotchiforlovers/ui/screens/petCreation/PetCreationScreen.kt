@@ -1,6 +1,7 @@
-package com.example.petgame.ui.screens.petCreation
+package com.github.bobryanskiy.tamagotchiforlovers.ui.screens.petCreation
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -30,7 +31,7 @@ fun PetCreationScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
-                            imageVector = androidx.compose.material.icons.Icons.Default.ArrowBack,
+                            imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Назад"
                         )
                     }
@@ -71,7 +72,7 @@ fun PetCreationScreen(
                         leadingIcon = if (selectedPetType == type) {
                             {
                                 Icon(
-                                    imageVector = androidx.compose.material.icons.Icons.Default.Check,
+                                    imageVector = Icons.Default.Check,
                                     contentDescription = null,
                                     modifier = Modifier.size(18.dp)
                                 )

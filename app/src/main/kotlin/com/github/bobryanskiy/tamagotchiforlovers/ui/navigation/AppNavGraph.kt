@@ -2,53 +2,102 @@ package com.github.bobryanskiy.tamagotchiforlovers.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.github.bobryanskiy.tamagotchiforlovers.ui.screens.CreatePetScreen
-import com.github.bobryanskiy.tamagotchiforlovers.ui.screens.GameOverScreen
-import com.github.bobryanskiy.tamagotchiforlovers.ui.screens.JoinSessionScreen
-import com.github.bobryanskiy.tamagotchiforlovers.ui.screens.LobbyContainer
-import com.github.bobryanskiy.tamagotchiforlovers.ui.screens.StartContainer
-import com.github.bobryanskiy.tamagotchiforlovers.ui.screens.GameContainer
+import androidx.navigation.navArgument
+import com.github.bobryanskiy.tamagotchiforlovers.ui.screens.home.HomeScreen
+import com.github.bobryanskiy.tamagotchiforlovers.ui.screens.petCreation.PetCreationScreen
+import com.github.bobryanskiy.tamagotchiforlovers.ui.screens.petMain.PetMainScreen
+import com.github.bobryanskiy.tamagotchiforlovers.ui.screens.login.LoginScreen
+import com.github.bobryanskiy.tamagotchiforlovers.ui.screens.connection.ConnectionScreen
+// MiniGames экран будет добавлен позже
 
+/**
+ * Главный навигационный граф приложения.
+ * Определяет все доступные экраны и переходы между ними.
+ */
 @Composable
 fun AppNavGraph(
-    navController: NavHostController
+    navController: NavHostController,
+    startDestination: String = Screen.Home.route
 ) {
-    NavHost(navController = navController, startDestination = "start") {
-
-        composable("start") {
-            StartContainer(navController = navController)
-        }
-
-        composable("create_pet") {
-            CreatePetScreen(navController = navController, forPair = false)
-        }
-
-        composable("create_pair") {
-            CreatePetScreen(navController = navController, forPair = true)
-        }
-
-        composable("lobby") {
-            LobbyContainer(navController = navController)
-        }
-
-        composable("join") {
-            JoinSessionScreen(navController = navController)
-        }
-
-        composable("game") {
-            GameContainer(navController = navController)
-        }
-
-        composable("game_over") {
-            GameOverScreen(
-                onRestart = {
-                    navController.navigate("start") {
-                        popUpTo("start") { inclusive = true }
-                    }
-                }
+    NavHost(
+        navController = navController,
+        startDestination = startDestination
+    ) {
+        // Главный экран
+        composable(Screen.Home.route) {
+            HomeScreen(
+                onStartNewGame = { navController.navigate(Screen.PetCreation.route) },
+                onContinueGame = { petId ->
+                    navController.navigate(Screen.PetMain.createRoute(petId))
+                },
+                onConnectToGame = { navController.navigate(Screen.Connection.route) },
+                onLoginClick = { navController.navigate(Screen.Login.route) },
+                onExitApp = { /* Логика выхода из приложения */ }
             )
+        }
+
+        // Экран создания питомца
+        composable(Screen.PetCreation.route) {
+            PetCreationScreen(
+                onPetCreated = { petId ->
+                    navController.navigate(Screen.PetMain.createRoute(petId)) {
+                        popUpTo(Screen.Home.route) { inclusive = true }
+                    }
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        // Экран основного геймплея с питомцем
+        composable(
+            route = Screen.PetMain.route,
+            arguments = listOf(
+                navArgument("petId") { type = NavType.IntType }
+            )
+        ) { backStackEntry ->
+            val petId = backStackEntry.arguments?.getInt("petId") ?: return@composable
+            PetMainScreen(
+                petId = petId,
+                onNavigateToMiniGames = { statType ->
+                    navController.navigate(Screen.MiniGames.createRoute(statType))
+                },
+                onBackToHome = { navController.popBackStack(Screen.Home.route, false) }
+            )
+        }
+
+        // Экран входа в аккаунт
+        composable(Screen.Login.route) {
+            LoginScreen(
+                onLoginSuccess = { navController.popBackStack() },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        // Экран подключения к онлайн-игре
+        composable(Screen.Connection.route) {
+            ConnectionScreen(
+                onConnectionSuccess = { navController.popBackStack() },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        // Экран мини-игр (будет реализован позже)
+        composable(
+            route = Screen.MiniGames.route,
+            arguments = listOf(
+                navArgument("statType") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val statType = backStackEntry.arguments?.getString("statType") ?: return@composable
+            // Заглушка для экрана мини-игр
+            // MiniGamesScreen(
+            //     statType = statType,
+            //     onGameComplete = { navController.popBackStack() },
+            //     onBack = { navController.popBackStack() }
+            // )
         }
     }
 }

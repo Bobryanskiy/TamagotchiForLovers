@@ -1,8 +1,9 @@
-package com.example.petgame.ui.screens.petMain
+package com.github.bobryanskiy.tamagotchiforlovers.ui.screens.petMain
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.material.icons.Icons
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -39,7 +40,7 @@ fun PetMainScreen(
                 navigationIcon = {
                     IconButton(onClick = onBackToHome) {
                         Icon(
-                            imageVector = androidx.compose.material.icons.Icons.Default.Home,
+                            imageVector = Icons.Default.Home,
                             contentDescription = "На главную"
                         )
                     }
@@ -48,13 +49,13 @@ fun PetMainScreen(
                     // Кнопки для онлайн-функций
                     IconButton(onClick = { /* Вывод в онлайн */ }) {
                         Icon(
-                            imageVector = androidx.compose.material.icons.Icons.Default.Public,
+                            imageVector = Icons.Default.Public,
                             contentDescription = "Выйти в онлайн"
                         )
                     }
                     IconButton(onClick = { /* Генерация кода */ }) {
                         Icon(
-                            imageVector = androidx.compose.material.icons.Icons.Default.QrCode,
+                            imageVector = Icons.Default.QrCode,
                             contentDescription = "Код подключения"
                         )
                     }
@@ -107,7 +108,7 @@ fun PetMainScreen(
                         label = { Text("Уровень $petLevel") },
                         leadingIcon = {
                             Icon(
-                                imageVector = androidx.compose.material.icons.Icons.Default.Star,
+                                imageVector = Icons.Default.Star,
                                 contentDescription = null,
                                 modifier = Modifier.size(16.dp)
                             )
