@@ -6,16 +6,15 @@ import androidx.lifecycle.viewModelScope
 import com.github.bobryanskiy.tamagotchiforlovers.data.local.AppSessionStorage
 import com.github.bobryanskiy.tamagotchiforlovers.data.notification.NotificationScheduler
 import com.github.bobryanskiy.tamagotchiforlovers.domain.error.PetError
-import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pet
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetAction
-import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetCriticalStatus
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PairRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PetRepository
-import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.UserRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.ApplyPetActionUseCase
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.CalculatePetAlertsUseCase
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.EvaluatePetCriticalStateUseCase
+import com.github.bobryanskiy.tamagotchiforlovers.ui.state.GameUiState
+import com.github.bobryanskiy.tamagotchiforlovers.ui.state.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -30,11 +29,14 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ * ViewModel для экрана игры (GameScreen)
+ * Отвечает ТОЛЬКО за логику игрового экрана
+ */
 @HiltViewModel
-class PetViewModel @Inject constructor(
+class GameViewModel @Inject constructor(
     private val petRepository: PetRepository,
     private val pairRepository: PairRepository,
-    private val userRepository: UserRepository,
     private val sessionStorage: AppSessionStorage,
     private val scheduler: NotificationScheduler,
     private val applyActionUseCase: ApplyPetActionUseCase,
@@ -42,18 +44,19 @@ class PetViewModel @Inject constructor(
     private val evalCritical: EvaluatePetCriticalStateUseCase
 ) : ViewModel() {
 
-    // 🟢 Состояние для UI
-    private val _uiState = MutableStateFlow<Pet?>(null)
-    val uiState: StateFlow<Pet?> = _uiState.asStateFlow()
+    // 🟢 UI-состояние (только данные для отображения)
+    private val _uiState = MutableStateFlow(GameUiState.loading())
+    val uiState: StateFlow<GameUiState> = _uiState.asStateFlow()
 
     // 🟡 Одноразовые события (навигация, тосты)
     private val _uiEvent = MutableSharedFlow<UiEvent>(extraBufferCapacity = 1)
     val uiEvent: SharedFlow<UiEvent> = _uiEvent.asSharedFlow()
+
     private var currentPetId: String? = null
     private var petObservationJob: Job? = null
 
     init {
-        Log.d("DEBUG_PET", "=== INIT STARTED ===")
+        Log.d("GameViewModel", "=== INIT STARTED ===")
         viewModelScope.launch {
             loadPetFromSession()
         }
@@ -63,90 +66,73 @@ class PetViewModel @Inject constructor(
     private suspend fun loadPetFromSession(retries: Int = 5, delayMs: Long = 200) {
         repeat(retries) { attempt ->
             val firstId = sessionStorage.activePetId.first()
-            Log.d("DEBUG_PET", "Attempt ${attempt + 1}/$retries: activePetId.first() = $firstId")
+            Log.d("GameViewModel", "Attempt ${attempt + 1}/$retries: activePetId = $firstId")
 
             if (firstId != null) {
-                Log.d("DEBUG_PET", "Calling loadPet($firstId)")
                 loadPet(firstId)
                 return
             } else {
-                Log.d("DEBUG_PET", "activePetId is NULL - waiting ${delayMs}ms before retry")
+                Log.d("GameViewModel", "activePetId is NULL - waiting ${delayMs}ms before retry")
                 delay(delayMs)
             }
         }
-        Log.w("DEBUG_PET", "Failed to load pet after $retries attempts")
-
-        Log.w("DEBUG_PET", "Failed to load pet after $retries attempts")
-
-        // Дополнительно пробуем загрузить через observeUser, если activePetId так и не появился
-        val userId = userRepository.getCurrentUserId()
-        if (userId != null) {
-            userRepository.observeUser(userId).collect { user ->
-                val userPetId = user?.activePetId
-                Log.d("DEBUG_PET", "observeUser returned user with activePetId: $userPetId")
-                if (userPetId != null) {
-                    loadPet(userPetId)
-                }
-            }
-        }
+        Log.w("GameViewModel", "Failed to load pet after $retries attempts")
+        _uiEvent.emit(UiEvent.ShowError("Не удалось загрузить питомца"))
     }
 
     private fun loadPet(petId: String) {
-        Log.d("DEBUG_PET", "loadPet STARTED for id: $petId")
-        // Отменяем предыдущее наблюдение, если было (защита от дублей)
+        Log.d("GameViewModel", "loadPet STARTED for id: $petId")
         petObservationJob?.cancel()
-
         currentPetId = petId
 
-        // Запускаем новое наблюдение и сохраняем джоб
         petObservationJob = viewModelScope.launch {
-            Log.d("DEBUG_PET", "Starting observePet collection")
             petRepository.observePet(petId)
                 .catch { e ->
-                    Log.e("TAMAGOTCHI", "Failed to observe pet $petId", e)
-                    _uiEvent.emit(UiEvent.ShowError("Ошибка загрузки"))
+                    Log.e("GameViewModel", "Failed to observe pet $petId", e)
+                    _uiEvent.emit(UiEvent.ShowError("Ошибка загрузки питомца"))
                 }
                 .collect { pet ->
-                    Log.d("DEBUG_PET", "COLLECT received pet: ${pet?.profile?.name ?: "NULL"}")
-                    _uiState.value = pet
                     if (pet != null) {
+                        _uiState.value = GameUiState.fromDomain(pet)
                         handlePetUpdate(pet)
+                    } else {
+                        _uiState.value = GameUiState.loading()
                     }
                 }
         }
     }
 
-    // 🔥 Ядро логики: реагирует на каждое изменение статов из Firestore
-    private suspend fun handlePetUpdate(pet: Pet) {
-        // 1. Сохраняем активный ID в надёжное хранилище
+    /** Обработка обновления питомца: критические состояния и будильники */
+    private suspend fun handlePetUpdate(pet: com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pet) {
+        // Сохраняем активный ID
         if (sessionStorage.activePetId.first() != pet.id) {
             sessionStorage.setActivePetId(pet.id)
         }
 
-        // 2. Оцениваем критическое состояние (Смерть/Побег/Сон/Болезнь/Норма)
+        // Оцениваем критическое состояние
         val newState = evalCritical(pet.stats)
 
-        // 3. Если статус изменился — фиксируем в БД (один раз)
+        // Если статус изменился — фиксируем в БД
         if (newState.status != pet.profile.criticalStatus) {
             petRepository.updateCriticalState(pet.id, newState)
         }
 
-        // 4. Маршрутизация по состояниям
+        // Маршрутизация по состояниям
         when (newState.status) {
-            PetCriticalStatus.DEAD, PetCriticalStatus.ESCAPED -> {
+            com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetCriticalStatus.DEAD,
+            com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetCriticalStatus.ESCAPED -> {
                 scheduler.cancelAlertsForPet(pet.id)
                 val pairId = sessionStorage.activePairId.first()
                 if (pairId != null) pairRepository.endSession(pairId)
-                _uiEvent.emit(UiEvent.NavigateToGameOver(newState.status))
+                _uiEvent.emit(UiEvent.NavigateToGameOver)
                 return
             }
-            PetCriticalStatus.COLLAPSED -> {
-                // Питомец спит: отменяем уведомления до восстановления
+            com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetCriticalStatus.COLLAPSED -> {
                 scheduler.cancelAlertsForPet(pet.id)
                 return
             }
             else -> {
-                // NORMAL или SICK: пересчитываем будильники с учётом множителей
+                // NORMAL или SICK: пересчитываем будильники
                 scheduler.cancelAlertsForPet(pet.id)
                 val schedules = calcAlerts(pet)
                 scheduler.scheduleAlerts(schedules)
@@ -154,16 +140,10 @@ class PetViewModel @Inject constructor(
         }
     }
 
-    // 🎮 Обработка действий игрока (Покормить, Поиграть, Помыть, Уложить)
+    /** Обработка действий игрока */
     fun onAction(action: PetAction) {
-        val pet = _uiState.value ?: return
-
-        // Быстрая блокировка на уровне UI (UseCase подстрахует на уровне Domain)
-        if (pet.profile.criticalStatus in listOf(
-                PetCriticalStatus.COLLAPSED,
-                PetCriticalStatus.DEAD,
-                PetCriticalStatus.ESCAPED
-            )) {
+        val state = _uiState.value
+        if (state.isActionsBlocked) {
             viewModelScope.launch {
                 _uiEvent.emit(UiEvent.ShowError("Питомец сейчас не может это сделать"))
             }
@@ -171,15 +151,17 @@ class PetViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
+            val petId = currentPetId ?: return@launch
+            val pet = petRepository.getPet(petId) ?: return@launch
+
             when (val result = applyActionUseCase(pet, action)) {
                 is DomainResult.Success -> {
-                    Log.d("TAMAGOTCHI", "Action $action applied successfully")
-                    // Firestore обновит документ -> сработает collect -> handlePetUpdate пересчитает алармы
+                    Log.d("GameViewModel", "Action $action applied successfully")
                 }
                 is DomainResult.Failure -> {
                     val msg = when (result.error) {
-                        is PetError.ActionNotAllowed -> "Действие недоступно (питомец сыт/устал/не в настроении)"
-                        is PetError.Network -> "Проблема с соединением. Попробуйте позже."
+                        is PetError.ActionNotAllowed -> "Действие недоступно"
+                        is PetError.Network -> "Проблема с соединением"
                         else -> "Не удалось выполнить действие"
                     }
                     _uiEvent.emit(UiEvent.ShowError(msg))
@@ -188,22 +170,23 @@ class PetViewModel @Inject constructor(
         }
     }
 
-    // 🗑 Принудительное завершение игры пользователем
+    /** Принудительное завершение игры */
     fun abandonPet() {
-        val pet = _uiState.value ?: return
         viewModelScope.launch {
-            petRepository.abandonPet(pet.id)
+            val petId = currentPetId ?: return@launch
+            petRepository.abandonPet(petId)
+            
             val pairId = sessionStorage.activePairId.first()
             if (pairId != null) pairRepository.endSession(pairId)
+            
             sessionStorage.clearSession()
-            scheduler.cancelAlertsForPet(pet.id)
+            scheduler.cancelAlertsForPet(petId)
             _uiEvent.emit(UiEvent.NavigateToHome)
         }
     }
 
-    sealed class UiEvent {
-        data class ShowError(val message: String) : UiEvent()
-        data class NavigateToGameOver(val status: PetCriticalStatus) : UiEvent()
-        object NavigateToHome : UiEvent()
+    override fun onCleared() {
+        super.onCleared()
+        petObservationJob?.cancel()
     }
 }
