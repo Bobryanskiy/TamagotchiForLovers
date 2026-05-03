@@ -24,35 +24,34 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.PairViewModel
-import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.PetViewModel
+import com.github.bobryanskiy.tamagotchiforlovers.ui.state.CreatePetUiState
+import com.github.bobryanskiy.tamagotchiforlovers.ui.state.UiEvent
+import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.LobbyViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreatePetScreen(
     navController: NavController,
-    viewModel: PairViewModel = hiltViewModel(),
-    petViewModel: PetViewModel = hiltViewModel(),
+    viewModel: LobbyViewModel = hiltViewModel(),
     forPair: Boolean = false
 ) {
     var petName by remember { mutableStateOf("") }
     var pairName by remember { mutableStateOf("") }
-    val currentPet by petViewModel.uiState.collectAsState()
-
+    
     LaunchedEffect(Unit) {
         viewModel.uiEvent.collect { event ->
             when (event) {
-                is PairViewModel.UiEvent.NavigateToGame -> {
+                is UiEvent.NavigateToGame -> {
                     navController.navigate("game") {
                         popUpTo("create_pet") { inclusive = true }
                     }
                 }
-                is PairViewModel.UiEvent.NavigateToLobby -> {
+                is UiEvent.NavigateToLobby -> {
                     navController.navigate("lobby") {
                         popUpTo("create_pet") { inclusive = true }
                     }
                 }
-                is PairViewModel.UiEvent.ShowError -> {
+                is UiEvent.ShowError -> {
                     // Можно показать Snackbar или Toast
                 }
                 else -> {}
@@ -65,16 +64,13 @@ fun CreatePetScreen(
     ) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize().padding(24.dp)) {
             // Если создаем пару для существующего питомца - не показываем поле имени питомца
-            if (!forPair || currentPet == null) {
+            if (!forPair) {
                 OutlinedTextField(
                     value = petName,
                     onValueChange = { petName = it },
                     label = { Text("Имя питомца") },
                     modifier = Modifier.fillMaxWidth()
                 )
-            } else {
-                // Показываем имя текущего питомца
-                Text("Питомец: ${currentPet?.profile?.name}", modifier = Modifier.fillMaxWidth())
             }
 
             if (forPair) {
@@ -90,23 +86,20 @@ fun CreatePetScreen(
             Spacer(Modifier.height(16.dp))
             Button(
                 onClick = {
-                    if (forPair && currentPet != null) {
-                        // Создаем пару для существующего питомца
-                        if (pairName.isNotBlank()) {
-                            viewModel.createPairForExistingPet(currentPet!!.id, pairName)
-                        }
-                    } else if (forPair && pairName.isNotBlank()) {
+                    if (forPair && pairName.isNotBlank()) {
+                        // Создаем пару для существующего питомца (нужно будет передать petId)
+                        // viewModel.createPairForExistingPet(petId, pairName)
+                    } else if (forPair && petName.isNotBlank() && pairName.isNotBlank()) {
                         // Создаем нового питомца и пару
                         viewModel.createNewSession(petName, pairName)
                     } else if (petName.isNotBlank()) {
-                        // Просто создаем питомца
-                        viewModel.createPet(petName)
+                        // Просто создаем питомца (через отдельный UseCase или метод)
                     }
                 },
-                enabled = if (forPair && currentPet != null) {
-                    pairName.isNotBlank()
+                enabled = if (forPair) {
+                    pairName.isNotBlank() && (!forPair || petName.isNotBlank())
                 } else {
-                    petName.isNotBlank() && (!forPair || pairName.isNotBlank())
+                    petName.isNotBlank()
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {

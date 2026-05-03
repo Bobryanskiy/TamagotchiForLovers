@@ -7,30 +7,34 @@ import androidx.compose.runtime.getValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PairStatus
-import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.PairViewModel
+import com.github.bobryanskiy.tamagotchiforlovers.ui.state.UiEvent
+import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.LobbyViewModel
 
 @Composable
 fun LobbyContainer(
     navController: NavController,
-    viewModel: PairViewModel = hiltViewModel()
+    viewModel: LobbyViewModel = hiltViewModel()
 ) {
     // 1. Собираем состояние пары
-    val pair by viewModel.uiState.collectAsState()
+    val state by viewModel.uiState.collectAsState()
 
     // 2. Логика переходов
     LaunchedEffect(Unit) {
         viewModel.uiEvent.collect { event ->
             when (event) {
-                is PairViewModel.UiEvent.NavigateToGame -> {
+                is UiEvent.NavigateToGame -> {
                     navController.navigate("game")
                 }
-                is PairViewModel.UiEvent.NavigateToHome -> {
+                is UiEvent.NavigateToHome -> {
                     navController.navigate("start") {
                         popUpTo("start") { inclusive = true }
                     }
                 }
-                is PairViewModel.UiEvent.InviteCodeGenerated -> {
-                    // Код уже отображается в UI через обновление pair.inviteKey
+                is UiEvent.InviteCodeGenerated -> {
+                    // Код уже отображается в UI через обновление состояния
+                }
+                is UiEvent.ShowError -> {
+                    // Можно показать Snackbar или Toast
                 }
                 else -> {}
             }
@@ -38,8 +42,8 @@ fun LobbyContainer(
     }
 
     // Авто-переход в игру, если статус сменился на ACTIVE
-    LaunchedEffect(pair?.status) {
-        if (pair?.status == PairStatus.ACTIVE) {
+    LaunchedEffect(state.status) {
+        if (state.status == PairStatus.ACTIVE) {
             navController.navigate("game") {
                 popUpTo("lobby") { inclusive = true }
             }
@@ -48,7 +52,7 @@ fun LobbyContainer(
 
     // 3. Рисуем экран
     LobbyScreen(
-        pair = pair,
+        state = state,
         onAccept = viewModel::acceptRequest,
         onLeave = viewModel::leaveSession,
         onGenerateCode = viewModel::generateInviteCode

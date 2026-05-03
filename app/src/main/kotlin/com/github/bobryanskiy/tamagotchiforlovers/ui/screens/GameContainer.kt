@@ -6,45 +6,31 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.PairViewModel
-import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.PetViewModel
+import com.github.bobryanskiy.tamagotchiforlovers.ui.state.UiEvent
+import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.GameViewModel
 
 @Composable
 fun GameContainer(
     navController: NavController,
-    viewModel: PetViewModel = hiltViewModel(),
-    pairViewModel: PairViewModel = hiltViewModel()
+    viewModel: GameViewModel = hiltViewModel()
 ) {
     // 1. Собираем состояние ТОЛЬКО здесь
-    val pet by viewModel.uiState.collectAsState()
-    val pair by pairViewModel.uiState.collectAsState()
+    val state by viewModel.uiState.collectAsState()
 
     // 2. Обрабатываем события навигации внутри контейнера
     LaunchedEffect(Unit) {
         viewModel.uiEvent.collect { event ->
             when (event) {
-                is PetViewModel.UiEvent.NavigateToGameOver -> {
-                    // Передаем статус через аргументы или просто идем на экран проигрыша
+                is UiEvent.NavigateToGameOver -> {
                     navController.navigate("game_over")
                 }
-                is PetViewModel.UiEvent.NavigateToHome -> {
+                is UiEvent.NavigateToHome -> {
                     navController.navigate("start") {
                         popUpTo("start") { inclusive = true }
                     }
                 }
-                else -> {}
-            }
-        }
-    }
-
-    // Обработка событий от PairViewModel
-    LaunchedEffect(Unit) {
-        pairViewModel.uiEvent.collect { event ->
-            when (event) {
-                is PairViewModel.UiEvent.NavigateToLobby -> {
-                    navController.navigate("lobby") {
-                        popUpTo("game") { inclusive = false }
-                    }
+                is UiEvent.ShowError -> {
+                    // Можно показать Snackbar или Toast
                 }
                 else -> {}
             }
@@ -53,7 +39,7 @@ fun GameContainer(
 
     // 3. Рисуем экран
     GameScreen(
-        pet = pet,
+        state = state,
         onAction = viewModel::onAction,
         onAbandon = viewModel::abandonPet,
         onCreatePair = {
