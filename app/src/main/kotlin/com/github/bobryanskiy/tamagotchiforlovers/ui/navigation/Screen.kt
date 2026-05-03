@@ -1,4 +1,4 @@
-package com.example.petgame.ui.navigation
+package com.github.bobryanskiy.tamagotchiforlovers.ui.navigation
 
 /**
  *sealed class для навигации по экранам приложения.

@@ -1,6 +1,7 @@
-package com.example.petgame.ui.screens.miniGames
+package com.github.bobryanskiy.tamagotchiforlovers.ui.screens.miniGames
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -27,7 +28,7 @@ fun MiniGamesScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
-                            imageVector = androidx.compose.material.icons.Icons.Default.ArrowBack,
+                            imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Назад"
                         )
                     }
@@ -44,7 +45,7 @@ fun MiniGamesScreen(
             verticalArrangement = Arrangement.Center
         ) {
             Icon(
-                imageVector = androidx.compose.material.icons.Icons.Default.SportsBasketball,
+                imageVector = Icons.Default.SportsBasketball,
                 contentDescription = null,
                 modifier = Modifier.size(100.dp),
                 tint = MaterialTheme.colorScheme.primary

@@ -1,4 +1,4 @@
-package com.example.petgame.ui.screens.login
+package com.github.bobryanskiy.tamagotchiforlovers.ui.screens.login
 
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel

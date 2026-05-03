@@ -1,4 +1,4 @@
-package com.example.petgame.ui.screens.petMain
+package com.github.bobryanskiy.tamagotchiforlovers.ui.screens.petMain
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.SavedStateHandle
