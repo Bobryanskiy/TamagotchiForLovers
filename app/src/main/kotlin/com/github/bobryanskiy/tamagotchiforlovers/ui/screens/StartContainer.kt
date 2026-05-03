@@ -6,68 +6,52 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.PairViewModel
-import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.PetViewModel
+import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.StartViewModel
 
 @Composable
 fun StartContainer(
     navController: NavController,
-    pairViewModel: PairViewModel = hiltViewModel(),
-    petViewModel: PetViewModel = hiltViewModel()
+    viewModel: StartViewModel = hiltViewModel()
 ) {
-    // Собираем состояния локально
-    val pairState by pairViewModel.uiState.collectAsState()
-    val petState by petViewModel.uiState.collectAsState()
+    val state by viewModel.uiState.collectAsState()
 
-    // Обновляем состояние при возврате на экран start
+    // Обновляем состояние при входе на экран
     LaunchedEffect(Unit) {
-        // Принудительно обновляем состояние пары при входе на экран
-        pairViewModel.refreshPairState()
+        viewModel.refreshState()
     }
 
+    // Обработка событий навигации
     LaunchedEffect(Unit) {
-        pairViewModel.uiEvent.collect { event ->
+        viewModel.uiEvent.collect { event ->
             when (event) {
-                is PairViewModel.UiEvent.NavigateToGame -> {
-                    navController.navigate("game") {
-                        popUpTo("start") { inclusive = false }
-                    }
-                }
-                is PairViewModel.UiEvent.NavigateToLobby -> {
-                    navController.navigate("lobby") {
-                        popUpTo("start") { inclusive = false }
-                    }
-                }
-                else -> {}
+                else -> {} // Пока без специальной навигации
             }
         }
     }
 
-    val hasActivePet = petState != null
-    val hasActivePair = pairState != null
-    val isGameActive = pairState?.status?.name == "ACTIVE"
-
     StartScreen(
-        hasActiveSession = hasActivePet || hasActivePair,
+        hasActiveSession = !state.isLoading && (state.hasActivePet || state.hasActivePair),
         onNewGame = {
-            if (hasActivePet && !hasActivePair) {
+            if (state.hasActivePet && !state.hasActivePair) {
                 navController.navigate("create_pair")
             } else {
                 navController.navigate("create_pet")
             }
         },
         onContinue = {
-            if (isGameActive) {
+            if (state.isGameActive) {
                 navController.navigate("game")
-            } else if (hasActivePair) {
+            } else if (state.hasActivePair) {
                 navController.navigate("lobby")
-            } else if (hasActivePet) {
-                // Если есть питомец, но нет пары - идём в игру
+            } else if (state.hasActivePet) {
                 navController.navigate("game")
             }
         },
         onJoinGame = {
             navController.navigate("join")
+        },
+        onAccountClick = {
+            // TODO: Навигация на экран аккаунта
         }
     )
 }
