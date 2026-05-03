@@ -24,20 +24,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.github.bobryanskiy.tamagotchiforlovers.ui.state.CreatePetUiState
 import com.github.bobryanskiy.tamagotchiforlovers.ui.state.UiEvent
-import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.LobbyViewModel
+import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.CreatePetViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreatePetScreen(
     navController: NavController,
-    viewModel: LobbyViewModel = hiltViewModel(),
+    viewModel: CreatePetViewModel = hiltViewModel(),
     forPair: Boolean = false
 ) {
+    val state by viewModel.uiState.collectAsState()
     var petName by remember { mutableStateOf("") }
     var pairName by remember { mutableStateOf("") }
     
+    // Обработка событий навигации
     LaunchedEffect(Unit) {
         viewModel.uiEvent.collect { event ->
             when (event) {
@@ -67,7 +68,10 @@ fun CreatePetScreen(
             if (!forPair) {
                 OutlinedTextField(
                     value = petName,
-                    onValueChange = { petName = it },
+                    onValueChange = { 
+                        petName = it
+                        viewModel.updatePetName(it)
+                    },
                     label = { Text("Имя питомца") },
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -77,7 +81,10 @@ fun CreatePetScreen(
                 Spacer(Modifier.height(16.dp))
                 OutlinedTextField(
                     value = pairName,
-                    onValueChange = { pairName = it },
+                    onValueChange = { 
+                        pairName = it
+                        viewModel.updatePairName(it)
+                    },
                     label = { Text("Название пары") },
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -87,23 +94,25 @@ fun CreatePetScreen(
             Button(
                 onClick = {
                     if (forPair && pairName.isNotBlank()) {
-                        // Создаем пару для существующего питомца (нужно будет передать petId)
-                        // viewModel.createPairForExistingPet(petId, pairName)
+                        // Создаем пару для существующего питомца
+                        // Нужно получить petId из сессии
+                        viewModel.createPairForExistingPet("", pairName)
                     } else if (forPair && petName.isNotBlank() && pairName.isNotBlank()) {
                         // Создаем нового питомца и пару
-                        viewModel.createNewSession(petName, pairName)
+                        viewModel.createPetAndPair(petName, pairName)
                     } else if (petName.isNotBlank()) {
-                        // Просто создаем питомца (через отдельный UseCase или метод)
+                        // Просто создаем питомца
+                        viewModel.createPetOnly(petName)
                     }
                 },
                 enabled = if (forPair) {
-                    pairName.isNotBlank() && (!forPair || petName.isNotBlank())
+                    pairName.isNotBlank() && !state.isLoading
                 } else {
-                    petName.isNotBlank()
+                    petName.isNotBlank() && !state.isLoading
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(if (forPair) "Создать пару" else "Создать питомца")
+                Text(if (state.isLoading) "Создание..." else if (forPair) "Создать пару" else "Создать питомца")
             }
 
             Spacer(Modifier.height(12.dp))
