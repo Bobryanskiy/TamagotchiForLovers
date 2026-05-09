@@ -3,9 +3,21 @@ package com.github.bobryanskiy.tamagotchiforlovers.ui.screen
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CloudOff
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -24,54 +36,46 @@ import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.MainViewModel
 fun MainScreen(
     viewModel: MainViewModel = hiltViewModel(),
     navController: NavHostController,
-    onNavigateToAuth: () -> Unit
+    onNavigateToAuth: () -> Unit,
+    onNavigateToGame: () -> Unit,
+    onNavigateToPairConnect: () -> Unit
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Виртуальный питомец") },
                 actions = {
                     TextButton(onClick = onNavigateToAuth) {
-                        Text("Логин")
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Войти",
+                            modifier = Modifier.size(24.dp)
+                        )
                     }
                 }
             )
         }
     ) { padding ->
-        when (uiState) {
-            MainUiState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
-            is MainUiState.Content -> {
-                val data = uiState as MainUiState.Content
-                MainContent(
-                    modifier = Modifier.padding(padding).padding(24.dp),
-                    isOnline = data.isOnline,
-                    onStartGame = viewModel::onStartGame,
-                    onLogin = onNavigateToAuth
-                )
-            }
-        }
+        MainContent(
+            modifier = Modifier.padding(padding).padding(24.dp),
+            onStartGame = onNavigateToGame,
+            onPairConnect = onNavigateToPairConnect
+        )
     }
 }
 
 @Composable
 private fun MainContent(
     modifier: Modifier = Modifier,
-    isOnline: Boolean,
     onStartGame: () -> Unit,
-    onLogin: () -> Unit
+    onPairConnect: () -> Unit
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
     ) {
-        if (!isOnline) {
-            OfflineIndicator()
-        }
+        Spacer(modifier = Modifier.height(32.dp))
 
         Text(
             text = stringResource(R.string.welcome_message),
@@ -86,29 +90,10 @@ private fun MainContent(
         }
 
         OutlinedButton(
-            onClick = onLogin,
+            onClick = onPairConnect,
             modifier = Modifier.fillMaxWidth(0.7f)
         ) {
-            Text(stringResource(R.string.login))
+            Text("Подключиться к паре")
         }
-    }
-}
-
-@Composable
-private fun OfflineIndicator() {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Icon(
-            imageVector = Icons.Default.CloudOff,
-            contentDescription = stringResource(R.string.offline_status),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Text(
-            text = stringResource(R.string.working_offline),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
     }
 }
