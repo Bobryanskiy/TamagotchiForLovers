@@ -5,6 +5,10 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.github.bobryanskiy.tamagotchiforlovers.ui.screen.BootScreen
+import com.github.bobryanskiy.tamagotchiforlovers.ui.screen.MainScreen
+import com.github.bobryanskiy.tamagotchiforlovers.ui.screen.PetScreen
+import com.github.bobryanskiy.tamagotchiforlovers.ui.screen.AuthScreen
 
 @Composable
 fun AppNavGraph(
@@ -13,10 +17,54 @@ fun AppNavGraph(
 ) {
     NavHost(
         navController = navController,
-        startDestination = AppRoute.Main,
+        startDestination = AppRoute.Boot,
         modifier = modifier
     ) {
+        composable<AppRoute.Boot> {
+            BootScreen(
+                onNavigateToMain = {
+                    navController.navigate(AppRoute.Main) {
+                        popUpTo<AppRoute.Boot> { inclusive = true }
+                    }
+                },
+                onNavigateToPet = { petId ->
+                    navController.navigate(AppRoute.Pet) {
+                        popUpTo<AppRoute.Boot> { inclusive = true }
+                    }
+                },
+                onNavigateToAuth = {
+                    navController.navigate(AppRoute.Auth)
+                }
+            )
+        }
         composable<AppRoute.Main> {
+            MainScreen(
+                navController = navController,
+                onNavigateToAuth = {
+                    navController.navigate(AppRoute.Auth)
+                },
+                onNavigateToGame = {
+                    // TODO: Navigate to game screen
+                },
+                onNavigateToPairConnect = {
+                    // TODO: Navigate to pair connect screen
+                }
+            )
+        }
+        composable<AppRoute.Pet> {
+            PetScreen(
+                navController = navController,
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        composable<AppRoute.Auth> {
+            AuthScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
         }
     }
 }
