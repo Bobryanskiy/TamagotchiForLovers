@@ -8,6 +8,7 @@ import com.github.bobryanskiy.tamagotchiforlovers.di.IoDispatcher
 import com.github.bobryanskiy.tamagotchiforlovers.domain.error.PairError
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pair
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PairStatus
+import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PendingRequest
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PairRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PetRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.UserRepository
@@ -221,6 +222,29 @@ class DefaultPairRepository @Inject constructor(
         if (userId1 != null) userRepository.updateUserSession(userId1, null, null)
         if (userId2 != null) userRepository.updateUserSession(userId2, null, null)
         DomainResult.Success(Unit)
+    } catch (e: Throwable) {
+        if (e is CancellationException) throw e
+        DomainResult.Failure(mapToPairError(e))
+    }
+
+    override suspend fun getPendingRequests(pairId: String): DomainResult<List<PendingRequest>> = try {
+        val pairDoc = firestore.collection("pairs").document(pairId).get().await()
+        val pendingRequestMap = pairDoc.get("pendingRequest") as? Map<String, Any>
+        
+        val requests = if (pendingRequestMap != null) {
+            val guestId = pendingRequestMap["guestId"] as? String
+            val requestedAt = pendingRequestMap["requestedAt"] as? Long ?: System.currentTimeMillis()
+            
+            if (guestId != null) {
+                listOf(PendingRequest(guestId = guestId, requestedAt = requestedAt))
+            } else {
+                emptyList()
+            }
+        } else {
+            emptyList()
+        }
+        
+        DomainResult.Success(requests)
     } catch (e: Throwable) {
         if (e is CancellationException) throw e
         DomainResult.Failure(mapToPairError(e))

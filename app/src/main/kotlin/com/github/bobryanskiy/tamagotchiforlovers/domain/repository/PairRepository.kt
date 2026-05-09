@@ -1,6 +1,7 @@
 package com.github.bobryanskiy.tamagotchiforlovers.domain.repository
 
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pair
+import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PendingRequest
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
 import kotlinx.coroutines.flow.Flow
 
@@ -16,4 +17,5 @@ interface PairRepository {
     suspend fun endSession(pairId: String): DomainResult<Unit>
 
     suspend fun getCurrentUserId(): String?
+    suspend fun getPendingRequests(pairId: String): DomainResult<List<PendingRequest>>
 }
