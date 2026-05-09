@@ -1,0 +1,10 @@
+package com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel
+
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
+@HiltViewModel
+class BootViewModel @Inject constructor(
+    private val determineEntryPointUseCase:
+){
+}
