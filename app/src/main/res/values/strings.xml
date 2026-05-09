@@ -54,4 +54,11 @@
     <string name="error_pet_not_found">Pet not found</string>
     <string name="error_pet_network">Network error. Please check your connection</string>
     <string name="error_pet_unknown">Unknown error occurred</string>
+    
+    <!-- Main Screen -->
+    <string name="welcome_message">Добро пожаловать!</string>
+    <string name="start_game">Начать игру</string>
+    <string name="login">Войти</string>
+    <string name="offline_status">Offline</string>
+    <string name="working_offline">Работа в офлайн режиме</string>
 </resources>
