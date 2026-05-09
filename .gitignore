@@ -1,80 +1,44 @@
 ```
-# Compiled and build artifacts
+# Kotlin/Android build artifacts
 *.class
-*.o
-*.obj
-*.out
-*.pyc
-__pycache__/
-*.pyo
-*.pyd
-*.so
-*.dll
-*.exe
 *.jar
 *.war
-*.class
-*.jnilib
+*.aar
+*.so
+*.dll
 *.dylib
-*.obj
-*.lib
-*.a
-*.pdb
 
-# Dependencies
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnp
-.pnp.js
-node/
-julia-*/
-zig*/
-target/
+# Gradle
 .gradle/
 build/
-dist/
-out/
+app/build/
 
-# Virtual environments
-venv/
-.venv/
-env/
-ENV/
-.ENV
-.envrc
-.env.local
-.env.*
-.env
-.pytest_cache/
-.mypy_cache/
-.coverage
-coverage/
-htmlcov/
-
-# IDE and editor files
-.vscode/
+# IDE files
 .idea/
-*.swp
-*.swo
-*~
-.DS_Store
-Thumbs.db
-desktop.ini
+*.iml
+*.ipr
+*.iws
+.vscode/
+
+# Temp files
 *.tmp
 *.temp
 *.log
-*.bak
-*.backup
 
-# System files
+# Local configuration
+local.properties
+.settings/
+.gradle/
+!/gradle/wrapper/
+
+# Android specific
+*.ap_
+*.apk
+*.dex
+
+# macOS
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Icon?
+
+# Windows
 Thumbs.db
 ```
