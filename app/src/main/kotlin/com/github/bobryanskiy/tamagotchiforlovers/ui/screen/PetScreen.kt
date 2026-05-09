@@ -44,7 +44,10 @@ import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.PetViewModel
 fun PetScreen(
     viewModel: PetViewModel = hiltViewModel(),
     navController: NavHostController,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onNavigateToPuzzle: (String, PetActionType) -> Unit,
+    onNavigateToCreatePair: (String) -> Unit,
+    onNavigateToJoinRequests: (String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -85,9 +88,16 @@ fun PetScreen(
                     stats = state.pet.stats,
                     onActionClick = { action ->
                         viewModel.onActionSelected(action)
+                        // Get pet ID from state
+                        onNavigateToPuzzle(state.pet.id, action)
                     },
-                    onCreatePair = { /* TODO: Navigate to create pair */ },
-                    onShowJoinRequests = { /* TODO: Show join requests */ }
+                    onCreatePair = { 
+                        onNavigateToCreatePair(state.pet.id)
+                    },
+                    onShowJoinRequests = { 
+                        // TODO: Get pair ID from pet or repository
+                        onNavigateToJoinRequests("default_pair_id")
+                    }
                 )
             }
             is PetUiState.Error -> {

@@ -12,4 +12,10 @@ sealed interface AppRoute {
     data object Pet : AppRoute
     @Serializable
     data object Auth : AppRoute
+    @Serializable
+    data class Puzzle(val petId: String, val actionType: String) : AppRoute
+    @Serializable
+    data class CreatePair(val petId: String) : AppRoute
+    @Serializable
+    data class JoinRequests(val pairId: String) : AppRoute
 }
