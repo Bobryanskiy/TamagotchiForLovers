@@ -12,10 +12,13 @@ class DetermineEntryPointUseCase @Inject constructor(
     private val sessionStorage: AppSessionStorage
 ) {
     suspend operator fun invoke(): DomainEntryPoint = withContext(Dispatchers.IO) {
-        if (auth.currentUser != null) return@withContext DomainEntryPoint.Auth
+        if (auth.currentUser == null) return@withContext DomainEntryPoint.Auth
 
         val petId = sessionStorage.activePetId.first()
-        if (petId != null) return@withContext DomainEntryPoint.Pet(petId)
-        return@withContext DomainEntryPoint.Main
+        return@withContext if (petId != null) {
+            DomainEntryPoint.Pet(petId)
+        } else {
+            DomainEntryPoint.Main
+        }
     }
 }
