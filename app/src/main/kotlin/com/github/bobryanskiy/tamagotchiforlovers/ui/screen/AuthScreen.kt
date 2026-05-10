@@ -11,15 +11,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,20 +31,49 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.AuthUiState
+import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.AuthViewModel
+import com.github.bobryanskiy.tamagotchiforlovers.util.ValidationUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AuthScreen(
     navController: NavHostController,
     onNavigateBack: () -> Unit,
-    onLoginClick: (String, String) -> Unit = { _, _ -> },
-    onSignUpClick: () -> Unit = {}
+    viewModel: AuthViewModel = hiltViewModel()
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var isSignUpMode by remember { mutableStateOf(false) }
+
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Валидация полей
+    val emailError = if (email.isNotEmpty()) ValidationUtils.getEmailError(email) else null
+    val passwordError = if (password.isNotEmpty()) ValidationUtils.getPasswordError(password) else null
+
+    // Обработка состояний аутентификации
+    LaunchedEffect(uiState) {
+        when (val state = uiState) {
+            is AuthUiState.Error -> {
+                snackbarHostState.showSnackbar(state.message)
+            }
+            is AuthUiState.Success -> {
+                // Успешная авторизация - возвращаемся назад
+                navController.popBackStack()
+            }
+            else -> {}
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Вход в аккаунт") },
+                title = { Text(if (isSignUpMode) "Создание аккаунта" else "Вход в аккаунт") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
@@ -50,12 +83,27 @@ fun AuthScreen(
                     }
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         AuthContent(
             modifier = Modifier.padding(padding).padding(24.dp),
-            onLoginClick = onLoginClick,
-            onSignUpClick = onSignUpClick
+            email = email,
+            password = password,
+            isSignUpMode = isSignUpMode,
+            isLoading = uiState is AuthUiState.Loading,
+            emailError = emailError,
+            passwordError = passwordError,
+            onEmailChange = { email = it },
+            onPasswordChange = { password = it },
+            onToggleMode = { isSignUpMode = !isSignUpMode },
+            onSubmit = {
+                if (isSignUpMode) {
+                    viewModel.register(email, password)
+                } else {
+                    viewModel.login(email, password)
+                }
+            }
         )
     }
 }
@@ -63,11 +111,18 @@ fun AuthScreen(
 @Composable
 private fun AuthContent(
     modifier: Modifier = Modifier,
-    onLoginClick: (String, String) -> Unit,
-    onSignUpClick: () -> Unit
+    email: String,
+    password: String,
+    isSignUpMode: Boolean,
+    isLoading: Boolean,
+    emailError: String?,
+    passwordError: String?,
+    onEmailChange: (String) -> Unit,
+    onPasswordChange: (String) -> Unit,
+    onToggleMode: () -> Unit,
+    onSubmit: () -> Unit
 ) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    val isFormValid = emailError == null && passwordError == null && email.isNotBlank() && password.isNotBlank()
 
     Column(
         modifier = modifier.fillMaxSize(),
@@ -75,7 +130,7 @@ private fun AuthContent(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Вход в аккаунт",
+            text = if (isSignUpMode) "Создать аккаунт" else "Вход в аккаунт",
             style = MaterialTheme.typography.headlineMedium
         )
 
@@ -83,36 +138,53 @@ private fun AuthContent(
 
         OutlinedTextField(
             value = email,
-            onValueChange = { email = it },
+            onValueChange = onEmailChange,
             label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !isLoading,
+            singleLine = true,
+            isError = emailError != null,
+            supportingText = if (emailError != null) {{ Text(emailError) }} else null
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
             value = password,
-            onValueChange = { password = it },
+            onValueChange = onPasswordChange,
             label = { Text("Пароль") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !isLoading,
+            singleLine = true,
+            isError = passwordError != null,
+            supportingText = if (passwordError != null) {{ Text(passwordError) }} else null
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
-            onClick = { onLoginClick(email, password) },
-            modifier = Modifier.fillMaxWidth()
+            onClick = onSubmit,
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !isLoading && isFormValid
         ) {
-            Text("Войти")
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.height(20.dp),
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            } else {
+                Text(if (isSignUpMode) "Создать" else "Войти")
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
-            onClick = onSignUpClick,
-            modifier = Modifier.fillMaxWidth()
+            onClick = onToggleMode,
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !isLoading
         ) {
-            Text("Создать аккаунт")
+            Text(if (isSignUpMode) "Уже есть аккаунт? Войти" else "Нет аккаунта? Создать")
         }
     }
 }
