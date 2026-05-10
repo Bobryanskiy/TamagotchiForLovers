@@ -17,6 +17,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -29,17 +30,21 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.CreatePairViewModel
 import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.CreatePairUiState
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreatePairScreen(
     viewModel: CreatePairViewModel = hiltViewModel(),
@@ -147,14 +152,14 @@ private fun CreatePairContent(
                 Text(
                     text = "Придумайте название для вашей пары и получите код приглашения для друга",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainerVariant
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                 )
             }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        var pairName by remember { androidx.compose.runtime.mutableStateOf("") }
+        var pairName by remember { mutableStateOf("") }
 
         OutlinedTextField(
             value = pairName,
@@ -234,7 +239,7 @@ private fun PairCreatedContent(
                 Text(
                     text = "Код приглашения:",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onTertiaryContainerVariant
+                    color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.8f)
                 )
 
                 Row(
@@ -260,7 +265,7 @@ private fun PairCreatedContent(
                 Text(
                     text = "Отправьте этот код другу для подключения",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onTertiaryContainerVariant
+                    color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.7f)
                 )
             }
         }

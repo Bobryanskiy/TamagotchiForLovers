@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -28,10 +29,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AuthScreen(
     navController: NavHostController,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onLoginClick: (String, String) -> Unit = { _, _ -> },
+    onSignUpClick: () -> Unit = {}
 ) {
     Scaffold(
         topBar = {
@@ -50,8 +54,8 @@ fun AuthScreen(
     ) { padding ->
         AuthContent(
             modifier = Modifier.padding(padding).padding(24.dp),
-            onLoginClick = { /* TODO: Implement login */ },
-            onSignUpClick = { /* TODO: Implement sign up */ }
+            onLoginClick = onLoginClick,
+            onSignUpClick = onSignUpClick
         )
     }
 }

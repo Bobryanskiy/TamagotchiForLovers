@@ -17,11 +17,11 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FoodBank
 import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material.icons.filled.Power
-import androidx.compose.material.icons.filled.Sleep
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -30,16 +30,19 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetStats
 import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.PetUiState
 import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.PetViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PetScreen(
     viewModel: PetViewModel = hiltViewModel(),
@@ -158,7 +161,7 @@ private fun PetContent(
         )
 
         StatActionButton(
-            icon = Icons.Default.Sleep,
+            icon = Icons.Default.Power,
             label = "Энергия",
             value = stats.energy,
             onClick = { onActionClick(PetActionType.Rest) }
@@ -252,8 +255,8 @@ private fun StatActionButton(
                         color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                     LinearProgressIndicator(
-                        progress = value / 100f,
-                        modifier = Modifier.fillMaxWidth(150.dp).height(6.dp),
+                        progress = { value / 100f },
+                        modifier = Modifier.fillMaxWidth(0.5f).height(6.dp),
                         color = MaterialTheme.colorScheme.primary,
                         trackColor = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.3f)
                     )

@@ -36,11 +36,27 @@ class PuzzleViewModel @Inject constructor(
 
     private var currentTask: PetTask? = null
     private var currentPetId: String? = null
-    private var currentActionType: PetActionType? = null
+    private var currentAction: PetAction? = null
 
-    fun generateTask(petId: String, actionType: PetActionType) {
-        currentPetId = petId
-        currentActionType = actionType
+    init {
+        val petId = savedStateHandle.get<String>("petId")
+        val actionType = savedStateHandle.get<PetActionType>("actionType")
+
+        if (petId != null && actionType != null) {
+            currentPetId = petId
+            currentAction = when (actionType) {
+                PetActionType.Feed -> PetAction.Feed
+                PetActionType.Rest -> PetAction.Rest
+                PetActionType.Clean -> PetAction.Clean
+                PetActionType.Play -> PetAction.Play
+            }
+            generateTask(petId)
+        } else {
+            _uiState.value = PuzzleUiState.Error("Invalid parameters", generatePetTaskUseCase())
+        }
+    }
+
+    private fun generateTask(petId: String) {
         currentTask = generatePetTaskUseCase()
         _uiState.value = PuzzleUiState.Content(currentTask!!)
     }
@@ -52,31 +68,21 @@ class PuzzleViewModel @Inject constructor(
         
         if (isCorrect) {
             _uiState.value = PuzzleUiState.Success
+            currentPetId?.let { petId ->
+                currentAction?.let { action ->
+                    applyPetAction(petId, action)
+                }
+            }
         } else {
             _uiState.value = PuzzleUiState.Error("Неверный ответ! Попробуйте еще раз.", task)
         }
     }
 
-    fun applyPetAction(petId: String, actionType: PetActionType) {
+    private fun applyPetAction(petId: String, action: PetAction) {
         viewModelScope.launch {
-            val petResult = petRepository.getPet(petId)
-            petResult.fold(
-                onSuccess = { pet ->
-                    val action = when (actionType) {
-                        PetActionType.Feed -> PetAction.Feed
-                        PetActionType.Rest -> PetAction.Rest
-                        PetActionType.Clean -> PetAction.Clean
-                        PetActionType.Play -> PetAction.Play
-                    }
-                    
-                    applyPetActionUseCase(pet, action).fold(
-                        onSuccess = {
-                            // Action applied successfully
-                        },
-                        onFailure = { error ->
-                            // Handle error if needed
-                        }
-                    )
+            applyPetActionUseCase(petId, action).fold(
+                onSuccess = {
+                    // Action applied successfully
                 },
                 onFailure = { error ->
                     // Handle error if needed

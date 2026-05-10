@@ -10,17 +10,9 @@ import javax.inject.Inject
 class ApplyPetActionUseCase @Inject constructor(
     private val petRepository: PetRepository
 ) {
-    suspend operator fun invoke(pet: Pet, petAction: PetAction): DomainResult<Unit> {
-        if (pet.id.isBlank()) return DomainResult.Failure(PetError.InvalidInput)
-        val allowed = when (petAction) {
-            PetAction.Feed -> pet.stats.hunger < 100
-            PetAction.Rest -> pet.stats.energy < 100
-            PetAction.Clean -> pet.stats.cleanliness < 100
-            PetAction.Play -> pet.stats.happiness < 100 && pet.stats.energy >= 10
-        }
+    suspend operator fun invoke(petId: String, petAction: PetAction): DomainResult<Unit> {
+        if (petId.isBlank()) return DomainResult.Failure(PetError.InvalidInput)
 
-        if (!allowed) return DomainResult.Failure(PetError.ActionNotAllowed)
-
-        return petRepository.applyAction(pet.id, petAction)
+        return petRepository.applyAction(petId, petAction)
     }
 }
