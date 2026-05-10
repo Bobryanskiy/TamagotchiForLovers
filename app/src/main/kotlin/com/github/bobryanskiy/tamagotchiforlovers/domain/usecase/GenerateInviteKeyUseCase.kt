@@ -12,10 +12,14 @@ class GenerateInviteKeyUseCase @Inject constructor(
     private val pairRepository: PairRepository,
     private val clock: Clock
 ) {
-    suspend operator fun invoke(pairId: String, currentPair: Pair): DomainResult<String> {
+    suspend operator fun invoke(pairId: String): DomainResult<String> {
         if (pairId.isBlank()) return DomainResult.Failure(PairError.InvalidInput)
-        if (currentPair.status != PairStatus.PENDING) return DomainResult.Failure(PairError.SessionNotActive)
-        currentPair.inviteKey?.let { key ->
+        val pair = pairRepository.getPair(pairId)
+            ?: return DomainResult.Failure(PairError.NotFound)
+
+        if (pair.status != PairStatus.PENDING) return DomainResult.Failure(PairError.SessionNotActive)
+
+        pair.inviteKey?.let { key ->
             if (key.expiresAt > clock.currentTimeMillis()) return DomainResult.Success(key.code)
         }
 

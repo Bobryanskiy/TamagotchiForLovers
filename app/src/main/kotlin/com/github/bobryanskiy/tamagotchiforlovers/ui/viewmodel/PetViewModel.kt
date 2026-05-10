@@ -29,22 +29,26 @@ class PetViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<PetUiState>(PetUiState.Loading)
     val uiState: StateFlow<PetUiState> = _uiState.asStateFlow()
 
+    private var currentPetId: String? = null
+
     init {
-        loadPet()
+        val petId = savedStateHandle.get<String>("petId")
+        if (petId != null) {
+            currentPetId = petId
+            observePet(petId)
+        } else {
+            _uiState.value = PetUiState.Error("Pet ID not provided")
+        }
     }
 
-    private fun loadPet() {
+    private fun observePet(petId: String) {
         viewModelScope.launch {
-            // TODO: Get pet ID from navigation args or repository
-            val petResult = petRepository.getPet("default_pet_id")
-            petResult.fold(
-                onSuccess = { pet ->
-                    _uiState.value = PetUiState.Content(pet)
-                },
-                onFailure = { error ->
-                    _uiState.value = PetUiState.Error("Failed to load pet: $error")
+            petRepository.observePet(petId).collect { pet ->
+                when {
+                    pet != null -> _uiState.value = PetUiState.Content(pet)
+                    currentPetId != null -> _uiState.value = PetUiState.Error("Pet not found")
                 }
-            )
+            }
         }
     }
 
@@ -58,26 +62,17 @@ class PetViewModel @Inject constructor(
             PetActionType.Clean -> PetAction.Clean
             PetActionType.Play -> PetAction.Play
         }
+    }
 
+    fun applyAction(petId: String, action: PetAction) {
         viewModelScope.launch {
-            // TODO: Show puzzle/example before applying action
-            // For now, directly apply the action
-            petRepository.applyAction(pet.id, action).fold(
+            petRepository.applyAction(petId, action).fold(
                 onSuccess = {
-                    loadPet() // Reload pet stats
                 },
                 onFailure = { error ->
-                    // TODO: Show error message
+                    _uiState.value = PetUiState.Error("Failed to apply action: $error")
                 }
             )
         }
-    }
-
-    fun onCreatePair() {
-        // TODO: Navigate to create pair screen
-    }
-
-    fun onShowJoinRequests() {
-        // TODO: Show join requests dialog/screen
     }
 }

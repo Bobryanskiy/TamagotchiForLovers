@@ -2,7 +2,6 @@ package com.github.bobryanskiy.tamagotchiforlovers.ui.screen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,7 +16,10 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -33,15 +35,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.platform.LocalSoftwareKeyboard
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetTask
-import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.PuzzleViewModel
 import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.PuzzleUiState
+import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.PuzzleViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PuzzleScreen(
     viewModel: PuzzleViewModel = hiltViewModel(),
@@ -52,13 +56,12 @@ fun PuzzleScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var userAnswer by remember { mutableStateOf("") }
-    val keyboardController = LocalSoftwareKeyboard.current
+
     val focusRequester = remember { FocusRequester() }
+    val keyboard = LocalSoftwareKeyboardController  .current
 
     LaunchedEffect(Unit) {
-        viewModel.generateTask(petId, actionType)
         focusRequester.requestFocus()
-        keyboardController?.show()
     }
 
     Scaffold(
@@ -66,7 +69,7 @@ fun PuzzleScreen(
             TopAppBar(
                 title = { Text("Задание для питомца") },
                 navigationIcon = {
-                    androidx.compose.material3.IconButton(onClick = onNavigateBack) {
+                    IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Закрыть"
@@ -78,11 +81,10 @@ fun PuzzleScreen(
     ) { padding ->
         when (val state = uiState) {
             is PuzzleUiState.Loading -> {
-                androidx.compose.material3.CircularProgressIndicator(
+                CircularProgressIndicator(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(padding),
-                    contentAlignment = Alignment.Center
+                        .padding(padding)
                 )
             }
             is PuzzleUiState.Content -> {
@@ -93,14 +95,13 @@ fun PuzzleScreen(
                     onAnswerChange = { userAnswer = it },
                     onSubmit = {
                         viewModel.checkAnswer(userAnswer)
-                        keyboardController?.hide()
+                        keyboard?.hide()
                     },
                     focusRequester = focusRequester
                 )
             }
             is PuzzleUiState.Success -> {
                 LaunchedEffect(Unit) {
-                    viewModel.applyPetAction(petId, actionType)
                     onNavigateBack()
                 }
             }
@@ -112,7 +113,7 @@ fun PuzzleScreen(
                     onAnswerChange = { userAnswer = it },
                     onSubmit = {
                         viewModel.checkAnswer(userAnswer)
-                        keyboardController?.hide()
+                        keyboard?.hide()
                     },
                     errorMessage = state.message,
                     focusRequester = focusRequester

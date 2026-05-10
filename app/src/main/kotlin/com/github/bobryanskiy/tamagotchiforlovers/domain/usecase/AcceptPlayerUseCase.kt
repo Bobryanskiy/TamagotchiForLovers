@@ -10,12 +10,14 @@ import javax.inject.Inject
 class AcceptPlayerUseCase @Inject constructor(
     private val pairRepository: PairRepository
 ) {
-    suspend operator fun invoke(pairId: String, currentPair: Pair, guestId: String): DomainResult<Unit> {
+    suspend operator fun invoke(pairId: String, guestId: String): DomainResult<Unit> {
         if (pairId.isBlank() || guestId.isBlank()) return DomainResult.Failure(PairError.InvalidInput)
 
-        if (currentPair.status != PairStatus.PENDING) return DomainResult.Failure(PairError.SessionNotActive)
-        if (currentPair.userId2 != null) return DomainResult.Failure(PairError.InvalidRequest)
-        if (currentPair.pendingRequest?.guestId != guestId) return DomainResult.Failure(PairError.InvalidRequest)
+        val pair = pairRepository.getPair(pairId) ?: return DomainResult.Failure(PairError.NotFound)
+
+        if (pair.status != PairStatus.PENDING) return DomainResult.Failure(PairError.SessionNotActive)
+        if (pair.userId2 != null) return DomainResult.Failure(PairError.InvalidRequest)
+        if (pair.pendingRequest?.guestId != guestId) return DomainResult.Failure(PairError.InvalidRequest)
 
         return pairRepository.acceptPlayer(pairId, guestId)
     }

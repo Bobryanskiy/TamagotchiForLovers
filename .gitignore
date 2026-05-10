@@ -1,56 +1,18 @@
-```
-# Compiled and build artifacts
-*.class
-*.o
-*.obj
-*.exe
-*.dll
-*.so
-*.a
-*.out
-*.pyc
-__pycache__/
-
-# Dependencies
-node_modules/
-venv/
-.venv/
-.mypy_cache/
-.pytest_cache/
-.gradle/
-target/
-build/
-dist/
-
-# Logs and temp files
-*.log
-*.tmp
-*.swp
-*.swo
-
-# Environment
-.env
-.env.local
-.env.*
-
-# Editors
-.vscode/
-.idea/
 *.iml
-*.ipr
-*.iws
+.gradle
+gradle
+.idea
+app/.gradle
+app/build
+.kotlin
+build
+.externalNativeBuild
+.cxx
+*aab
+*apk
+app/google-services.json
+app/sonar-project.properties
+app/test-proguard-rules.pro
+app/debug.keystore
 
-# System files
-.DS_Store
-Thumbs.db
-
-# Coverage reports
-coverage/
-htmlcov/
-.coverage
-
-# Kotlin/Android specific
-*.kotlin_metadata
-*.class
-!*.kt
-```
+local.properties

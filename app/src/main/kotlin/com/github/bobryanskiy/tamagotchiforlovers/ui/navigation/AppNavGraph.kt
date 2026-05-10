@@ -80,6 +80,7 @@ fun AppNavGraph(
         }
         composable<AppRoute.Auth> {
             AuthScreen(
+                navController = navController,
                 onNavigateBack = {
                     navController.popBackStack()
                 }

@@ -227,6 +227,14 @@ class DefaultPairRepository @Inject constructor(
         DomainResult.Failure(mapToPairError(e))
     }
 
+    override suspend fun getPair(pairId: String): Pair? {
+        val snapshot = firestore.collection("pairs").document(pairId).get().await()
+        if (!snapshot.exists()) {
+            return null
+        }
+        return snapshot.toObject(Pair::class.java)
+    }
+
     override suspend fun getPendingRequests(pairId: String): DomainResult<List<PendingRequest>> = try {
         val pairDoc = firestore.collection("pairs").document(pairId).get().await()
         val pendingRequestMap = pairDoc.get("pendingRequest") as? Map<String, Any>
