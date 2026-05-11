@@ -237,11 +237,11 @@ class DefaultPairRepository @Inject constructor(
 
     override suspend fun getPendingRequests(pairId: String): DomainResult<List<PendingRequest>> = try {
         val pairDoc = firestore.collection("pairs").document(pairId).get().await()
-        val pendingRequestMap = pairDoc.get("pendingRequest") as? Map<String, Any>
-        
-        val requests = if (pendingRequestMap != null) {
-            val guestId = pendingRequestMap["guestId"] as? String
-            val requestedAt = pendingRequestMap["requestedAt"] as? Long ?: System.currentTimeMillis()
+        val pendingRequestData = pairDoc.get("pendingRequest")
+
+        val requests = if (pendingRequestData is Map<*, *>) {
+            val guestId = pendingRequestData["guestId"] as? String
+            val requestedAt = pendingRequestData["requestedAt"] as? Long ?: System.currentTimeMillis()
             
             if (guestId != null) {
                 listOf(PendingRequest(guestId = guestId, requestedAt = requestedAt))
