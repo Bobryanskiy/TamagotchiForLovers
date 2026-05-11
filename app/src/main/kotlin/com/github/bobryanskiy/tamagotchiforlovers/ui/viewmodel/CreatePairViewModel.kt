@@ -3,6 +3,7 @@ package com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.UserRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.CreatePairUseCase
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.GenerateInviteKeyUseCase
@@ -24,6 +25,7 @@ sealed interface CreatePairUiState {
 class CreatePairViewModel @Inject constructor(
     private val createPairUseCase: CreatePairUseCase,
     private val generateInviteKeyUseCase: GenerateInviteKeyUseCase,
+    private val userRepository: UserRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -35,9 +37,12 @@ class CreatePairViewModel @Inject constructor(
     fun createPair(petId: String, pairName: String) {
         viewModelScope.launch {
             _uiState.value = CreatePairUiState.Loading
-            
-            // Get current user ID (in real app, get from auth repository)
-            val userId = "current_user_id" // TODO: Get from repository
+
+            val userId = userRepository.getCurrentUserId()
+            if (userId == null) {
+                _uiState.value = CreatePairUiState.Error("Пользователь не авторизован")
+                return@launch
+            }
             
             when (val result = createPairUseCase(userId, pairName, petId)) {
                 is DomainResult.Success -> {

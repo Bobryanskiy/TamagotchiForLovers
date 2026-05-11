@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import com.github.bobryanskiy.tamagotchiforlovers.ui.screen.BootScreen
 import com.github.bobryanskiy.tamagotchiforlovers.ui.screen.MainScreen
 import com.github.bobryanskiy.tamagotchiforlovers.ui.screen.PetScreen
@@ -55,23 +56,19 @@ fun AppNavGraph(
                 }
             )
         }
-        composable<AppRoute.Pet> {
+        composable<AppRoute.Pet> { backStackEntry ->
+            val petId = backStackEntry.arguments?.getString("petId") ?: ""
             PetScreen(
                 navController = navController,
+                petId = petId,
                 onNavigateBack = {
                     navController.popBackStack()
                 },
-                onNavigateToPuzzle = { petId, actionType ->
-                    val actionTypeName = when (actionType) {
-                        is PetActionType.Feed -> "Feed"
-                        is PetActionType.Rest -> "Rest"
-                        is PetActionType.Clean -> "Clean"
-                        is PetActionType.Play -> "Play"
-                    }
-                    navController.navigate(AppRoute.Puzzle(petId, actionTypeName))
+                onNavigateToPuzzle = { id, actionType ->
+                    navController.navigate(AppRoute.Puzzle(id, actionType.name))
                 },
-                onNavigateToCreatePair = { petId ->
-                    navController.navigate(AppRoute.CreatePair(petId))
+                onNavigateToCreatePair = { id ->
+                    navController.navigate(AppRoute.CreatePair(id))
                 },
                 onNavigateToJoinRequests = { pairId ->
                     navController.navigate(AppRoute.JoinRequests(pairId))
@@ -87,7 +84,7 @@ fun AppNavGraph(
             )
         }
         composable<AppRoute.Puzzle> { backStackEntry ->
-            val route = backStackEntry.arguments as AppRoute.Puzzle
+            val route = backStackEntry.toRoute<AppRoute.Puzzle>()
             val actionType = when (route.actionType) {
                 "Feed" -> PetActionType.Feed
                 "Rest" -> PetActionType.Rest
@@ -105,7 +102,7 @@ fun AppNavGraph(
             )
         }
         composable<AppRoute.CreatePair> { backStackEntry ->
-            val route = backStackEntry.arguments as AppRoute.CreatePair
+            val route = backStackEntry.toRoute<AppRoute.CreatePair>()
             CreatePairScreen(
                 navController = navController,
                 petId = route.petId,
@@ -115,7 +112,7 @@ fun AppNavGraph(
             )
         }
         composable<AppRoute.JoinRequests> { backStackEntry ->
-            val route = backStackEntry.arguments as AppRoute.JoinRequests
+            val route = backStackEntry.toRoute<AppRoute.JoinRequests>()
             JoinRequestsScreen(
                 navController = navController,
                 pairId = route.pairId,

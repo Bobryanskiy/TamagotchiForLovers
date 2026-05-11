@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CleanHands
 import androidx.compose.material.icons.filled.Favorite
@@ -61,13 +62,13 @@ fun PetScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Назад"
                         )
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /* TODO: Create pair */ }) {
+                    IconButton(onClick = onCreatePair) {
                         Icon(
                             imageVector = Icons.Default.Pets,
                             contentDescription = "Создать пару"
@@ -91,15 +92,16 @@ fun PetScreen(
                     stats = state.pet.stats,
                     onActionClick = { action ->
                         viewModel.onActionSelected(action)
-                        // Get pet ID from state
                         onNavigateToPuzzle(state.pet.id, action)
                     },
                     onCreatePair = { 
                         onNavigateToCreatePair(state.pet.id)
                     },
-                    onShowJoinRequests = { 
-                        // TODO: Get pair ID from pet or repository
-                        onNavigateToJoinRequests("default_pair_id")
+                    onShowJoinRequests = {
+                        val pairId = state.pet.profile.currentPairId
+                        if (pairId != null) {
+                            onNavigateToJoinRequests(pairId)
+                        }
                     }
                 )
             }
