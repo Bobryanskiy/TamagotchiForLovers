@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CleanHands
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FoodBank
@@ -35,10 +34,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import com.github.bobryanskiy.tamagotchiforlovers.R
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetStats
 import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.PetUiState
 import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.PetViewModel
@@ -48,6 +49,7 @@ import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.PetViewModel
 fun PetScreen(
     viewModel: PetViewModel = hiltViewModel(),
     navController: NavHostController,
+    petId: String,
     onNavigateBack: () -> Unit,
     onNavigateToPuzzle: (String, PetActionType) -> Unit,
     onNavigateToCreatePair: (String) -> Unit,
@@ -58,20 +60,20 @@ fun PetScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Мой питомец") },
+                title = { Text(stringResource(R.string.my_pet)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Назад"
+                            contentDescription = stringResource(R.string.back)
                         )
                     }
                 },
                 actions = {
-                    IconButton(onClick = onCreatePair) {
+                    IconButton(onClick = { onNavigateToCreatePair(petId) }) {
                         Icon(
                             imageVector = Icons.Default.Pets,
-                            contentDescription = "Создать пару"
+                            contentDescription = stringResource(R.string.create_pair)
                         )
                     }
                 }
@@ -106,7 +108,10 @@ fun PetScreen(
                 )
             }
             is PetUiState.Error -> {
-                // TODO: Show error state
+                ErrorContent(
+                    message = state.message,
+                    onRetry = { /* Retry logic */ }
+                )
             }
         }
     }
@@ -139,7 +144,7 @@ private fun PetContent(
             ) {
                 Icon(
                     imageVector = Icons.Default.Pets,
-                    contentDescription = "Питомец",
+                    contentDescription = stringResource(R.string.pet),
                     modifier = Modifier.size(120.dp),
                     tint = MaterialTheme.colorScheme.onPrimaryContainer
                 )
@@ -157,28 +162,28 @@ private fun PetContent(
         // Stats section with 4 buttons
         StatActionButton(
             icon = Icons.Default.FoodBank,
-            label = "Голод",
+            label = stringResource(R.string.hunger),
             value = stats.hunger,
             onClick = { onActionClick(PetActionType.Feed) }
         )
 
         StatActionButton(
             icon = Icons.Default.Power,
-            label = "Энергия",
+            label = stringResource(R.string.energy),
             value = stats.energy,
             onClick = { onActionClick(PetActionType.Rest) }
         )
 
         StatActionButton(
             icon = Icons.Default.CleanHands,
-            label = "Чистота",
+            label = stringResource(R.string.cleanliness),
             value = stats.cleanliness,
             onClick = { onActionClick(PetActionType.Clean) }
         )
 
         StatActionButton(
             icon = Icons.Default.Favorite,
-            label = "Счастье",
+            label = stringResource(R.string.happiness),
             value = stats.happiness,
             onClick = { onActionClick(PetActionType.Play) }
         )
@@ -200,7 +205,7 @@ private fun PetContent(
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.size(4.dp))
-                Text("Создать пару")
+                Text(stringResource(R.string.create_pair))
             }
 
             Button(
@@ -213,11 +218,40 @@ private fun PetContent(
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.size(4.dp))
-                Text("Запросы")
+                Text(stringResource(R.string.pair_requests))
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
+    }
+}
+
+@Composable
+private fun ErrorContent(
+    message: String,
+    onRetry: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = stringResource(R.string.error_state),
+            style = MaterialTheme.typography.headlineSmall,
+            color = MaterialTheme.colorScheme.error
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodyMedium
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(onClick = onRetry) {
+            Text(stringResource(R.string.try_again))
+        }
     }
 }
 

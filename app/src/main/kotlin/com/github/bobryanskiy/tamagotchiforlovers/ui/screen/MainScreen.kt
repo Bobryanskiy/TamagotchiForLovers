@@ -41,12 +41,12 @@ fun MainScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Виртуальный питомец") },
+                title = { Text(stringResource(R.string.app_name)) },
                 actions = {
                     TextButton(onClick = onNavigateToAuth) {
                         Icon(
                             imageVector = Icons.Default.Person,
-                            contentDescription = "Войти",
+                            contentDescription = stringResource(R.string.login),
                             modifier = Modifier.size(24.dp)
                         )
                     }
@@ -91,7 +91,7 @@ private fun MainContent(
             onClick = onPairConnect,
             modifier = Modifier.fillMaxWidth(0.7f)
         ) {
-            Text("Подключиться к паре")
+            Text(stringResource(R.string.connect_to_pair))
         }
     }
 }

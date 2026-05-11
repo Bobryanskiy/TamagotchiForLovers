@@ -5,10 +5,10 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import com.github.bobryanskiy.tamagotchiforlovers.data.local.AppSessionStorage
+import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetCriticalStatus
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PetRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.CalculatePetAlertsUseCase
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.EvaluatePetCriticalStateUseCase
-import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetCriticalStatus
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors

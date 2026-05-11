@@ -1,7 +1,10 @@
 package com.github.bobryanskiy.tamagotchiforlovers.data.model.mapper
 
 import com.github.bobryanskiy.tamagotchiforlovers.data.model.dto.PairDto
-import com.github.bobryanskiy.tamagotchiforlovers.domain.model.*
+import com.github.bobryanskiy.tamagotchiforlovers.domain.model.InviteKey
+import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pair
+import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PairStatus
+import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PendingRequest
 
 fun PairDto.toDomain(pairId: String): Pair {
     val statusEnum = runCatching { PairStatus.valueOf(status.uppercase()) }

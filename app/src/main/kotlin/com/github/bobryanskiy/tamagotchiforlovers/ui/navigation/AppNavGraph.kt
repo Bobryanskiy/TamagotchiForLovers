@@ -6,14 +6,14 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
-import com.github.bobryanskiy.tamagotchiforlovers.ui.screen.BootScreen
-import com.github.bobryanskiy.tamagotchiforlovers.ui.screen.MainScreen
-import com.github.bobryanskiy.tamagotchiforlovers.ui.screen.PetScreen
 import com.github.bobryanskiy.tamagotchiforlovers.ui.screen.AuthScreen
-import com.github.bobryanskiy.tamagotchiforlovers.ui.screen.PuzzleScreen
+import com.github.bobryanskiy.tamagotchiforlovers.ui.screen.BootScreen
 import com.github.bobryanskiy.tamagotchiforlovers.ui.screen.CreatePairScreen
 import com.github.bobryanskiy.tamagotchiforlovers.ui.screen.JoinRequestsScreen
+import com.github.bobryanskiy.tamagotchiforlovers.ui.screen.MainScreen
 import com.github.bobryanskiy.tamagotchiforlovers.ui.screen.PetActionType
+import com.github.bobryanskiy.tamagotchiforlovers.ui.screen.PetScreen
+import com.github.bobryanskiy.tamagotchiforlovers.ui.screen.PuzzleScreen
 
 @Composable
 fun AppNavGraph(
@@ -65,7 +65,13 @@ fun AppNavGraph(
                     navController.popBackStack()
                 },
                 onNavigateToPuzzle = { id, actionType ->
-                    navController.navigate(AppRoute.Puzzle(id, actionType.name))
+                    val actionTypeString = when (actionType) {
+                        is PetActionType.Feed -> "Feed"
+                        is PetActionType.Rest -> "Rest"
+                        is PetActionType.Clean -> "Clean"
+                        is PetActionType.Play -> "Play"
+                    }
+                    navController.navigate(AppRoute.Puzzle(id, actionTypeString))
                 },
                 onNavigateToCreatePair = { id ->
                     navController.navigate(AppRoute.CreatePair(id))

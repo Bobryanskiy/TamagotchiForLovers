@@ -3,8 +3,6 @@ package com.github.bobryanskiy.tamagotchiforlovers.data.repository
 import android.util.Log
 import com.github.bobryanskiy.tamagotchiforlovers.data.exception.RepositoryException
 import com.github.bobryanskiy.tamagotchiforlovers.data.model.dto.PetDto
-import com.github.bobryanskiy.tamagotchiforlovers.data.model.dto.ProfileDto
-import com.github.bobryanskiy.tamagotchiforlovers.data.model.dto.StatsDto
 import com.github.bobryanskiy.tamagotchiforlovers.data.model.mapper.toDomain
 import com.github.bobryanskiy.tamagotchiforlovers.di.IoDispatcher
 import com.github.bobryanskiy.tamagotchiforlovers.domain.error.PetError

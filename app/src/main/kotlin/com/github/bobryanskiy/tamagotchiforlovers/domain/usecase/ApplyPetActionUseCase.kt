@@ -1,7 +1,6 @@
 package com.github.bobryanskiy.tamagotchiforlovers.domain.usecase
 
 import com.github.bobryanskiy.tamagotchiforlovers.domain.error.PetError
-import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pet
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetAction
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PetRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
