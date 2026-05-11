@@ -3,7 +3,6 @@ package com.github.bobryanskiy.tamagotchiforlovers.domain.usecase
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetTask
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.TaskExample
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.TaskType
-import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
 import java.util.UUID
 import javax.inject.Inject
 

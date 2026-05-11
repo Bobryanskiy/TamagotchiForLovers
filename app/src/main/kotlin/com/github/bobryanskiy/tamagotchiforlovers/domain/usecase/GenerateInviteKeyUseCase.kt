@@ -1,7 +1,6 @@
 package com.github.bobryanskiy.tamagotchiforlovers.domain.usecase
 
 import com.github.bobryanskiy.tamagotchiforlovers.domain.error.PairError
-import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pair
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PairStatus
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PairRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult

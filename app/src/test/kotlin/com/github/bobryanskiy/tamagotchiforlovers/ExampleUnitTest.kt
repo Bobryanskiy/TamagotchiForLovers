@@ -1,9 +1,7 @@
 package com.github.bobryanskiy.tamagotchiforlovers
 
-import com.github.bobryanskiy.tamagotchiforlovers.data.pairing.model.UserData
+import org.junit.Assert.assertEquals
 import org.junit.Test
-
-import org.junit.Assert.*
 
 /**
  * Example local unit test, which will execute on the development machine (host).
