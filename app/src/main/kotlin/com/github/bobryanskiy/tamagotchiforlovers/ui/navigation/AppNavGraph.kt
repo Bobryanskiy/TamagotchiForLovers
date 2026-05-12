@@ -9,8 +9,10 @@ import androidx.navigation.toRoute
 import com.github.bobryanskiy.tamagotchiforlovers.ui.screen.AuthScreen
 import com.github.bobryanskiy.tamagotchiforlovers.ui.screen.BootScreen
 import com.github.bobryanskiy.tamagotchiforlovers.ui.screen.CreatePairScreen
+import com.github.bobryanskiy.tamagotchiforlovers.ui.screen.CreatePetScreen
 import com.github.bobryanskiy.tamagotchiforlovers.ui.screen.JoinRequestsScreen
 import com.github.bobryanskiy.tamagotchiforlovers.ui.screen.MainScreen
+import com.github.bobryanskiy.tamagotchiforlovers.ui.screen.PairConnectScreen
 import com.github.bobryanskiy.tamagotchiforlovers.ui.screen.PetActionType
 import com.github.bobryanskiy.tamagotchiforlovers.ui.screen.PetScreen
 import com.github.bobryanskiy.tamagotchiforlovers.ui.screen.PuzzleScreen
@@ -49,10 +51,20 @@ fun AppNavGraph(
                     navController.navigate(AppRoute.Auth)
                 },
                 onNavigateToGame = {
-                    // TODO: Navigate to game screen
+                    navController.navigate(AppRoute.CreatePet)
                 },
                 onNavigateToPairConnect = {
-                    // TODO: Navigate to pair connect screen
+                    navController.navigate(AppRoute.PairConnect)
+                }
+            )
+        }
+        composable<AppRoute.CreatePet> {
+            CreatePetScreen(
+                navController = navController,
+                onNavigateToPet = { petId ->
+                    navController.navigate(AppRoute.Pet) {
+                        popUpTo<AppRoute.Main> { inclusive = false }
+                    }
                 }
             )
         }
@@ -124,6 +136,19 @@ fun AppNavGraph(
                 pairId = route.pairId,
                 onNavigateBack = {
                     navController.popBackStack()
+                }
+            )
+        }
+        composable<AppRoute.PairConnect> {
+            PairConnectScreen(
+                navController = navController,
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToPet = { petId ->
+                    navController.navigate(AppRoute.Pet) {
+                        popUpTo<AppRoute.Main> { inclusive = false }
+                    }
                 }
             )
         }

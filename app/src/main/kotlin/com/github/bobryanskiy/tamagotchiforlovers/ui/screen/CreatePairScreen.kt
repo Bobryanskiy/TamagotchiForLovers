@@ -37,10 +37,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboard
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import com.github.bobryanskiy.tamagotchiforlovers.R
 import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.CreatePairUiState
 import com.github.bobryanskiy.tamagotchiforlovers.ui.viewmodel.CreatePairViewModel
 import kotlinx.coroutines.launch
@@ -56,17 +58,16 @@ fun CreatePairScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val clipboard = LocalClipboard.current
-    val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Создать пару") },
+                title = { Text(stringResource(R.string.creating_pair)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Назад"
+                            contentDescription = stringResource(R.string.back)
                         )
                     }
                 }
@@ -97,16 +98,12 @@ fun CreatePairScreen(
                     modifier = Modifier.padding(padding),
                     inviteCode = state.inviteCode,
                     onCopyCode = {
-                        scope.launch {
-                            scope.launch {
-                                clipboard.nativeClipboard.setPrimaryClip(
-                                    ClipData.newPlainText(
-                                        "Invite Code",
-                                        state.inviteCode
-                                    )
-                                )
-                            }
-                        }
+                        clipboard.nativeClipboard.setPrimaryClip(
+                            ClipData.newPlainText(
+                                "Invite Code",
+                                state.inviteCode
+                            )
+                        )
                     },
                     onDone = onNavigateBack
                 )
@@ -155,13 +152,13 @@ private fun CreatePairContent(
                 )
 
                 Text(
-                    text = "Создание пары",
+                    text = stringResource(R.string.creating_pair),
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
 
                 Text(
-                    text = "Придумайте название для вашей пары и получите код приглашения для друга",
+                    text = stringResource(R.string.pair_description),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                 )
@@ -175,7 +172,7 @@ private fun CreatePairContent(
         OutlinedTextField(
             value = pairName,
             onValueChange = { pairName = it },
-            label = { Text("Название пары") },
+            label = { Text(stringResource(R.string.pair_name)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             isError = errorMessage != null
@@ -202,7 +199,7 @@ private fun CreatePairContent(
                 modifier = Modifier.size(18.dp)
             )
             Spacer(modifier = Modifier.size(8.dp))
-            Text("Создать пару и получить код")
+            Text(stringResource(R.string.create_pair_and_get_code))
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -242,13 +239,13 @@ private fun PairCreatedContent(
                 )
 
                 Text(
-                    text = "Пара создана!",
+                    text = stringResource(R.string.pair_created),
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onTertiaryContainer
                 )
 
                 Text(
-                    text = "Код приглашения:",
+                    text = stringResource(R.string.invite_code),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.8f)
                 )
@@ -268,13 +265,13 @@ private fun PairCreatedContent(
                     IconButton(onClick = onCopyCode) {
                         Icon(
                             imageVector = Icons.Default.ContentCopy,
-                            contentDescription = "Копировать"
+                            contentDescription = stringResource(R.string.copy)
                         )
                     }
                 }
 
                 Text(
-                    text = "Отправьте этот код другу для подключения",
+                    text = stringResource(R.string.send_code_to_friend),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.7f)
                 )
@@ -287,7 +284,7 @@ private fun PairCreatedContent(
             onClick = onDone,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Готово")
+            Text(stringResource(R.string.done))
         }
 
         Spacer(modifier = Modifier.height(16.dp))
