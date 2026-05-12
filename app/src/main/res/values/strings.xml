@@ -120,4 +120,9 @@
     <string name="pet_id_not_provided">Pet ID not provided</string>
     <string name="pet_not_found">Pet not found</string>
     <string name="failed_to_apply_action">Failed to apply action</string>
+    <string name="create_pet">Create Pet</string>
+    <string name="create_pet_description">Enter a name for your new pet</string>
+    <string name="pet_name">Pet Name</string>
+    <string name="create_pet_button">Create Pet</string>
+    <string name="creating_pet">Creating…</string>
 </resources>

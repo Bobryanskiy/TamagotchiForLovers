@@ -120,4 +120,9 @@
     <string name="pet_id_not_provided">Pet ID not provided</string>
     <string name="pet_not_found">Питомец не найден</string>
     <string name="failed_to_apply_action">Failed to apply action</string>
+    <string name="create_pet">Создать питомца</string>
+    <string name="create_pet_description">Введите имя для вашего нового питомца</string>
+    <string name="pet_name">Имя питомца</string>
+    <string name="create_pet_button">Создать питомца</string>
+    <string name="creating_pet">Создание…</string>
 </resources>
