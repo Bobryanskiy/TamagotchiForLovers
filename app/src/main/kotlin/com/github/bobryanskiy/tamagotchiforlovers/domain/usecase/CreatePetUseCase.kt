@@ -1,16 +1,64 @@
 package com.github.bobryanskiy.tamagotchiforlovers.domain.usecase
 
-import com.github.bobryanskiy.tamagotchiforlovers.domain.error.PetError
+import com.github.bobryanskiy.tamagotchiforlovers.domain.model.*
+import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.AuthRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PetRepository
+import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.SessionRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
+import com.github.bobryanskiy.tamagotchiforlovers.domain.util.Clock
+import com.github.bobryanskiy.tamagotchiforlovers.domain.util.IdGenerator
 import javax.inject.Inject
+import javax.inject.Singleton
 
+/**
+ * UseCase создания нового питомца.
+ *
+ * Создаёт доменную модель с начальными статами и сохраняет через Repository.
+ * Если пользователь авторизован — привязывает питомца к его ownerId.
+ */
+@Singleton
 class CreatePetUseCase @Inject constructor(
-    private val petRepository: PetRepository
+    private val petRepository: PetRepository,
+    private val authRepository: AuthRepository,
+    private val sessionRepository: SessionRepository,
+    private val clock: Clock,
+    private val idGenerator: IdGenerator
 ) {
-    suspend operator fun invoke(name: String, ownerUserId: String): DomainResult<String> {
-        if (name.isBlank() || ownerUserId.isBlank()) return DomainResult.Failure(PetError.InvalidInput)
+    suspend operator fun invoke(name: String): DomainResult<String> {
+        val ownerId = authRepository.getCurrentUserId()
+        val now = clock.currentTimeMillis()
+        val id = idGenerator.generate()
 
-        return petRepository.createPet(name.trim(), ownerUserId)
+        val newPet = Pet(
+            id = id,
+            profile = PetProfile(
+                name = name.trim(),
+                ownerUserId = ownerId,
+                currentPairId = null,
+                createdAt = now,
+                abandonedAt = null
+            ),
+            stats = PetStats(
+                hunger = 80,
+                energy = 80,
+                cleanliness = 80,
+                happiness = 80,
+                updatedAt = now
+            ),
+            lifeState = PetLifeState(
+                status = PetLifeStatus.NORMAL,
+                isActionsBlocked = false,
+                recoveryEndTime = null,
+                decayMultiplier = 1.0f
+            ),
+            syncStatus = SyncStatus.SYNCED
+        )
+
+        val saveResult = petRepository.createPet(newPet)
+        if (saveResult is DomainResult.Failure) return saveResult
+
+        sessionRepository.saveActivePetId(newPet.id)
+
+        return DomainResult.Success(newPet.id)
     }
 }

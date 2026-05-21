@@ -25,7 +25,7 @@
                 android:name="AccessoryServicesLocation"
                 android:value="@raw/accessory_config" />
         <activity
-                android:name=".ui.MainActivity"
+                android:name=".presentation.MainActivity"
                 android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -33,31 +33,18 @@
             </intent-filter>
         </activity>
 
-        <receiver
-                android:name=".data.notification.PetAlertReceiver"
+        <receiver android:name=".presentation.receiver.CriticalStateReceiver"
                 android:enabled="true"
                 android:exported="false" />
         <receiver
-                android:name=".data.notification.PetBootReceiver"
+                android:name=".presentation.receiver.BootReceiver"
                 android:enabled="true"
-                android:exported="false"
-                android:directBootAware="true">
+                android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
-                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
             </intent-filter>
         </receiver>
-
-        <provider
-                android:name="androidx.startup.InitializationProvider"
-                android:authorities="${applicationId}.androidx-startup"
-                android:exported="false"
-                tools:node="merge">
-            <meta-data
-                    android:name="androidx.work.WorkManagerInitializer"
-                    android:value="androidx.startup" />
-        </provider>
     </application>
 
 </manifest>

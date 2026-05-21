@@ -1,7 +1,7 @@
 package com.github.bobryanskiy.tamagotchiforlovers.di
 
-import com.github.bobryanskiy.tamagotchiforlovers.data.time.SystemClock
-import com.github.bobryanskiy.tamagotchiforlovers.domain.time.Clock
+import com.github.bobryanskiy.tamagotchiforlovers.data.util.SystemClock
+import com.github.bobryanskiy.tamagotchiforlovers.domain.util.Clock
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
