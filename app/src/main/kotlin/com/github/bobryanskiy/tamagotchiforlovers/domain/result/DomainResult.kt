@@ -3,7 +3,15 @@ package com.github.bobryanskiy.tamagotchiforlovers.domain.result
 import com.github.bobryanskiy.tamagotchiforlovers.domain.error.DomainError
 
 sealed class DomainResult<out T> {
-    fun fold(onSuccess: (T) -> Unit, onFailure: (DomainError) -> Unit) {}
+    inline fun <R> fold(
+        onSuccess: (T) -> R,
+        onFailure: (DomainError) -> R
+    ): R = when (this) {
+        is Success -> onSuccess(data)
+        is Failure -> onFailure(error)
+    }
+
+    fun getOrNull(): T? = when(this) { is Success -> data; is Failure -> null }
 
     data class Success<out T>(val data: T) : DomainResult<T>()
     data class Failure(val error: DomainError) : DomainResult<Nothing>()

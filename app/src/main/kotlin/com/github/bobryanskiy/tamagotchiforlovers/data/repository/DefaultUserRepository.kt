@@ -1,7 +1,7 @@
 package com.github.bobryanskiy.tamagotchiforlovers.data.repository
 
 import android.util.Log
-import com.github.bobryanskiy.tamagotchiforlovers.data.model.dto.UserDto
+import com.github.bobryanskiy.tamagotchiforlovers.data.remote.dto.UserDto
 import com.github.bobryanskiy.tamagotchiforlovers.data.model.mapper.toDomain
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.User
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.UserRepository

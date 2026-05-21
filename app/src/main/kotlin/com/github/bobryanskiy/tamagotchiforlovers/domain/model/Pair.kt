@@ -10,6 +10,7 @@ data class Pair(
     val inviteKey: InviteKey?,
     val pendingRequest: PendingRequest? = null,
     val createdAt: Long,
+    val updatedAt: Long,
     val endedAt: Long?
 )
 
@@ -20,5 +21,11 @@ data class InviteKey(
 
 data class PendingRequest(
     val guestId: String,
-    val requestedAt: Long
+    val requestedAt: Long?
 )
+
+enum class PairStatus {
+    PENDING,
+    ACTIVE,
+    ENDED
+}

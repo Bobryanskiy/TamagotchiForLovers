@@ -4,14 +4,40 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.error.PetError
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetAction
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PetRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
+import com.github.bobryanskiy.tamagotchiforlovers.domain.result.onSuccess
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class ApplyPetActionUseCase @Inject constructor(
-    private val petRepository: PetRepository
+    private val petRepository: PetRepository,
+    private val evaluateStateUseCase: EvaluatePetCriticalStateUseCase
 ) {
-    suspend operator fun invoke(petId: String, petAction: PetAction): DomainResult<Unit> {
-        if (petId.isBlank()) return DomainResult.Failure(PetError.InvalidInput)
 
-        return petRepository.applyAction(petId, petAction)
+    suspend operator fun invoke(petId: String, action: PetAction): DomainResult<Unit> {
+        val petResult = petRepository.getPetById(petId)
+        if (petResult is DomainResult.Failure) return petResult
+        val pet = petResult.getOrNull() ?: return DomainResult.Failure(PetError.PetNotFound)
+
+        if (pet.lifeState.isActionsBlocked) {
+            return DomainResult.Failure(PetError.ActionBlocked)
+        }
+
+        val newStats = pet.stats.applyAction(action)
+        val newState = evaluateStateUseCase(newStats)
+
+        val statsResult = petRepository.updateStats(
+            petId = petId,
+            hunger = newStats.hunger,
+            energy = newStats.energy,
+            cleanliness = newStats.cleanliness,
+            happiness = newStats.happiness
+        )
+        if (statsResult is DomainResult.Failure) return statsResult
+
+        val stateResult = petRepository.updateCriticalState(petId, newState)
+        if (stateResult is DomainResult.Failure) return stateResult
+
+        return DomainResult.Success(Unit)
     }
 }

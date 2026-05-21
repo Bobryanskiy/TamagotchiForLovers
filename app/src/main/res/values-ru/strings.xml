@@ -1,128 +1,164 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Тамагочи</string>
-    <string name="pet_want_eat_text">Я проголодался</string>
-    <string name="notification_channel_desc">Ваш питомец что-то хочет</string>
-    <string name="pet_want_eat_title">Приветик</string>
-    <string name="pet_thirst_title">Привет</string>
-    <string name="pet_thirst_text">Я хочу пить</string>
-    <string name="prompt_email">Почта</string>
-    <string name="prompt_password">Пароль</string>
-    <string name="action_sign_in">Войти или зарегистрироваться</string>
-    <string name="action_sign_in_short">Войти</string>
-    <string name="welcome">Добро пожаловать!</string>
-    <string name="invalid_username">Неправильное имя</string>
-    <string name="invalid_password">Пароль должен быть длиннее 5 символов</string>
-    <string name="login_failed">Ошибка входа</string>
-    <string name="wrong_login_data">Неверное имя или пароль</string>
-    <string name="wrong_username">Имя не существует</string>
-    <string name="action_register">Зарегистрироваться</string>
-    <string name="pet_deleted_success">Питомец успешно удален</string>
-    <string name="pet_deleted_error">Произошла ошибка при удалении питомца</string>
-    <string name="switch_visibility_success">Видимость успешно переключена</string>
-    <string name="switch_visibility_error">Ошибка при переключении видимости</string>
-    <string name="title_play_error">Произошла ошибка</string>
-    <string name="creating_pair_error">Произошла ошибка при создании пары</string>
-    <string name="joining_pair_error">Произошла ошибка при присоединении к существующей паре</string>
-    <string name="title_play_button">Играть</string>
-    <string name="title_settings_botton">Настройки</string>
-    <string name="title_exit_button">Выход</string>
-    <string name="pet_feed_button">Покормить</string>
-    <string name="pet_switch_visibility_button">Переключить видимость</string>
-    <string name="pet_delete_pet_button">Удалить питомца</string>
-    <string name="pet_exit_button">Выйти</string>
+    <!-- App -->
+    <string name="app_name">Тамагочи для Влюбленных</string>
 
-    <string name="join_session_title">Присоединиться к игре</string>
-    <string name="join_session_hint">Введите код приглашения</string>
-    <string name="join_session_button">Подключиться</string>
-    <string name="error_pair_not_found">Игровая сессия не найдена или код неверен</string>
-    <string name="error_pair_already_joined">Вы уже присоединились к сессии</string>
-
-    <!-- Pair Error Messages -->
-    <string name="error_pair_guest_only">Только гость может выполнить это действие</string>
-    <string name="error_pair_creator_only">Только создатель может выполнить это действие</string>
-    <string name="error_pair_session_not_active">Сессия не активна</string>
-    <string name="error_pair_already_ended">Сессия уже завершена</string>
-    <string name="error_pair_invalid_input">Неверные входные данные</string>
-    <string name="error_pair_invalid_request">Неверный запрос</string>
-    <string name="error_pair_network">Ошибка сети. Проверьте подключение</string>
-    <string name="error_pair_unknown">Произошла неизвестная ошибка</string>
-
-    <!-- Pet Error Messages -->
-    <string name="error_pet_invalid_input">Неверные данные питомца</string>
-    <string name="error_pet_action_not_allowed">Это действие запрещено</string>
-    <string name="error_pet_not_found">Питомец не найден</string>
-    <string name="error_pet_network">Ошибка сети. Проверьте подключение</string>
-    <string name="error_pet_unknown">Произошла неизвестная ошибка</string>
-
-    <!-- Main Screen -->
-    <string name="welcome_message">Добро пожаловать!</string>
-    <string name="start_game">Начать игру</string>
-    <string name="connect_to_pair">Подключиться к паре</string>
-    <string name="login">Войти</string>
-    <string name="offline_status">Offline</string>
-    <string name="working_offline">Работа в офлайн режиме</string>
-    <string name="my_pet">Мой питомец</string>
+    <!-- Common -->
     <string name="back">Назад</string>
-    <string name="create_pair">Создать пару</string>
-    <string name="hunger">Голод</string>
-    <string name="energy">Энергия</string>
-    <string name="cleanliness">Чистота</string>
-    <string name="happiness">Счастье</string>
-    <string name="pair_requests">Запросы</string>
-    <string name="pet">Питомец</string>
-    <string name="puzzle_for_pet">Задание для питомца</string>
-    <string name="close">Закрыть</string>
-    <string name="your_answer">Ваш ответ</string>
-    <string name="check_answer">Проверить ответ</string>
     <string name="cancel">Отмена</string>
     <string name="done">Готово</string>
+    <string name="loading">Загрузка…</string>
+    <string name="error_unknown">Неизвестная ошибка</string>
+    <string name="no_internet">Нет интернета</string>
+    <string name="copy">Копировать</string>
+    <string name="close">Закрыть</string>
+
+    <!-- Main Screen -->
+    <string name="welcome_message">Добро пожаловать в Тамагочи!</string>
+    <string name="start_game">Начать игру</string>
+    <string name="connect_to_pair">Подключиться к паре</string>
+    <string name="my_pets">Мои питомцы</string>
+    <string name="no_pets_yet">У вас пока нет питомцев. Создайте нового!</string>
+
+    <!-- Pair Connect Screen -->
+    <string name="join_session_title">Присоединиться к сессии</string>
+    <string name="join_session_hint">Введите код приглашения</string>
+    <string name="join_session_button">Подключиться</string>
+    <string name="or_create_new">Или создать новую пару</string>
+
+    <!-- Create Pair Screen -->
+    <string name="pair_description">Придумайте название для вашей пары и получите код для друга</string>
     <string name="pair_name">Название пары</string>
     <string name="create_pair_and_get_code">Создать пару и получить код</string>
     <string name="pair_created">Пара создана!</string>
-    <string name="invite_code">Код приглашения:</string>
-    <string name="copy">Копировать</string>
-    <string name="send_code_to_friend">Отправьте этот код другу для подключения</string>
-    <string name="join_requests_title">Запросы на подключение</string>
-    <string name="no_requests">Нет запросов на подключение</string>
-    <string name="try_again">Попробовать снова</string>
-    <string name="player_wants_to_join">Игрок хочет присоединиться</string>
-    <string name="reject">Отклонить</string>
-    <string name="accept">Принять</string>
-    <string name="task_feed_title">Задание: Кормление</string>
-    <string name="task_feed_desc">Решите математическую задачу, чтобы покормить питомца!</string>
-    <string name="task_rest_title">Задание: Отдых</string>
-    <string name="task_rest_desc">Разгадайте загадку, чтобы питомец мог отдохнуть!</string>
-    <string name="task_clean_title">Задание: Уборка</string>
-    <string name="task_clean_desc">Решите логическую задачу, чтобы убрать за питомцем!</string>
-    <string name="task_play_title">Задание: Игра</string>
-    <string name="task_play_desc">Ответьте на вопрос, чтобы поиграть с питомцем!</string>
-    <string name="example">Пример:</string>
-    <string name="enter_solution">Введите решение:</string>
-    <string name="hint">Подсказка</string>
-    <string name="creating_pair">Создание пары</string>
-    <string name="pair_description">Придумайте название для вашей пары и получите код приглашения для друга</string>
-    <string name="create_account">Создать аккаунт</string>
-    <string name="login_to_account">Вход в аккаунт</string>
+    <string name="copy_code">Копировать</string>
+    <string name="send_code_to_friend">Отправьте этот код другу, чтобы подключиться</string>
+    <string name="code_copied_toast">Код скопирован в буфер обмена</string>
+
+    <!-- Auth -->
+    <string name="auth_title_login">С возвращением!</string>
+    <string name="auth_title_register">Создать аккаунт</string>
     <string name="email">Email</string>
     <string name="password">Пароль</string>
-    <string name="create">Создать</string>
-    <string name="enter">Войти</string>
-    <string name="have_account_login">Уже есть аккаунт? Войти</string>
-    <string name="no_account_create">Нет аккаунта? Создать</string>
-    <string name="error_state">Ошибка</string>
-    <string name="user_not_authorized">Пользователь не авторизован</string>
-    <string name="error_creating_pair">Ошибка создания пары</string>
-    <string name="error_generating_code">Ошибка генерации кода</string>
-    <string name="error_loading_requests">Ошибка загрузки запросов</string>
-    <string name="error_accepting_request">Ошибка принятия запроса</string>
-    <string name="incorrect_answer">Неверный ответ! Попробуйте еще раз.</string>
-    <string name="pet_id_not_provided">Pet ID not provided</string>
-    <string name="pet_not_found">Питомец не найден</string>
-    <string name="failed_to_apply_action">Failed to apply action</string>
+    <string name="login">Войти</string>
+    <string name="register">Регистрация</string>
+    <string name="login_as_guest">Продолжить как гость</string>
+    <string name="have_account">Уже есть аккаунт?</string>
+    <string name="no_account">Нет аккаунта?</string>
+    <string name="sign_in">Войти</string>
+    <string name="sign_up">Создать</string>
+
+    <!-- Auth Errors -->
+    <string name="error_auth_failed">Ошибка авторизации</string>
+    <string name="error_invalid_email">Неверный email</string>
+    <string name="error_empty_password">Пароль пуст</string>
+    <string name="error_short_password">Минимум 6 символов</string>
+    <string name="error_email_exists">Этот email уже занят</string>
+    <string name="error_weak_password">Слишком простой пароль</string>
+
+    <!-- Profile Screen -->
+    <string name="profile_owner_label">Email владельца</string>
+    <string name="profile_pet_stats_label">Текущие статы</string>
+    <string name="guest_user">Гостевой пользователь</string>
+    <string name="btn_unlink_account">Отвязать аккаунт (Стать гостем)</string>
+
+    <!-- Create Pet -->
     <string name="create_pet">Создать питомца</string>
-    <string name="create_pet_description">Введите имя для вашего нового питомца</string>
+    <string name="create_pet_description">Дайте имя вашему другу</string>
     <string name="pet_name">Имя питомца</string>
-    <string name="create_pet_button">Создать питомца</string>
+    <string name="create_pet_button">Создать</string>
     <string name="creating_pet">Создание…</string>
+    <string name="error_empty_pet_name">Имя не может быть пустым</string>
+
+    <!-- Pet Screen -->
+    <string name="pet_screen_title">Мой Питомец</string>
+    <string name="menu_profile">Профиль и Статы</string>
+    <string name="menu_rename">Переименовать</string>
+    <string name="menu_delete">Удалить питомца</string>
+
+    <!-- Stats -->
+    <string name="stat_hunger">Голод</string>
+    <string name="stat_energy">Энергия</string>
+    <string name="stat_cleanliness">Чистота</string>
+    <string name="stat_happiness">Настроение</string>
+
+    <!-- Actions -->
+    <string name="actions_title">Действия</string>
+    <string name="action_feed">Кормить</string>
+    <string name="action_play">Играть</string>
+    <string name="action_clean">Мыть</string>
+    <string name="action_rest">Спать</string>
+
+    <!-- Math Task -->
+    <string name="task_title">Реши задачку!</string>
+    <string name="task_description">Чтобы %1$s, реши пример:</string>
+    <string name="task_input_label">Ответ</string>
+    <string name="task_error">Неверно, попробуй еще раз!</string>
+    <string name="task_button_check">Проверить</string>
+
+    <!-- Game Over -->
+    <string name="game_over_title">💀 Игра окончена</string>
+    <string name="game_over_button">В главное меню</string>
+
+    <!-- Pair / Multiplayer -->
+    <string name="pair_connect_title">Подключение к паре</string>
+    <string name="create_pair">Создать пару</string>
+    <string name="join_pair">Присоединиться</string>
+    <string name="invite_code">Код приглашения</string>
+    <string name="code_copied">Код скопирован</string>
+    <string name="send_code_hint">Отправьте код другу</string>
+    <string name="enter_code_hint">Введите код друга</string>
+    <string name="connect_button">Подключиться</string>
+    <string name="requests_title">Запросы на вход</string>
+    <string name="no_requests">Нет запросов</string>
+    <string name="accept">Принять</string>
+    <string name="reject">Отклонить</string>
+
+    <!-- Pair Errors -->
+    <string name="error_pair_not_found">Пара не найдена</string>
+    <string name="error_pair_already_joined">Вы уже в паре</string>
+    <string name="error_pair_invalid_code">Неверный код</string>
+    <string name="error_pair_network">Ошибка сети</string>
+    <string name="error_pair_guest_only">Только для гостей</string>
+    <string name="error_pair_creator_only">Только для создателя</string>
+    <string name="error_pair_already_ended">Сессия завершена</string>
+    <string name="error_pair_invalid_request">Неверный запрос</string>
+    <string name="error_pair_not_active">Пара не активна</string>
+    <string name="error_pair_invalid_input">Неверные данные</string>
+
+    <!-- Pet Errors -->
+    <string name="error_pet_not_found">Питомец не найден</string>
+    <string name="error_action_blocked">Действие заблокировано</string>
+    <string name="error_not_authenticated">Нужен вход</string>
+    <string name="error_session_not_found">Сессия не найдена</string>
+    <string name="error_database">Ошибка базы данных</string>
+    <string name="error_network">Ошибка сети</string>
+    <string name="error_pet_invalid_input">Неверные данные питомца</string>
+
+    <!-- Notifications -->
+    <string name="notif_channel_name">Оповещения о питомце</string>
+    <string name="notif_channel_desc">Когда питомцу нужна забота</string>
+    <string name="notif_title_warn">%1$s нуждается в заботе</string>
+    <string name="notif_title_crit">❗ %1$s в опасности!</string>
+    <string name="notif_warn_hunger">%1$s проголодался.</string>
+    <string name="notif_warn_energy">%1$s устал.</string>
+    <string name="notif_warn_clean">%1$s испачкался.</string>
+    <string name="notif_warn_happy">%1$s заскучал.</string>
+    <string name="notif_crit_hunger">❗ %1$s голодает!</string>
+    <string name="notif_crit_energy">❗ %1$s падает без сил!</string>
+    <string name="notif_crit_clean">❗ %1$s в грязи!</string>
+    <string name="notif_crit_happy">❗ %1$s в стрессе!</string>
+    <string name="notif_dead">%1$s погиб…</string>
+    <string name="notif_escaped">%1$s убежал.</string>
+
+    <!-- System -->
+    <string name="sync_success">Данные синхронизированы</string>
+    <string name="sync_error">Ошибка синхронизации</string>
+    <string name="pet_saved">Питомец сохранен</string>
+    <string name="account_linked">Аккаунт привязан</string>
+
+    <string name="btn_logout">Выйти</string>
+    <string name="confirm_logout_title">Выйти из аккаунта?</string>
+    <string name="confirm_logout_message">Вы выйдете из аккаунта. Питомец останется в облаке для вашего партнера. Локальные данные будут удалены.</string>
+    <string name="btn_confirm_logout">Выйти</string>
 </resources>

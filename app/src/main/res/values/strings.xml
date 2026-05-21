@@ -1,128 +1,163 @@
 <resources>
+    <!-- App -->
     <string name="app_name">Tamagotchi for Lovers</string>
-    <string name="pet_want_eat_text">I want to eat</string>
-    <string name="notification_channel_desc">Triggers when pet want something</string>
-    <string name="pet_want_eat_title">Hello</string>
-    <string name="pet_thirst_title">Hello</string>
-    <string name="pet_thirst_text">I am thirst</string>
-    <!-- Strings related to login -->
-    <string name="prompt_email">Email</string>
-    <string name="prompt_password">Password</string>
-    <string name="action_sign_in">Sign in or register</string>
-    <string name="action_sign_in_short">Sign in</string>
-    <string name="welcome">"Welcome!"</string>
-    <string name="invalid_username">Not a valid username</string>
-    <string name="invalid_password">Password must be >5 characters</string>
-    <string name="login_failed">"Login failed"</string>
-    <string name="wrong_login_data">Wrong username or password</string>
-    <string name="wrong_username">Username doesn\'t exist</string>
-    <string name="action_register">Register</string>
-    <string name="pet_deleted_success">Pet deleted successfully</string>
-    <string name="pet_deleted_error">Pet deletion error</string>
-    <string name="switch_visibility_success">Visibility switched successfully</string>
-    <string name="switch_visibility_error">"Switch visibility error "</string>
-    <string name="title_play_error">Some error happened</string>
-    <string name="creating_pair_error">Creating pair error</string>
-    <string name="joining_pair_error">Joining pair error</string>
-    <string name="title_exit_button">Exit</string>
-    <string name="title_settings_botton">Settings</string>
-    <string name="title_play_button">Play</string>
-    <string name="pet_feed_button">Feed</string>
-    <string name="pet_exit_button">Log out</string>
-    <string name="pet_delete_pet_button">Delete pet</string>
-    <string name="pet_switch_visibility_button">Switch visibility</string>
 
-    <string name="join_session_title">Join Game</string>
-    <string name="join_session_hint">Enter invite code</string>
-    <string name="join_session_button">Connect</string>
-    <string name="error_pair_not_found">Game session not found or code is invalid</string>
-    <string name="error_pair_already_joined">You have already joined a session</string>
-
-    <!-- Pair Error Messages -->
-    <string name="error_pair_guest_only">Only guest can perform this action</string>
-    <string name="error_pair_creator_only">Only creator can perform this action</string>
-    <string name="error_pair_session_not_active">Session is not active</string>
-    <string name="error_pair_already_ended">Session has already ended</string>
-    <string name="error_pair_invalid_input">Invalid input data</string>
-    <string name="error_pair_invalid_request">Invalid request</string>
-    <string name="error_pair_network">Network error. Please check your connection</string>
-    <string name="error_pair_unknown">Unknown error occurred</string>
-
-    <!-- Pet Error Messages -->
-    <string name="error_pet_invalid_input">Invalid pet data</string>
-    <string name="error_pet_action_not_allowed">This action is not allowed</string>
-    <string name="error_pet_not_found">Pet not found</string>
-    <string name="error_pet_network">Network error. Please check your connection</string>
-    <string name="error_pet_unknown">Unknown error occurred</string>
-
-    <!-- Main Screen -->
-    <string name="welcome_message">Welcome!</string>
-    <string name="start_game">Start Game</string>
-    <string name="connect_to_pair">Connect to Pair</string>
-    <string name="login">Login</string>
-    <string name="offline_status">Offline</string>
-    <string name="working_offline">Working offline</string>
-    <string name="my_pet">My Pet</string>
+    <!-- Common -->
     <string name="back">Back</string>
-    <string name="create_pair">Create Pair</string>
-    <string name="hunger">Hunger</string>
-    <string name="energy">Energy</string>
-    <string name="cleanliness">Cleanliness</string>
-    <string name="happiness">Happiness</string>
-    <string name="pair_requests">Requests</string>
-    <string name="pet">Pet</string>
-    <string name="puzzle_for_pet">Puzzle for Pet</string>
-    <string name="close">Close</string>
-    <string name="your_answer">Your Answer</string>
-    <string name="check_answer">Check Answer</string>
     <string name="cancel">Cancel</string>
     <string name="done">Done</string>
-    <string name="pair_name">Pair Name</string>
-    <string name="create_pair_and_get_code">Create Pair and Get Code</string>
-    <string name="pair_created">Pair Created!</string>
-    <string name="invite_code">Invite Code:</string>
+    <string name="loading">Loading…</string>
+    <string name="error_unknown">Unknown error occurred</string>
+    <string name="no_internet">No internet connection</string>
     <string name="copy">Copy</string>
-    <string name="send_code_to_friend">Send this code to your friend to connect</string>
-    <string name="join_requests_title">Join Requests</string>
-    <string name="no_requests">No join requests</string>
-    <string name="try_again">Try Again</string>
-    <string name="player_wants_to_join">Player wants to join</string>
-    <string name="reject">Reject</string>
-    <string name="accept">Accept</string>
-    <string name="task_feed_title">Task: Feeding</string>
-    <string name="task_feed_desc">Solve the math problem to feed your pet!</string>
-    <string name="task_rest_title">Task: Rest</string>
-    <string name="task_rest_desc">Solve the riddle to let your pet rest!</string>
-    <string name="task_clean_title">Task: Cleaning</string>
-    <string name="task_clean_desc">Solve the logic puzzle to clean up after your pet!</string>
-    <string name="task_play_title">Task: Play</string>
-    <string name="task_play_desc">Answer the question to play with your pet!</string>
-    <string name="example">Example:</string>
-    <string name="enter_solution">Enter solution:</string>
-    <string name="hint">Hint</string>
-    <string name="creating_pair">Creating Pair</string>
+    <string name="close">Close</string>
+
+    <!-- Main Screen -->
+    <string name="welcome_message">Welcome to Tamagotchi!</string>
+    <string name="start_game">Start Game</string>
+    <string name="connect_to_pair">Connect to Pair</string>
+    <string name="my_pets">My Pets</string>
+    <string name="no_pets_yet">You don\'t have any pets yet. Create one!</string>
+
+    <!-- Pair Connect Screen -->
+    <string name="join_session_title">Join a Session</string>
+    <string name="join_session_hint">Enter invite code</string>
+    <string name="join_session_button">Connect</string>
+    <string name="or_create_new">Or create a new pair</string>
+
+    <!-- Create Pair Screen -->
     <string name="pair_description">Come up with a name for your pair and get an invite code for your friend</string>
-    <string name="create_account">Create Account</string>
-    <string name="login_to_account">Login to Account</string>
+    <string name="pair_name">Pair Name</string>
+    <string name="create_pair_and_get_code">Create Pair &amp; Get Code</string>
+    <string name="pair_created">Pair Created!</string>
+    <string name="copy_code">Copy</string>
+    <string name="send_code_to_friend">Send this code to your friend to connect</string>
+    <string name="code_copied_toast">Code copied to clipboard</string>
+
+    <!-- Auth -->
+    <string name="auth_title_login">Welcome Back</string>
+    <string name="auth_title_register">Create Account</string>
     <string name="email">Email</string>
     <string name="password">Password</string>
-    <string name="create">Create</string>
-    <string name="enter">Login</string>
-    <string name="have_account_login">Already have an account? Login</string>
-    <string name="no_account_create">No account? Create</string>
-    <string name="error_state">Error</string>
-    <string name="user_not_authorized">User not authorized</string>
-    <string name="error_creating_pair">Error creating pair</string>
-    <string name="error_generating_code">Error generating code</string>
-    <string name="error_loading_requests">Error loading requests</string>
-    <string name="error_accepting_request">Error accepting request</string>
-    <string name="incorrect_answer">Incorrect answer! Try again.</string>
-    <string name="pet_id_not_provided">Pet ID not provided</string>
-    <string name="pet_not_found">Pet not found</string>
-    <string name="failed_to_apply_action">Failed to apply action</string>
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="login_as_guest">Continue as Guest</string>
+    <string name="have_account">Already have an account?</string>
+    <string name="no_account">Don\'t have an account?</string>
+    <string name="sign_in">Sign In</string>
+    <string name="sign_up">Sign Up</string>
+
+    <!-- Auth Errors -->
+    <string name="error_auth_failed">Authentication failed</string>
+    <string name="error_invalid_email">Invalid email format</string>
+    <string name="error_empty_password">Password cannot be empty</string>
+    <string name="error_short_password">Password must be at least 6 characters</string>
+    <string name="error_email_exists">This email is already registered</string>
+    <string name="error_weak_password">Password is too weak</string>
+
+    <!-- Profile Screen -->
+    <string name="profile_owner_label">Owner Email</string>
+    <string name="profile_pet_stats_label">Current Stats</string>
+    <string name="guest_user">Guest User</string>
+    <string name="btn_unlink_account">Unlink Account (Go Guest)</string>
+
+    <!-- Create Pet -->
     <string name="create_pet">Create Pet</string>
-    <string name="create_pet_description">Enter a name for your new pet</string>
+    <string name="create_pet_description">Give your new companion a name</string>
     <string name="pet_name">Pet Name</string>
     <string name="create_pet_button">Create Pet</string>
     <string name="creating_pet">Creating…</string>
+    <string name="error_empty_pet_name">Pet name cannot be empty</string>
+
+    <!-- Pet Screen -->
+    <string name="pet_screen_title">My Pet</string>
+    <string name="menu_profile">Profile &amp; Stats</string>
+    <string name="menu_rename">Rename</string>
+    <string name="menu_delete">Delete Pet</string>
+
+    <!-- Stats -->
+    <string name="stat_hunger">Hunger</string>
+    <string name="stat_energy">Energy</string>
+    <string name="stat_cleanliness">Cleanliness</string>
+    <string name="stat_happiness">Happiness</string>
+
+    <!-- Actions -->
+    <string name="actions_title">Actions</string>
+    <string name="action_feed">Feed</string>
+    <string name="action_play">Play</string>
+    <string name="action_clean">Clean</string>
+    <string name="action_rest">Rest</string>
+
+    <!-- Math Task -->
+    <string name="task_title">Solve the puzzle!</string>
+    <string name="task_description">To %1$s, solve the example:</string>
+    <string name="task_input_label">Answer</string>
+    <string name="task_error">Incorrect, try again!</string>
+    <string name="task_button_check">Check</string>
+
+    <!-- Game Over -->
+    <string name="game_over_title">💀 Game Over</string>
+    <string name="game_over_button">Main Menu</string>
+
+    <!-- Pair / Multiplayer -->
+    <string name="pair_connect_title">Connect to Pair</string>
+    <string name="create_pair">Create Pair</string>
+    <string name="join_pair">Join Pair</string>
+    <string name="invite_code">Invite Code</string>
+    <string name="code_copied">Code copied</string>
+    <string name="send_code_hint">Send this code to your friend</string>
+    <string name="enter_code_hint">Enter friend\'s code</string>
+    <string name="connect_button">Connect</string>
+    <string name="requests_title">Join Requests</string>
+    <string name="no_requests">No pending requests</string>
+    <string name="accept">Accept</string>
+    <string name="reject">Reject</string>
+
+    <!-- Pair Errors -->
+    <string name="error_pair_not_found">Pair not found</string>
+    <string name="error_pair_already_joined">You are already in a pair</string>
+    <string name="error_pair_invalid_code">Invalid invite code</string>
+    <string name="error_pair_network">Network error</string>
+    <string name="error_pair_guest_only">Only guest can do this</string>
+    <string name="error_pair_creator_only">Only creator can do this</string>
+    <string name="error_pair_already_ended">Session ended</string>
+    <string name="error_pair_invalid_request">Invalid request</string>
+    <string name="error_pair_not_active">Pair is not active</string>
+    <string name="error_pair_invalid_input">Invalid input</string>
+
+    <!-- Pet Errors -->
+    <string name="error_pet_not_found">Pet not found</string>
+    <string name="error_action_blocked">Action blocked</string>
+    <string name="error_not_authenticated">Login required</string>
+    <string name="error_session_not_found">Session not found</string>
+    <string name="error_database">Database error</string>
+    <string name="error_network">Network error</string>
+    <string name="error_pet_invalid_input">Invalid pet data</string>
+
+    <!-- Notifications -->
+    <string name="notif_channel_name">Pet Care Alerts</string>
+    <string name="notif_channel_desc">Alerts when your pet needs care</string>
+    <string name="notif_title_warn">%1$s needs care</string>
+    <string name="notif_title_crit">❗ %1$s is in danger!</string>
+    <string name="notif_warn_hunger">%1$s is hungry.</string>
+    <string name="notif_warn_energy">%1$s is tired.</string>
+    <string name="notif_warn_clean">%1$s is dirty.</string>
+    <string name="notif_warn_happy">%1$s is bored.</string>
+    <string name="notif_crit_hunger">❗ %1$s is starving!</string>
+    <string name="notif_crit_energy">❗ %1$s is collapsing!</string>
+    <string name="notif_crit_clean">❗ %1$s is filthy!</string>
+    <string name="notif_crit_happy">❗ %1$s is stressed!</string>
+    <string name="notif_dead">%1$s passed away…</string>
+    <string name="notif_escaped">%1$s ran away.</string>
+
+    <!-- System -->
+    <string name="sync_success">Data synced</string>
+    <string name="sync_error">Sync failed</string>
+    <string name="pet_saved">Pet saved</string>
+    <string name="account_linked">Account linked</string>
+
+    <string name="btn_logout">Log Out</string>
+    <string name="confirm_logout_title">Log Out?</string>
+    <string name="confirm_logout_message">You will leave your account. Your pet will remain in the cloud for your partner. Local data will be cleared.</string>
+    <string name="btn_confirm_logout">Log Out</string>
 </resources>
