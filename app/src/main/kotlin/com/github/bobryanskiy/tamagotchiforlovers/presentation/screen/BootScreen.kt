@@ -49,7 +49,7 @@ fun BootScreen(
                 color = MaterialTheme.colorScheme.primary
             )
             Text(
-                text = "Загрузка...",
+                text = stringResource(R.string.boot_loading),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onBackground
             )

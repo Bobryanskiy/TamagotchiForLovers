@@ -71,7 +71,7 @@ fun PetScreen(
 //                },
                 actions = {
                     IconButton(onClick = { onNavigateToPair(petId) }) {
-                        Icon(Icons.Default.Link, contentDescription = "Create Pair")
+                        Icon(Icons.Default.Link, contentDescription = stringResource(R.string.pet_cd_create_pair))
                     }
 
                     IconButton(onClick = { onNavigateToProfile(petId) }) {
@@ -79,7 +79,7 @@ fun PetScreen(
                     }
 
                     IconButton(onClick = { showMenu = true }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "Settings")
+                        Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.pet_cd_settings))
                     }
 
                     DropdownMenu(
@@ -162,7 +162,7 @@ private fun PetContent(
             // Маскот (Ворон)
             Image(
                 painter = painterResource(id = R.drawable.ic_pet_icon), // Замени на своего ворона
-                contentDescription = "Mascot",
+                contentDescription = stringResource(R.string.pet_cd_mascot),
                 modifier = Modifier.size(200.dp),
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
             )

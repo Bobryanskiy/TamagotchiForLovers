@@ -36,10 +36,10 @@ fun JoinPairScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Присоединиться к паре") },
+                title = { Text(stringResource(R.string.join_pair_screen_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Назад")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.join_pair_back))
                     }
                 }
             )
@@ -49,17 +49,15 @@ fun JoinPairScreen(
             when (val state = uiState) {
 
                 is JoinPairUiState.Idle -> {
-                    InviteCodeInputScreen(
-                        onSubmit = viewModel::submitInviteCode
-                    )
+                    InviteCodeInputScreen(onSubmit = viewModel::submitInviteCode)
                 }
 
                 is JoinPairUiState.Searching -> {
-                    LoadingContent("Поиск пары...")
+                    LoadingContent(stringResource(R.string.join_pair_searching))
                 }
 
                 is JoinPairUiState.SendingRequest -> {
-                    LoadingContent("Отправка запроса...")
+                    LoadingContent(stringResource(R.string.join_pair_sending))
                 }
 
                 is JoinPairUiState.WaitingForApproval -> {
@@ -90,7 +88,7 @@ fun JoinPairScreen(
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             CircularProgressIndicator()
                             Spacer(Modifier.height(16.dp))
-                            Text("Подключение к сессии...")
+                            Text(stringResource(R.string.join_pair_connecting))
                         }
                     }
                 }
@@ -119,13 +117,13 @@ private fun InviteCodeInputScreen(onSubmit: (String) -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    "Join a Session",
+                    stringResource(R.string.join_pair_title),
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "Enter invite code",
+                    stringResource(R.string.join_pair_subtitle),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
                 )
@@ -137,10 +135,10 @@ private fun InviteCodeInputScreen(onSubmit: (String) -> Unit) {
         OutlinedTextField(
             value = code,
             onValueChange = { code = it.uppercase() },
-            label = { Text("Invite Code") },
+            label = { Text(stringResource(R.string.join_pair_invite_label)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
-            placeholder = { Text("ABC123") }
+            placeholder = { Text(stringResource(R.string.join_pair_invite_placeholder)) }
         )
 
         Spacer(Modifier.height(16.dp))
@@ -152,7 +150,7 @@ private fun InviteCodeInputScreen(onSubmit: (String) -> Unit) {
         ) {
             Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(8.dp))
-            Text("Подключиться")
+            Text(stringResource(R.string.join_pair_connect_btn))
         }
     }
 }
@@ -168,7 +166,7 @@ private fun WaitingForApprovalContent(pairName: String, onDismiss: () -> Unit) {
         Spacer(Modifier.height(24.dp))
 
         Text(
-            "Запрос отправлен!",
+            stringResource(R.string.join_pair_waiting_title),
             style = MaterialTheme.typography.headlineSmall
         )
 
@@ -183,7 +181,7 @@ private fun WaitingForApprovalContent(pairName: String, onDismiss: () -> Unit) {
         Spacer(Modifier.height(16.dp))
 
         Text(
-            "Ожидайте одобрения создателя пары...",
+            stringResource(R.string.join_pair_waiting_message),
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.bodyMedium
         )
@@ -191,7 +189,7 @@ private fun WaitingForApprovalContent(pairName: String, onDismiss: () -> Unit) {
         Spacer(Modifier.height(32.dp))
 
         OutlinedButton(onClick = onDismiss) {
-            Text("Отменить")
+            Text(stringResource(R.string.join_pair_cancel_btn))
         }
     }
 }
@@ -223,7 +221,7 @@ private fun ErrorContent(messageResId: Int, onRetry: () -> Unit) {
         )
         Spacer(Modifier.height(16.dp))
         Button(onClick = onRetry) {
-            Text("Попробовать снова")
+            Text(stringResource(R.string.btn_retry))
         }
     }
 }
