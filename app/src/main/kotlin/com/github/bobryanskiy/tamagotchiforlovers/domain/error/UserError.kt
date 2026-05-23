@@ -5,4 +5,5 @@ sealed class UserError : DomainError{
     object WeakPassword : UserError()
     object NotAuthenticated : UserError()
     object LoginError : UserError()
+    object Unknown : UserError()
 }

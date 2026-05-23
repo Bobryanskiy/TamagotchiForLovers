@@ -4,7 +4,7 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.error.PetError
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetAction
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PetRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
-import com.github.bobryanskiy.tamagotchiforlovers.domain.result.onSuccess
+import com.github.bobryanskiy.tamagotchiforlovers.domain.result.PetResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.util.Clock
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -16,7 +16,7 @@ class ApplyPetActionUseCase @Inject constructor(
     private val clock: Clock
 ) {
 
-    suspend operator fun invoke(petId: String, action: PetAction): DomainResult<Unit> {
+    suspend operator fun invoke(petId: String, action: PetAction): PetResult<Unit> {
         val petResult = petRepository.getPetById(petId)
         if (petResult is DomainResult.Failure) return petResult
         val pet = petResult.getOrNull() ?: return DomainResult.Failure(PetError.PetNotFound)

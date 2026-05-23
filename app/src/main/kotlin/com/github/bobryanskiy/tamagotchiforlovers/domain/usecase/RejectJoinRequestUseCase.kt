@@ -3,6 +3,7 @@ package com.github.bobryanskiy.tamagotchiforlovers.domain.usecase
 import com.github.bobryanskiy.tamagotchiforlovers.domain.error.PairError
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PairRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
+import com.github.bobryanskiy.tamagotchiforlovers.domain.result.PairResult
 import javax.inject.Inject
 
 class RejectJoinRequestUseCase @Inject constructor(
@@ -12,7 +13,7 @@ class RejectJoinRequestUseCase @Inject constructor(
         pairId: String,
         guestId: String,
         callerId: String
-    ): DomainResult<Unit> {
+    ): PairResult<Unit> {
         if (pairId.isBlank() || callerId.isBlank()) {
             return DomainResult.Failure(PairError.InvalidInput)
         }

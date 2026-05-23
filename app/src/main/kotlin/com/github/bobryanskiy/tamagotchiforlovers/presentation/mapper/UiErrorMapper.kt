@@ -1,10 +1,9 @@
 package com.github.bobryanskiy.tamagotchiforlovers.presentation.mapper
 
 import com.github.bobryanskiy.tamagotchiforlovers.R
-import com.github.bobryanskiy.tamagotchiforlovers.domain.error.PetError
 import com.github.bobryanskiy.tamagotchiforlovers.domain.error.PairError
+import com.github.bobryanskiy.tamagotchiforlovers.domain.error.PetError
 import com.github.bobryanskiy.tamagotchiforlovers.domain.error.UserError
-import com.github.bobryanskiy.tamagotchiforlovers.domain.model.User
 
 fun PetError.toUiErrorStringRes(): Int = when (this) {
     PetError.PetNotFound -> R.string.error_pet_not_found
@@ -31,6 +30,7 @@ fun PairError.toUiErrorStringRes(): Int = when (this) {
     PairError.InvalidRequest -> R.string.error_pair_invalid_request
     PairError.Network -> R.string.error_pair_network
     PairError.Unknown -> R.string.error_unknown
+    PairError.NotAuthenticated -> R.string.error_not_authenticated
 }
 
 fun UserError.toUiErrorStringRes(): Int = when (this) {
@@ -38,4 +38,5 @@ fun UserError.toUiErrorStringRes(): Int = when (this) {
     UserError.WeakPassword -> R.string.error_weak_password
     UserError.NotAuthenticated -> R.string.error_not_authenticated
     UserError.LoginError -> R.string.login_error
+    UserError.Unknown -> R.string.error_unknown
 }

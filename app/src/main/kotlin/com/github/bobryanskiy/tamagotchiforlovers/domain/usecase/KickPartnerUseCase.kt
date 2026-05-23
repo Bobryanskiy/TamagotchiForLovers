@@ -4,6 +4,7 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.error.PairError
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PairStatus
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PairRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
+import com.github.bobryanskiy.tamagotchiforlovers.domain.result.PairResult
 import javax.inject.Inject
 
 class KickPartnerUseCase @Inject constructor(
@@ -12,7 +13,7 @@ class KickPartnerUseCase @Inject constructor(
     suspend operator fun invoke(
         pairId: String,
         callerId: String
-    ): DomainResult<Unit> {
+    ): PairResult<Unit> {
         if (pairId.isBlank() || callerId.isBlank()) {
             return DomainResult.Failure(PairError.InvalidInput)
         }

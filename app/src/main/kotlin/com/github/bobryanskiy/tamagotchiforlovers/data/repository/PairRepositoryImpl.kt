@@ -15,6 +15,7 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PairReposito
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PetRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.UserRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
+import com.github.bobryanskiy.tamagotchiforlovers.domain.result.PairResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.util.Clock
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -117,7 +118,7 @@ class PairRepositoryImpl @Inject constructor(
         creatorId: String,
         pairName: String,
         petId: String
-    ): DomainResult<String> = try {
+    ): PairResult<String> = try {
         val pairId = firestore.collection("pairs").document().id
         val now = clock.currentTimeMillis()
 
@@ -144,7 +145,7 @@ class PairRepositoryImpl @Inject constructor(
         DomainResult.Failure(mapToPairError(e))
     }
 
-    override suspend fun generateInviteKey(pairId: String): DomainResult<String> = try {
+    override suspend fun generateInviteKey(pairId: String): PairResult<String> = try {
         val code = generateRandomCode()
         val expiresAt = clock.currentTimeMillis() + (5 * 60 * 1000L) // 5 минут
 
@@ -163,7 +164,7 @@ class PairRepositoryImpl @Inject constructor(
         DomainResult.Failure(mapToPairError(e))
     }
 
-    override suspend fun findPairByInviteKey(inviteKey: String): DomainResult<Pair> = try {
+    override suspend fun findPairByInviteKey(inviteKey: String): PairResult<Pair> = try {
         val snapshot = firestore.collection("pairs")
             .whereEqualTo("invite_key.code", inviteKey.uppercase())
             .limit(1)
@@ -194,7 +195,7 @@ class PairRepositoryImpl @Inject constructor(
         DomainResult.Failure(mapToPairError(e))
     }
 
-    override suspend fun requestJoin(pairId: String, guestId: String): DomainResult<Unit> = try {
+    override suspend fun requestJoin(pairId: String, guestId: String): PairResult<Unit> = try {
         firestore.runTransaction { transaction ->
             val ref = firestore.collection("pairs").document(pairId)
             val snapshot = transaction.get(ref)
@@ -234,7 +235,7 @@ class PairRepositoryImpl @Inject constructor(
         pairId: String,
         guestId: String,
         callerId: String
-    ): DomainResult<Unit> = try {
+    ): PairResult<Unit> = try {
         // Проверка прав: только хост может принимать
         val pairDoc = firestore.collection("pairs").document(pairId).get().await()
         val hostId = pairDoc.getString("user_id_1")
@@ -271,7 +272,7 @@ class PairRepositoryImpl @Inject constructor(
         pairId: String,
         guestId: String,
         callerId: String
-    ): DomainResult<Unit> = try {
+    ): PairResult<Unit> = try {
         val pairDoc = firestore.collection("pairs").document(pairId).get().await()
         val hostId = pairDoc.getString("user_id_1")
 
@@ -290,7 +291,7 @@ class PairRepositoryImpl @Inject constructor(
         DomainResult.Failure(mapToPairError(e))
     }
 
-    override suspend fun leaveSession(pairId: String, userId: String): DomainResult<Unit> = try {
+    override suspend fun leaveSession(pairId: String, userId: String): PairResult<Unit> = try {
         firestore.collection("pairs").document(pairId).update(
             mapOf(
                 "user_id_2" to FieldValue.delete(),
@@ -307,7 +308,7 @@ class PairRepositoryImpl @Inject constructor(
         DomainResult.Failure(mapToPairError(e))
     }
 
-    override suspend fun endSession(pairId: String, callerId: String): DomainResult<Unit> = try {
+    override suspend fun endSession(pairId: String, callerId: String): PairResult<Unit> = try {
         val pairDoc = firestore.collection("pairs").document(pairId).get().await()
         val hostId = pairDoc.getString("user_id_1")
         val userId2 = pairDoc.getString("user_id_2")
@@ -334,7 +335,7 @@ class PairRepositoryImpl @Inject constructor(
         DomainResult.Failure(mapToPairError(e))
     }
 
-    override suspend fun updatePairName(pairId: String, newName: String): DomainResult<Unit> = try {
+    override suspend fun updatePairName(pairId: String, newName: String): PairResult<Unit> = try {
         firestore.collection("pairs").document(pairId)
             .update("name", newName)
             .await()
@@ -344,7 +345,7 @@ class PairRepositoryImpl @Inject constructor(
         DomainResult.Failure(mapToPairError(e))
     }
 
-    override suspend fun kickPartner(pairId: String, callerId: String): DomainResult<Unit> = try {
+    override suspend fun kickPartner(pairId: String, callerId: String): PairResult<Unit> = try {
         val doc = firestore.collection("pairs").document(pairId).get().await()
         val hostId = doc.getString("user_id_1")
 

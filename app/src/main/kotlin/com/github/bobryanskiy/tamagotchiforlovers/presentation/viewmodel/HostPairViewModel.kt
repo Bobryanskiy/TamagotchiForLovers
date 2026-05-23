@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.bobryanskiy.tamagotchiforlovers.R
-import com.github.bobryanskiy.tamagotchiforlovers.domain.error.toUiErrorStringRes
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pair
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PairStatus
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PendingRequest
@@ -18,6 +17,7 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.KickPartnerUseC
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.ObservePendingRequestsUseCase
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.RejectJoinRequestUseCase
 import com.github.bobryanskiy.tamagotchiforlovers.domain.util.Clock
+import com.github.bobryanskiy.tamagotchiforlovers.presentation.mapper.toUiErrorStringRes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -4,12 +4,13 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.error.PairError
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pair
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PairRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
+import com.github.bobryanskiy.tamagotchiforlovers.domain.result.PairResult
 import javax.inject.Inject
 
 class FindPairByInviteKeyUseCase @Inject constructor(
     private val pairRepository: PairRepository
 ) {
-    suspend operator fun invoke(inviteCode: String): DomainResult<Pair> {
+    suspend operator fun invoke(inviteCode: String): PairResult<Pair> {
         if (inviteCode.isBlank()) {
             return DomainResult.Failure(PairError.InvalidInput)
         }

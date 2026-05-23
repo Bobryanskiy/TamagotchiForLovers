@@ -1,10 +1,16 @@
 package com.github.bobryanskiy.tamagotchiforlovers.domain.usecase
 
-import com.github.bobryanskiy.tamagotchiforlovers.domain.model.*
+import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pet
+import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetLifeState
+import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetLifeStatus
+import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetProfile
+import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetStats
+import com.github.bobryanskiy.tamagotchiforlovers.domain.model.SyncStatus
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.AuthRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PetRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.SessionRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
+import com.github.bobryanskiy.tamagotchiforlovers.domain.result.PetResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.util.Clock
 import com.github.bobryanskiy.tamagotchiforlovers.domain.util.IdGenerator
 import javax.inject.Inject
@@ -24,7 +30,7 @@ class CreatePetUseCase @Inject constructor(
     private val clock: Clock,
     private val idGenerator: IdGenerator
 ) {
-    suspend operator fun invoke(name: String): DomainResult<String> {
+    suspend operator fun invoke(name: String): PetResult<String> {
         val ownerId = authRepository.getCurrentUserId()
         val now = clock.currentTimeMillis()
         val id = idGenerator.generate()

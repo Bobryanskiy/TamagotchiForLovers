@@ -5,6 +5,7 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.error.UserError
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PairRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.UserRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
+import com.github.bobryanskiy.tamagotchiforlovers.domain.result.PairResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.onFailure
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.onSuccess
 import com.github.bobryanskiy.tamagotchiforlovers.domain.util.Clock
@@ -18,10 +19,10 @@ class CreatePairWithInviteUseCase @Inject constructor(
     suspend operator fun invoke(
         pairName: String,
         petId: String
-    ): DomainResult<PairInviteData> {
+    ): PairResult<PairInviteData> {
         val creatorId = userRepository.getCurrentUserId()
         if (pairName.isBlank()) return DomainResult.Failure(PairError.InvalidInput)
-        if (creatorId == null) return DomainResult.Failure(UserError.NotAuthenticated)
+        if (creatorId == null) return DomainResult.Failure(PairError.NotAuthenticated)
 
         val pairIdResult = pairRepository.createPair(creatorId, pairName, petId)
         if (pairIdResult is DomainResult.Failure) return pairIdResult

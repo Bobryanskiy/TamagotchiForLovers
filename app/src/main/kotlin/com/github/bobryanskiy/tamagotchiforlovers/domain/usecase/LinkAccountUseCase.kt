@@ -1,11 +1,13 @@
 package com.github.bobryanskiy.tamagotchiforlovers.domain.usecase
 
+import com.github.bobryanskiy.tamagotchiforlovers.domain.error.PetError
 import com.github.bobryanskiy.tamagotchiforlovers.domain.error.UserError
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pet
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.AuthRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PetRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.SessionRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
+import com.github.bobryanskiy.tamagotchiforlovers.domain.result.PetResult
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -22,9 +24,9 @@ class LinkAccountUseCase @Inject constructor(
     private val sessionRepository: SessionRepository
 ) {
 
-    suspend operator fun invoke(): DomainResult<LinkResult> {
+    suspend operator fun invoke(): PetResult<LinkResult> {
         val currentUserId = authRepository.getCurrentUserId()
-            ?: return DomainResult.Failure(UserError.NotAuthenticated)
+            ?: return DomainResult.Failure(PetError.NotAuthenticated)
 
         // 1. Получаем локального питомца (если есть активный в сессии)
         val activePetId = sessionRepository.getActivePetId()

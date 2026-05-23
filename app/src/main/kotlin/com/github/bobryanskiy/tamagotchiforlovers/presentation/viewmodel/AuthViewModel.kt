@@ -2,13 +2,12 @@ package com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.bobryanskiy.tamagotchiforlovers.R
-import com.github.bobryanskiy.tamagotchiforlovers.domain.error.PetError
-import com.github.bobryanskiy.tamagotchiforlovers.domain.error.toUiErrorStringRes
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.AuthRepository
+import com.github.bobryanskiy.tamagotchiforlovers.domain.result.UserResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.onFailure
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.onSuccess
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.LinkAccountUseCase
+import com.github.bobryanskiy.tamagotchiforlovers.presentation.mapper.toUiErrorStringRes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -58,7 +57,7 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    private fun executeAuthAction(authOperation: suspend () -> com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult<Unit>) {
+    private fun executeAuthAction(authOperation: suspend () -> UserResult<Unit>) {
         _uiState.value = AuthUiState.Loading
         viewModelScope.launch {
             authOperation()

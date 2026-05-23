@@ -4,6 +4,7 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.error.PetError
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pet
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PetRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
+import com.github.bobryanskiy.tamagotchiforlovers.domain.result.PetResult
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -11,7 +12,7 @@ import javax.inject.Singleton
 class HandleCriticalStateUseCase @Inject constructor(
     private val petRepository: PetRepository
 ) {
-    suspend operator fun invoke(petId: String): DomainResult<Pet> {
+    suspend operator fun invoke(petId: String): PetResult<Pet> {
         val petResult = petRepository.getPetById(petId)
 
         if (petResult is DomainResult.Failure) {

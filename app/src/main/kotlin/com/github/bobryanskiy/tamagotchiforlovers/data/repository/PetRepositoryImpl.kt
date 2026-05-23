@@ -13,6 +13,7 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetLifeState
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.AuthRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PetRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
+import com.github.bobryanskiy.tamagotchiforlovers.domain.result.PetResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.CalculateTimeDecayUseCase
 import com.github.bobryanskiy.tamagotchiforlovers.domain.util.Clock
 import kotlinx.coroutines.CancellationException
@@ -93,11 +94,11 @@ class PetRepositoryImpl @Inject constructor(
         }
     }.flowOn(io)
 
-    override suspend fun getPetById(petId: String): DomainResult<Pet?> = execute {
+    override suspend fun getPetById(petId: String): PetResult<Pet?> = execute {
         local.getPet(petId)?.toDomain()
     }
 
-    override suspend fun createPet(pet: Pet): DomainResult<String> = execute {
+    override suspend fun createPet(pet: Pet): PetResult<String> = execute {
         val entity = pet.toEntity().copy(syncStatus = "PENDING")
         val dto = pet.toEntity().toDto()
 
@@ -114,7 +115,7 @@ class PetRepositoryImpl @Inject constructor(
         pet.id
     }
 
-    override suspend fun savePet(pet: Pet): DomainResult<Unit> = execute {
+    override suspend fun savePet(pet: Pet): PetResult<Unit> = execute {
         val entity = pet.toEntity().copy(syncStatus = "PENDING", updatedAt = clock.currentTimeMillis())
         local.savePet(entity)
 
@@ -129,7 +130,7 @@ class PetRepositoryImpl @Inject constructor(
     override suspend fun updateStats(
         petId: String,
         hunger: Int, energy: Int, cleanliness: Int, happiness: Int
-    ): DomainResult<Unit> = execute {
+    ): PetResult<Unit> = execute {
         val now = clock.currentTimeMillis()
         local.updateStats(petId, hunger, energy, cleanliness, happiness, now)
         local.markPending(petId)
@@ -142,7 +143,7 @@ class PetRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun updateCriticalState(petId: String, state: PetLifeState): DomainResult<Unit> = execute {
+    override suspend fun updateCriticalState(petId: String, state: PetLifeState): PetResult<Unit> = execute {
         val now = clock.currentTimeMillis()
         local.updateLifeState(
             petId,
@@ -169,7 +170,7 @@ class PetRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun updatePairId(petId: String, pairId: String?): DomainResult<Unit> = execute {
+    override suspend fun updatePairId(petId: String, pairId: String?): PetResult<Unit> = execute {
         val now = clock.currentTimeMillis()
         local.updatePairId(petId, pairId, now)
         local.markPending(petId)
@@ -182,7 +183,7 @@ class PetRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun updatePetName(petId: String, name: String): DomainResult<Unit> = execute {
+    override suspend fun updatePetName(petId: String, name: String): PetResult<Unit> = execute {
         val now = clock.currentTimeMillis()
         local.updateName(petId, name, now)
         local.markPending(petId)
@@ -195,15 +196,15 @@ class PetRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getAllPetsByOwner(ownerId: String): DomainResult<List<Pet>> = execute {
+    override suspend fun getAllPetsByOwner(ownerId: String): PetResult<List<Pet>> = execute {
         local.getPetsByOwner(ownerId).map { it.toDomain() }
     }
 
-    override suspend fun getAllActivePets(): DomainResult<List<Pet>> = execute {
+    override suspend fun getAllActivePets(): PetResult<List<Pet>> = execute {
         local.getAllActivePets().map { it.toDomain() }
     }
 
-    override suspend fun migrateOwnerUserId(oldOwnerId: String?, newOwnerId: String): DomainResult<Unit> = execute {
+    override suspend fun migrateOwnerUserId(oldOwnerId: String?, newOwnerId: String): PetResult<Unit> = execute {
         val now = clock.currentTimeMillis()
         local.migrateOwnerUserId(oldOwnerId, newOwnerId, now)
         local.markAllPending()
@@ -215,7 +216,7 @@ class PetRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun syncPetsForOwner(ownerId: String): DomainResult<List<Pet>> {
+    override suspend fun syncPetsForOwner(ownerId: String): PetResult<List<Pet>> {
         return execute {
             val pairs: List<Pair<String, PetDto>> = remote.getPetsByOwner(ownerId)
 
@@ -236,7 +237,7 @@ class PetRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun deletePet(petId: String): DomainResult<Unit> = withContext(io) {
+    override suspend fun deletePet(petId: String): PetResult<Unit> = withContext(io) {
         try {
             runCatching {
                 remote.deletePet(petId)
@@ -253,7 +254,7 @@ class PetRepositoryImpl @Inject constructor(
         }
     }
 
-    private suspend fun <T> execute(block: suspend () -> T): DomainResult<T> = withContext(io) {
+    private suspend fun <T> execute(block: suspend () -> T): PetResult<T> = withContext(io) {
         try {
             DomainResult.Success(block())
         } catch (e: CancellationException) {

@@ -4,6 +4,7 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.error.PairError
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PairStatus
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PairRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
+import com.github.bobryanskiy.tamagotchiforlovers.domain.result.PairResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.util.Clock
 import javax.inject.Inject
 
@@ -11,7 +12,7 @@ class GenerateInviteKeyUseCase @Inject constructor(
     private val pairRepository: PairRepository,
     private val clock: Clock
 ) {
-    suspend operator fun invoke(pairId: String): DomainResult<String> {
+    suspend operator fun invoke(pairId: String): PairResult<String> {
         if (pairId.isBlank()) return DomainResult.Failure(PairError.InvalidInput)
         val pair = pairRepository.getPair(pairId)
             ?: return DomainResult.Failure(PairError.PairNotFound)

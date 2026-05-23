@@ -5,6 +5,7 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.error.PetError
 import com.github.bobryanskiy.tamagotchiforlovers.domain.error.UserError
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.AuthRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
+import com.github.bobryanskiy.tamagotchiforlovers.domain.result.UserResult
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
@@ -22,14 +23,14 @@ class AuthRepositoryImpl @Inject constructor(
     override fun getCurrentUserEmail(): String? = auth.currentUser?.email
     override fun isLoggedIn(): Boolean = auth.currentUser != null
 
-    override suspend fun signIn(email: String, password: String): DomainResult<Unit> = try {
+    override suspend fun signIn(email: String, password: String): UserResult<Unit> = try {
         auth.signInWithEmailAndPassword(email, password).await()
         DomainResult.Success(Unit)
     } catch (e: Exception) {
         DomainResult.Failure(UserError.LoginError)
     }
 
-    override suspend fun signUp(email: String, password: String): DomainResult<Unit> = try {
+    override suspend fun signUp(email: String, password: String): UserResult<Unit> = try {
         auth.createUserWithEmailAndPassword(email, password).await()
         DomainResult.Success(Unit)
     } catch (e: FirebaseAuthUserCollisionException) {
@@ -38,13 +39,13 @@ class AuthRepositoryImpl @Inject constructor(
         DomainResult.Failure(UserError.WeakPassword)
     } catch (e: Exception) {
         Log.e("AuthRepository", "Sign up failed", e)
-        DomainResult.Failure(PetError.Network)
+        DomainResult.Failure(UserError.Unknown)
     }
 
-    override suspend fun signOut(): DomainResult<Unit> = try {
+    override suspend fun signOut(): UserResult<Unit> = try {
         auth.signOut()
         DomainResult.Success(Unit)
     } catch (e: Exception) {
-        DomainResult.Failure(PetError.Unknown)
+        DomainResult.Failure(UserError.Unknown)
     }
 }

@@ -8,6 +8,7 @@ sealed class PairError : DomainError {
     object PairNotFound : PairError()
     object AlreadyJoined : PairError()
     object InvalidInput : PairError()
+    object NotAuthenticated : PairError()
     object InvalidRequest : PairError()
     object Network : PairError()
     object Unknown : PairError()
