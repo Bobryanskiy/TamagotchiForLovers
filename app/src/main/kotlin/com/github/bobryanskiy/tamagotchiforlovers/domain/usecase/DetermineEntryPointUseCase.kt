@@ -30,10 +30,21 @@ class DetermineEntryPointUseCase @Inject constructor(
 
         if (activePairId != null) {
             val pair = pairRepository.getPair(activePairId)
-            if (pair?.status == com.github.bobryanskiy.tamagotchiforlovers.domain.model.PairStatus.ACTIVE) {
+            if (pair?.status == com.github.bobryanskiy.tamagotchiforlovers.domain.model.PairStatus.ACTIVE ||
+                pair?.status == com.github.bobryanskiy.tamagotchiforlovers.domain.model.PairStatus.PENDING) {
                 validPairId = activePairId
             } else {
                 sessionRepository.clearActivePairId()
+            }
+        }
+
+        if (validPairId == null && pet.profile.currentPairId != null) {
+            val pair = pairRepository.getPair(pet.profile.currentPairId)
+            if (pair?.status == com.github.bobryanskiy.tamagotchiforlovers.domain.model.PairStatus.ACTIVE ||
+                pair?.status == com.github.bobryanskiy.tamagotchiforlovers.domain.model.PairStatus.PENDING) {
+                validPairId = pet.profile.currentPairId
+                // Сохраняем в сессию для будущего использования
+                sessionRepository.saveActivePairId(validPairId)
             }
         }
 

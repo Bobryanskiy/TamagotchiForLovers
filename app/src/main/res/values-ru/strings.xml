@@ -201,4 +201,47 @@
     <string name="error_pair_session_expired">Сессия истекла. Попробуйте снова.</string>
 
     <string name="try_again">Попробовать снова</string>
+
+    <!-- JOIN PAIR SCREEN -->
+    <string name="join_pair_screen_title">Присоединиться к паре</string>
+    <string name="join_pair_back">Назад</string>
+    <string name="join_pair_searching">Поиск пары…</string>
+    <string name="join_pair_sending">Отправка запроса…</string>
+    <string name="join_pair_waiting_title">Запрос отправлен!</string>
+    <string name="join_pair_waiting_pair_name">Пара: %1$s</string>
+    <string name="join_pair_waiting_message">Ожидайте одобрения создателя пары…</string>
+    <string name="join_pair_connecting">Подключение к сессии…</string>
+    <string name="join_pair_invite_label">Код приглашения</string>
+    <string name="join_pair_invite_placeholder">ABC123</string>
+    <string name="join_pair_connect_btn">Подключиться</string>
+    <string name="join_pair_cancel_btn">Отменить</string>
+
+    <!-- Boot Screen -->
+    <string name="boot_loading">Загрузка…</string>
+
+    <!-- Profile Screen Errors -->
+    <string name="profile_error_pet_not_selected">Питомец не выбран</string>
+    <string name="profile_error_pet_not_found">Питомец не найден. Возможно, он был удален.</string>
+    <string name="profile_error_load_failed">Ошибка загрузки: %1$s</string>
+    <string name="profile_error_title">Упс!</string>
+    <string name="profile_btn_refresh">Обновить</string>
+    <string name="profile_btn_create_pet">Создать питомца</string>
+
+    <!-- Common retry -->
+    <string name="btn_retry">Попробовать снова</string>
+
+    <!-- Host Pair Screen -->
+    <string name="host_pair_name_label">Название пары</string>
+    <string name="host_pair_name_hint">Придумайте название для вашей пары</string>
+    <string name="host_pair_generate_key">Сгенерировать ключ</string>
+    <string name="host_pair_end_session">Завершить сессию</string>
+
+    <!-- Pet Cooldowns -->
+    <string name="pet_cd_create_pair">Создать пару</string>
+    <string name="pet_cd_mascot">Питомец</string>
+    <string name="pet_cd_settings">Настройки</string>
+
+    <!-- Notification Messages -->
+    <string name="notif_dead_message">Ваш питомец погиб. Создайте нового, чтобы продолжить игру.</string>
+    <string name="notif_escaped_message">Ваш питомец сбежал из-за плохого ухода. Найдите и верните его!</string>
 </resources>

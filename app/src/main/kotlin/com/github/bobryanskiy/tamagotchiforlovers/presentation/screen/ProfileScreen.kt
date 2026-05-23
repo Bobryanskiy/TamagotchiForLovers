@@ -67,7 +67,6 @@ fun ProfileScreen(
                 ErrorPlaceholder(
                     modifier = Modifier.padding(padding),
                     messageResId = state.messageResId,
-                    formatArg = state.formatArg,
                     onRetry = { viewModel.loadProfile(petId) },
                     onCreatePet = { /* Навигация на создание питомца */ }
                 )
@@ -193,7 +192,6 @@ private fun StatItem(label: String, value: String) {
 private fun ErrorPlaceholder(
     modifier: Modifier = Modifier,
     messageResId: Int,
-    formatArg: String? = null,
     onRetry: () -> Unit,
     onCreatePet: () -> Unit
 ) {
@@ -219,7 +217,7 @@ private fun ErrorPlaceholder(
         Spacer(Modifier.height(8.dp))
 
         Text(
-            text = if (formatArg != null) stringResource(messageResId, formatArg) else stringResource(messageResId),
+            text = stringResource(messageResId),
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant

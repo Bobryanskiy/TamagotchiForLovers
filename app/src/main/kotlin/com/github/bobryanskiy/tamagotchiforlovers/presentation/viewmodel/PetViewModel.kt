@@ -86,7 +86,12 @@ class PetViewModel @Inject constructor(
                         }
                     }
                 }
-                .collect { _uiState.value = it }
+                .collect { newState ->
+                    // Обновляем состояние только если оно действительно изменилось
+                    if (_uiState.value != newState) {
+                        _uiState.value = newState
+                    }
+                }
         }
     }
 

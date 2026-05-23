@@ -67,21 +67,24 @@ class HostPairViewModel @Inject constructor(
     fun initScreen() {
         viewModelScope.launch {
             val savedPairId = sessionRepository.getActivePairId()
-            if (savedPairId == null) {
-                _uiState.value = HostPairUiState.Idle
+            if (savedPairId != null) {
+                currentPairId = savedPairId
+                currentCreatorId = userRepository.getCurrentUserId()
+
+                Log.d("FIREBASE_DEBUG", "🔄 [VM] Subscribing to pair from session: $savedPairId")
+
+                pairRepository.observePair(savedPairId)
+                    .collect { pair ->
+                        Log.d("FIREBASE_DEBUG", "📲 [VM] Update received: status=${pair?.status}, hasKey=${pair?.inviteKey != null}")
+                        handlePairUpdate(pair)
+                    }
                 return@launch
             }
 
-            currentPairId = savedPairId
-            currentCreatorId = userRepository.getCurrentUserId()
-
-            Log.d("FIREBASE_DEBUG", "🔄 [VM] Subscribing to pair: $savedPairId")
-
-            pairRepository.observePair(savedPairId)
-                .collect { pair ->
-                    Log.d("FIREBASE_DEBUG", "📲 [VM] Update received: status=${pair?.status}, hasKey=${pair?.inviteKey != null}")
-                    handlePairUpdate(pair)
-                }
+            // Если нет savedPairId, но у пользователя есть активная пара в сессии (через petId)
+            // или мы можем проверить через UserRepository текущий статус
+            // В этом случае остаемся в Idle, пользователь должен создать новую пару
+            _uiState.value = HostPairUiState.Idle
         }
     }
 

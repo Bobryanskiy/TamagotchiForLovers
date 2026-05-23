@@ -125,7 +125,7 @@ class JoinPairViewModel @Inject constructor(
             pairObservationJob?.cancel()
         }
         // Хост выгнал нас (если уже были приняты)
-        else if (pair.status.name == PairStatus.PENDING.name && pair.userId2 == null) {
+        else if (pair.status.name == PairStatus.PENDING.name && pair.userId2 == null && currentPairId != null) {
             _uiState.value = JoinPairUiState.Error(R.string.error_pair_kicked)
             pairObservationJob?.cancel()
         }

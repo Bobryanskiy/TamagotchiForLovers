@@ -49,7 +49,7 @@ class ProfileViewModel @Inject constructor(
                     _uiState.value = ProfileUiState.Error(R.string.profile_error_pet_not_found)
                 }
             }.onFailure { e ->
-                _uiState.value = ProfileUiState.Error(R.string.profile_error_load_failed, e.message ?: "Unknown")
+                _uiState.value = ProfileUiState.Error(R.string.profile_error_load_failed)
             }
         }
     }

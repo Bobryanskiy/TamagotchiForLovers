@@ -184,7 +184,7 @@ class PairRepositoryImpl @Inject constructor(
         }
 
         // Проверка, что пара ещё может принимать участников
-        if (!pair.canAcceptRequests) {
+        if (pair.userId2 != null) {
             return DomainResult.Failure(PairError.AlreadyJoined)
         }
 

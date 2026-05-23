@@ -27,7 +27,7 @@ class ApplyPetActionUseCase @Inject constructor(
 
         val currentTime = clock.currentTimeMillis()
         val newStats = pet.stats.applyAction(action, currentTime)
-        val newState = evaluateStateUseCase(newStats)
+        val newState = evaluateStateUseCase(newStats, currentTime)
 
         val statsResult = petRepository.updateStats(
             petId = petId,

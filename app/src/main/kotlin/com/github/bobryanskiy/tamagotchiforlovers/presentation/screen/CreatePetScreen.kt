@@ -62,16 +62,17 @@ fun CreatePetScreen(
             )
         }
     ) { padding ->
+        val errorText = if (uiState is CreatePetUiState.Error) {
+            stringResource((uiState as CreatePetUiState.Error).messageResId)
+        } else null
+
         CreatePetContent(
             modifier = Modifier.padding(padding).padding(24.dp),
             petName = petName,
             onNameChange = viewModel::onNameChange,
             onCreateClick = viewModel::createPet,
             isLoading = uiState is CreatePetUiState.Loading,
-            error = when (uiState) {
-                is CreatePetUiState.Error -> stringResource(uiState.messageResId)
-                else -> null
-            }
+            error = errorText
         )
     }
 }

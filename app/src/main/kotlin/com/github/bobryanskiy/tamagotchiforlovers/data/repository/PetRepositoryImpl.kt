@@ -41,7 +41,7 @@ class PetRepositoryImpl @Inject constructor(
     @param:IoDispatcher private val io: CoroutineDispatcher
 ) : PetRepository {
 
-
+    private val scope = CoroutineScope(SupervisorJob() + io)
     private val syncScope = CoroutineScope(SupervisorJob() + io)
 
     override fun observePet(petId: String): Flow<Pet?> = flow {
@@ -49,27 +49,35 @@ class PetRepositoryImpl @Inject constructor(
             local.getPet(petId)?.let { emit(it.toDomain()) }
 
             val flows = mutableListOf<Flow<Pet?>>()
-            flows.add(local.observePet(petId).mapNotNull { it?.toDomain() })
+            flows.add(
+                local.observePet(petId)
+                    .mapNotNull { it?.toDomain() }
+            )
 
             if (authRepository.isLoggedIn()) {
-                flows.add(
-                    remote.observePet(petId).mapNotNull { dto ->
-                        if (dto == null) {
-                            syncScope.launch { local.deletePet(petId) }
-                            return@mapNotNull null
+                scope.launch {
+                    try {
+                        remote.observePet(petId).collect { dto ->
+                            if (dto == null) {
+                                syncScope.launch { local.deletePet(petId) }
+                                return@collect
+                            }
+
+                            val entity = dto.toEntity(petId).copy(syncStatus = "SYNCED")
+                            val localEntity = local.getPet(petId)
+
+                            // Синхронизируем только если данные из Firestore новее
+                            if (localEntity == null || entity.updatedAt > localEntity.updatedAt) {
+                                local.savePet(entity)
+                                android.util.Log.d("PetRepo", "🔄 Synced from Firestore: ${entity.updatedAt} > ${localEntity?.updatedAt}")
+                            } else {
+                                android.util.Log.d("PetRepo", "⏭️ Local is newer: ${localEntity.updatedAt} >= ${entity.updatedAt}")
+                            }
                         }
-
-                        val entity = dto.toEntity(petId).copy(syncStatus = "SYNCED")
-                        val localEntity = local.getPet(petId)
-
-                        if (localEntity != null && localEntity.updatedAt >= entity.updatedAt) {
-                            return@mapNotNull localEntity.toDomain()
-                        }
-
-                        local.savePet(entity)
-                        entity.toDomain()
+                    } catch (e: Exception) {
+                        android.util.Log.e("PetRepo", "Firestore observe error: ${e.message}")
                     }
-                )
+                }
             } else {
                 android.util.Log.d("PetRepo", "User not authenticated. Skipping Firestore listen for pet $petId")
             }

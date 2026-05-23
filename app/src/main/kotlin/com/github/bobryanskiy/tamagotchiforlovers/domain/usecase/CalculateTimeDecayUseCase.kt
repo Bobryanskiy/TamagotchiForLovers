@@ -45,12 +45,22 @@ class CalculateTimeDecayUseCase @Inject constructor() {
     }
 
     private fun checkLifeState(stats: PetStats, currentLifeState: PetLifeState, currentTime: Long): PetLifeState {
-        if (stats.hunger <= 0 && stats.energy <= 0) {
-            return currentLifeState.copy(status = PetLifeStatus.DEAD)
+        // Проверяем смерть - если голод 0
+        if (stats.hunger <= 0) {
+            return PetLifeState(status = PetLifeStatus.DEAD, isActionsBlocked = true)
         }
+        // Проверяем побег - если счастье 0
+        if (stats.happiness <= 0) {
+            return PetLifeState(status = PetLifeStatus.ESCAPED, isActionsBlocked = true)
+        }
+        // Проверяем коллапс - если энергия 0
         if (stats.energy <= 0) {
-            return currentLifeState.copy(status = PetLifeStatus.COLLAPSED, recoveryEndTime = currentTime + 3600000)
+            return PetLifeState(status = PetLifeStatus.COLLAPSED, recoveryEndTime = currentTime + 3600000, isActionsBlocked = true)
         }
-        return currentLifeState
+        // Проверяем болезнь - если чистота 0
+        if (stats.cleanliness <= 0) {
+            return PetLifeState(status = PetLifeStatus.SICK, decayMultiplier = 2.0f)
+        }
+        return PetLifeState(status = PetLifeStatus.NORMAL, decayMultiplier = 1.0f)
     }
 }
