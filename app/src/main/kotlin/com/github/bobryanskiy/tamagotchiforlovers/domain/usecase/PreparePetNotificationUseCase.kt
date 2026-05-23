@@ -1,5 +1,6 @@
 package com.github.bobryanskiy.tamagotchiforlovers.domain.usecase
 
+import com.github.bobryanskiy.tamagotchiforlovers.R
 import com.github.bobryanskiy.tamagotchiforlovers.core.notification.NotificationHelper
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pet
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetLifeStatus
