@@ -69,7 +69,7 @@ fun CreatePetScreen(
             onCreateClick = viewModel::createPet,
             isLoading = uiState is CreatePetUiState.Loading,
             error = when (uiState) {
-                is CreatePetUiState.Error -> (uiState as CreatePetUiState.Error).message
+                is CreatePetUiState.Error -> stringResource(uiState.messageResId)
                 else -> null
             }
         )
