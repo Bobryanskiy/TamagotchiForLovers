@@ -9,13 +9,13 @@ import javax.inject.Singleton
 
 @Singleton
 class EvaluatePetCriticalStateUseCase @Inject constructor() {
-    operator fun invoke(stats: PetStats, currentTime: Long = System.currentTimeMillis()): PetLifeState {
+    operator fun invoke(stats: PetStats, currentTime: Long): PetLifeState {
         return when {
             stats.hunger <= 0 -> PetLifeState(PetLifeStatus.DEAD, isActionsBlocked = true)
             stats.happiness <= 0 -> PetLifeState(PetLifeStatus.ESCAPED, isActionsBlocked = true)
             stats.energy <= 0 -> PetLifeState(
                 status = PetLifeStatus.COLLAPSED,
-                recoveryEndTime = currentTime + TimeUnit.HOURS.toMillis(2),
+                recoveryEndTime = currentTime + java.util.concurrent.TimeUnit.HOURS.toMillis(2),
                 isActionsBlocked = true
             )
             stats.cleanliness <= 0 -> PetLifeState(PetLifeStatus.SICK, decayMultiplier = 2.0f)

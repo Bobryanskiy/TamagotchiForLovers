@@ -1,8 +1,5 @@
 package com.github.bobryanskiy.tamagotchiforlovers.domain.usecase
 
-import android.content.Context
-import android.util.Log
-import com.github.bobryanskiy.tamagotchiforlovers.R
 import com.github.bobryanskiy.tamagotchiforlovers.core.notification.NotificationHelper
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pet
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetLifeStatus
@@ -11,27 +8,24 @@ import javax.inject.Singleton
 
 @Singleton
 class PreparePetNotificationUseCase @Inject constructor(
-    private val context: Context,
     private val notificationHelper: NotificationHelper
 ) {
-    private val tag = "PreparePetNotificationUseCase"
-
-    suspend operator fun invoke(pet: Pet) {
+    suspend operator fun invoke(pet: Pet, stringProvider: StringResourceProvider) {
         try {
-            val data = prepareNotificationData(pet)
+            val data = prepareNotificationData(pet, stringProvider)
             notificationHelper.showPetNotification(data)
         } catch (e: Exception) {
-            Log.e(tag, "Failed to prepare/show notification for pet: ${pet.id}", e)
+            // Логирование должно быть через интерфейс или удалено из domain
         }
     }
 
-    private fun prepareNotificationData(pet: Pet): NotificationHelper.NotificationData {
+    private fun prepareNotificationData(pet: Pet, stringProvider: StringResourceProvider): NotificationHelper.NotificationData {
         if (pet.lifeState.status == PetLifeStatus.DEAD) {
             return NotificationHelper.NotificationData(
                 petId = pet.id,
                 petName = pet.profile.name,
-                title = context.getString(R.string.notif_dead, pet.profile.name),
-                message = "Начните новую жизнь с новым питомцем.",
+                title = stringProvider.getString(R.string.notif_dead, pet.profile.name),
+                message = stringProvider.getString(R.string.notif_dead_message),
                 isUrgent = true,
                 status = PetLifeStatus.DEAD
             )
@@ -41,8 +35,8 @@ class PreparePetNotificationUseCase @Inject constructor(
             return NotificationHelper.NotificationData(
                 petId = pet.id,
                 petName = pet.profile.name,
-                title = context.getString(R.string.notif_escaped, pet.profile.name),
-                message = "Попробуйте приютить нового друга.",
+                title = stringProvider.getString(R.string.notif_escaped, pet.profile.name),
+                message = stringProvider.getString(R.string.notif_escaped_message),
                 isUrgent = true,
                 status = PetLifeStatus.ESCAPED
             )
@@ -62,11 +56,11 @@ class PreparePetNotificationUseCase @Inject constructor(
             stats.energy -> if (minStat <= 15) R.string.notif_crit_energy else R.string.notif_warn_energy
             stats.cleanliness -> if (minStat <= 15) R.string.notif_crit_clean else R.string.notif_warn_clean
             stats.happiness -> if (minStat <= 15) R.string.notif_crit_happy else R.string.notif_warn_happy
-            else -> R.string.notif_warn_happy // Fallback
+            else -> R.string.notif_warn_happy
         }
 
-        val title = context.getString(titleResId, pet.profile.name)
-        val message = context.getString(textResId, pet.profile.name)
+        val title = stringProvider.getString(titleResId, pet.profile.name)
+        val message = stringProvider.getString(textResId, pet.profile.name)
         val isUrgent = minStat <= 15
 
         return NotificationHelper.NotificationData(
@@ -78,4 +72,8 @@ class PreparePetNotificationUseCase @Inject constructor(
             status = pet.lifeState.status
         )
     }
+}
+
+interface StringResourceProvider {
+    fun getString(resId: Int, vararg formatArgs: String): String
 }
