@@ -3,7 +3,7 @@ package com.github.bobryanskiy.tamagotchiforlovers.presentation.receiver
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.github.bobryanskiy.tamagotchiforlovers.core.string.ResourceStringProvider
+import com.github.bobryanskiy.tamagotchiforlovers.domain.provider.StringResourceProvider
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PetRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.PreparePetNotificationUseCase
@@ -18,7 +18,7 @@ import javax.inject.Inject
 class CriticalStateReceiver @Inject constructor(
     private val petRepository: PetRepository,
     private val prepareNotificationUseCase: PreparePetNotificationUseCase,
-    private val stringProvider: ResourceStringProvider
+    private val stringProvider: StringResourceProvider
 ) : BroadcastReceiver() {
 
     private val receiverScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)

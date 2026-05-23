@@ -5,13 +5,15 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetAction
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PetRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.onSuccess
+import com.github.bobryanskiy.tamagotchiforlovers.domain.util.Clock
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class ApplyPetActionUseCase @Inject constructor(
     private val petRepository: PetRepository,
-    private val evaluateStateUseCase: EvaluatePetCriticalStateUseCase
+    private val evaluateStateUseCase: EvaluatePetCriticalStateUseCase,
+    private val clock: Clock
 ) {
 
     suspend operator fun invoke(petId: String, action: PetAction): DomainResult<Unit> {
@@ -23,7 +25,8 @@ class ApplyPetActionUseCase @Inject constructor(
             return DomainResult.Failure(PetError.ActionBlocked)
         }
 
-        val newStats = pet.stats.applyAction(action)
+        val currentTime = clock.currentTimeMillis()
+        val newStats = pet.stats.applyAction(action, currentTime)
         val newState = evaluateStateUseCase(newStats)
 
         val statsResult = petRepository.updateStats(

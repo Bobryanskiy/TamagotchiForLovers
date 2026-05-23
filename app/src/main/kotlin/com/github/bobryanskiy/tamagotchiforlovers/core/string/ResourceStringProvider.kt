@@ -3,6 +3,7 @@ package com.github.bobryanskiy.tamagotchiforlovers.core.string
 import android.content.Context
 import androidx.annotation.StringRes
 import dagger.hilt.android.qualifiers.ApplicationContext
+import com.github.bobryanskiy.tamagotchiforlovers.domain.provider.StringResourceProvider
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -11,9 +12,9 @@ import javax.inject.Singleton
  */
 @Singleton
 class ResourceStringProvider @Inject constructor(
-    @ApplicationContext private val context: Context
-) {
-    fun getString(@StringRes resId: Int, vararg formatArgs: Any): String {
+    @param:ApplicationContext private val context: Context
+    ) : StringResourceProvider {
+        override fun getString(@StringRes resId: Int, vararg formatArgs: Any): String {
         return context.getString(resId, *formatArgs)
     }
 }

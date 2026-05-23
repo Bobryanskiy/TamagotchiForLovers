@@ -1,6 +1,7 @@
 package com.github.bobryanskiy.tamagotchiforlovers.domain.usecase
 
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PetRepository
+import com.github.bobryanskiy.tamagotchiforlovers.domain.provider.StringResourceProvider
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
 import javax.inject.Inject
 import javax.inject.Singleton

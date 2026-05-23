@@ -1,6 +1,7 @@
 package com.github.bobryanskiy.tamagotchiforlovers.domain.usecase
 
-import com.github.bobryanskiy.tamagotchiforlovers.core.string.ResourceStringProvider
+import com.github.bobryanskiy.tamagotchiforlovers.R
+import com.github.bobryanskiy.tamagotchiforlovers.domain.provider.StringResourceProvider
 import com.github.bobryanskiy.tamagotchiforlovers.core.notification.NotificationHelper
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pet
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetLifeStatus
@@ -11,7 +12,7 @@ import javax.inject.Singleton
 class PreparePetNotificationUseCase @Inject constructor(
     private val notificationHelper: NotificationHelper
 ) {
-    suspend operator fun invoke(pet: Pet, stringProvider: ResourceStringProvider) {
+    suspend operator fun invoke(pet: Pet, stringProvider: StringResourceProvider) {
         try {
             val data = prepareNotificationData(pet, stringProvider)
             notificationHelper.showPetNotification(data)
@@ -20,8 +21,7 @@ class PreparePetNotificationUseCase @Inject constructor(
         }
     }
 
-    private fun prepareNotificationData(pet: Pet, stringProvider: ResourceStringProvider): NotificationHelper.NotificationData {
-        if (pet.lifeState.status == PetLifeStatus.DEAD) {
+    private fun prepareNotificationData(pet: Pet, stringProvider: StringResourceProvider): NotificationHelper.NotificationData {        if (pet.lifeState.status == PetLifeStatus.DEAD) {
             return NotificationHelper.NotificationData(
                 petId = pet.id,
                 petName = pet.profile.name,

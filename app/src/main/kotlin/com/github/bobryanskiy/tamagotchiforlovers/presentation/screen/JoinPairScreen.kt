@@ -15,6 +15,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.JoinPairUiState
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.JoinPairViewModel
+import com.github.bobryanskiy.tamagotchiforlovers.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -173,7 +174,7 @@ private fun WaitingForApprovalContent(pairName: String, onDismiss: () -> Unit) {
         Spacer(Modifier.height(8.dp))
 
         Text(
-            "Пара: $pairName",
+            stringResource(R.string.join_pair_waiting_pair_name, pairName),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
         )

@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.github.bobryanskiy.tamagotchiforlovers.core.string.ResourceStringProvider
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.CheckAndNotifyPetsUseCase
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -13,7 +14,8 @@ import dagger.assisted.AssistedInject
 class CriticalStateWorker @AssistedInject constructor(
     @Assisted private val context: Context,
     @Assisted private val params: WorkerParameters,
-    private val checkAndNotifyPetsUseCase: CheckAndNotifyPetsUseCase
+    private val checkAndNotifyPetsUseCase: CheckAndNotifyPetsUseCase,
+    private val stringProvider: ResourceStringProvider
 ) : CoroutineWorker(context, params) {
 
     private val tag = "CriticalStateWorker"
@@ -22,7 +24,7 @@ class CriticalStateWorker @AssistedInject constructor(
         Log.d(tag, "Starting critical state check for all pets")
 
         return try {
-            val success = checkAndNotifyPetsUseCase.invoke()
+            val success = checkAndNotifyPetsUseCase.invoke(stringProvider)
             if (success) {
                 Result.success()
             } else {
