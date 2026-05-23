@@ -24,28 +24,28 @@ data class PetStats(
     val happiness: Int,
     val updatedAt: Long
 ) {
-    fun applyAction(action: PetAction): PetStats {
+    fun applyAction(action: PetAction, currentTime: Long): PetStats {
         return when (action) {
             PetAction.Feed -> copy(
                 hunger = (hunger + 30).coerceIn(0, 100),
                 happiness = (happiness + 10).coerceIn(0, 100),
-                updatedAt = System.currentTimeMillis()
+                updatedAt = currentTime
             )
             PetAction.Play -> copy(
                 happiness = (happiness + 30).coerceIn(0, 100),
                 energy = (energy - 15).coerceIn(0, 100),
                 hunger = (hunger + 10).coerceIn(0, 100),
-                updatedAt = System.currentTimeMillis()
+                updatedAt = currentTime
             )
             PetAction.Clean -> copy(
                 cleanliness = 100,
                 happiness = (happiness + 5).coerceIn(0, 100),
-                updatedAt = System.currentTimeMillis()
+                updatedAt = currentTime
             )
             PetAction.Rest -> copy(
                 energy = (energy + 40).coerceIn(0, 100),
                 hunger = (hunger + 5).coerceIn(0, 100),
-                updatedAt = System.currentTimeMillis()
+                updatedAt = currentTime
             )
         }
     }
