@@ -39,17 +39,17 @@ class CalculateTimeDecayUseCase @Inject constructor() {
             updatedAt = currentTime
         )
 
-        val newLifeState = checkLifeState(newStats, pet.lifeState)
+        val newLifeState = checkLifeState(newStats, pet.lifeState, currentTime)
 
         return pet.copy(stats = newStats, lifeState = newLifeState)
     }
 
-    private fun checkLifeState(stats: PetStats, currentLifeState: PetLifeState): PetLifeState {
+    private fun checkLifeState(stats: PetStats, currentLifeState: PetLifeState, currentTime: Long): PetLifeState {
         if (stats.hunger <= 0 && stats.energy <= 0) {
             return currentLifeState.copy(status = PetLifeStatus.DEAD)
         }
         if (stats.energy <= 0) {
-            return currentLifeState.copy(status = PetLifeStatus.COLLAPSED, recoveryEndTime = System.currentTimeMillis() + 3600000)
+            return currentLifeState.copy(status = PetLifeStatus.COLLAPSED, recoveryEndTime = currentTime + 3600000)
         }
         return currentLifeState
     }

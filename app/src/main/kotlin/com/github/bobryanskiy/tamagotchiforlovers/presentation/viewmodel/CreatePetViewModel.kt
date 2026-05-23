@@ -2,9 +2,9 @@ package com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.github.bobryanskiy.tamagotchiforlovers.R
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.CreatePetUseCase
-import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +16,7 @@ sealed interface CreatePetUiState {
     data object Idle : CreatePetUiState
     data object Loading : CreatePetUiState
     data class Success(val petId: String) : CreatePetUiState
-    data class Error(val message: String) : CreatePetUiState
+    data class Error(@androidx.annotation.StringRes val messageResId: Int) : CreatePetUiState
 }
 
 @HiltViewModel
@@ -41,7 +41,7 @@ class CreatePetViewModel @Inject constructor(
         val name = _petName.value.trim()
 
         if (name.isBlank()) {
-            _uiState.value = CreatePetUiState.Error("Pet name cannot be empty")
+            _uiState.value = CreatePetUiState.Error(R.string.error_empty_pet_name)
             return
         }
 
@@ -50,7 +50,7 @@ class CreatePetViewModel @Inject constructor(
             val result = createPetUseCase(name)
             _uiState.value = when (result) {
                 is DomainResult.Success -> CreatePetUiState.Success(result.data)
-                is DomainResult.Failure -> CreatePetUiState.Error("Failed to create pet: ${result.error}")
+                is DomainResult.Failure -> CreatePetUiState.Error(R.string.error_unknown)
             }
         }
     }

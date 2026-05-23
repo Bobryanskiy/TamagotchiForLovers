@@ -80,12 +80,19 @@ fun AuthScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (isSignUpMode) "Создание аккаунта" else "Вход в аккаунт") },
+                title = { 
+                    Text(
+                        stringResource(
+                            if (isSignUpMode) R.string.auth_title_register 
+                            else R.string.auth_title_login
+                        )
+                    ) 
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Назад"
+                            contentDescription = stringResource(R.string.back)
                         )
                     }
                 }
