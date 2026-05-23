@@ -10,4 +10,6 @@ interface LocalPairDataSource {
     suspend fun updateStatus(pairId: String, status: String, timestamp: Long)
     suspend fun updateUserId2(pairId: String, userId2: String?, timestamp: Long)
     suspend fun deletePair(pairId: String)
+    suspend fun updateInviteKey(pairId: String, code: String?, expiresAt: Long?, timestamp: Long)
+    suspend fun updatePendingRequest(pairId: String, guestId: String?, requestedAt: Long?)
 }

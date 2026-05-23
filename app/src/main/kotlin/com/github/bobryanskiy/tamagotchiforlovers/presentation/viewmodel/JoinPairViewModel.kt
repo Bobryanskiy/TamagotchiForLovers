@@ -10,6 +10,7 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.SessionRepos
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.UserRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.FindPairByInviteKeyUseCase
+import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.LeaveSessionUseCase
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.RequestJoinUseCase
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.mapper.toUiErrorStringRes
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -39,6 +40,7 @@ sealed interface JoinPairUiState {
 class JoinPairViewModel @Inject constructor(
     private val findPairByInviteKeyUseCase: FindPairByInviteKeyUseCase,
     private val requestJoinUseCase: RequestJoinUseCase,
+    private val leaveSessionUseCase: LeaveSessionUseCase,
     private val pairRepository: PairRepository,
     private val sessionRepository: SessionRepository,
     private val userRepository: UserRepository
@@ -136,7 +138,7 @@ class JoinPairViewModel @Inject constructor(
         val guestId = userRepository.getCurrentUserId() ?: return
 
         viewModelScope.launch {
-            when (val result = pairRepository.leaveSession(pairId, guestId)) {
+            when (val result = leaveSessionUseCase(pairId, guestId)) {
                 is DomainResult.Success -> {
                     sessionRepository.clearAllSessionData()
                     resetToIdle()

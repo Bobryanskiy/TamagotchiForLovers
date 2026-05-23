@@ -3,8 +3,10 @@ package com.github.bobryanskiy.tamagotchiforlovers.data.remote.dto
 import com.google.firebase.firestore.PropertyName
 
 data class UserDto(
-    @PropertyName("uid") val uid: String = "",
-    @PropertyName("active_pet_id") val activePetId: String? = null,
-    @PropertyName("active_pair_id") val activePairId: String? = null,
-    @PropertyName("created_at") val createdAt: Long = 0L
-)
+    @get:PropertyName("uid") @set:PropertyName("uid") var uid: String = "",
+    @get:PropertyName("active_pet_id") @set:PropertyName("active_pet_id") var activePetId: String? = null,
+    @get:PropertyName("active_pair_id") @set:PropertyName("active_pair_id") var activePairId: String? = null,
+    @get:PropertyName("created_at") @set:PropertyName("created_at") var createdAt: Long = 0L
+) {
+    constructor() : this("", null, null, 0L)
+}

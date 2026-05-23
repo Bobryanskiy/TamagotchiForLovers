@@ -1,5 +1,6 @@
 package com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel
 
+import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.bobryanskiy.tamagotchiforlovers.R
@@ -16,7 +17,7 @@ sealed interface CreatePetUiState {
     data object Idle : CreatePetUiState
     data object Loading : CreatePetUiState
     data class Success(val petId: String) : CreatePetUiState
-    data class Error(@androidx.annotation.StringRes val messageResId: Int) : CreatePetUiState
+    data class Error(@param:StringRes val messageResId: Int) : CreatePetUiState
 }
 
 @HiltViewModel

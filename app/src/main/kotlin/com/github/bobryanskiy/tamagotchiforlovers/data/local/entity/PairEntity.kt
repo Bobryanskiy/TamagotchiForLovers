@@ -24,5 +24,6 @@ data class PairEntity(
 
     @ColumnInfo(name = "created_at") val createdAt: Long,
     @ColumnInfo(name = "updated_at") val updatedAt: Long,
-    @ColumnInfo(name = "ended_at") val endedAt: Long?
+    @ColumnInfo(name = "ended_at") val endedAt: Long?,
+    @ColumnInfo(name = "sync_status") val syncStatus: String = "SYNCED"
 )

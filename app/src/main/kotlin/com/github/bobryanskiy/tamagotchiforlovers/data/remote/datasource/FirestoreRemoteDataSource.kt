@@ -1,10 +1,12 @@
 package com.github.bobryanskiy.tamagotchiforlovers.data.remote.datasource
 
+import android.util.Log
 import com.github.bobryanskiy.tamagotchiforlovers.data.remote.dto.PairDto
 import com.github.bobryanskiy.tamagotchiforlovers.data.remote.dto.PairKeys
 import com.github.bobryanskiy.tamagotchiforlovers.data.remote.dto.PetDto
 import com.github.bobryanskiy.tamagotchiforlovers.data.remote.dto.PetKeys
 import com.google.firebase.Firebase
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.channels.awaitClose
@@ -74,6 +76,38 @@ class FirestoreRemoteDataSource @Inject constructor(
     }
 
     // Pair methods
+    override fun observePair(pairId: String): Flow<PairDto?> = callbackFlow {
+        Log.d("FIREBASE_DEBUG", "🔗 [RemoteDataSource] Attaching listener for pair: $pairId")
+
+        val listener = db.collection("pairs")
+            .document(pairId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    Log.e("FIREBASE_DEBUG", "❌ [RemoteDataSource] Error listening to pair $pairId: ${error.message}", error)
+                    close(error)
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null && snapshot.exists()) {
+                    try {
+                        val dto = snapshot.toObject(PairDto::class.java)
+                        Log.d("FIREBASE_DEBUG", "📦 [RemoteDataSource] Received from Firestore: id=${snapshot.id}, status=${dto?.status}, user_id_2=${dto?.userId2}")
+                        trySend(dto)
+                    } catch (e: Exception) {
+                        Log.e("FIREBASE_DEBUG", "❌ [RemoteDataSource] Error parsing PairDto: ${e.message}", e)
+                        close(e)
+                    }
+                } else {
+                    Log.d("FIREBASE_DEBUG", "📦 [RemoteDataSource] Document does not exist or was deleted: $pairId")
+                    trySend(null)
+                }
+            }
+
+        awaitClose {
+            listener.remove()
+            Log.d("FIREBASE_DEBUG", "🔌 [RemoteDataSource] Removed listener for pair: $pairId")
+        }
+    }
     override suspend fun getPair(pairId: String): PairDto? = db.collection("pairs").document(pairId).get().await().toObject(PairDto::class.java)
     override suspend fun upsertPair(pairId: String, dto: PairDto) { db.collection("pairs").document(pairId).set(dto).await() }
     override suspend fun updatePairStatus(pairId: String, status: String, updatedAt: Long) {
@@ -84,4 +118,108 @@ class FirestoreRemoteDataSource @Inject constructor(
             PairKeys.UPDATED_AT to updatedAt)).await()
     }
     override suspend fun deletePair(pairId: String) { db.collection("pairs").document(pairId).delete().await() }
+    override suspend fun findPairByInviteKey(inviteKey: String): PairDto? {
+        val snapshot = db.collection("pairs")
+            .whereEqualTo("invite_key.code", inviteKey.uppercase())
+            .limit(1)
+            .get()
+            .await()
+
+        if (snapshot.isEmpty) return null
+
+        val doc = snapshot.documents.first()
+        return doc.toObject(PairDto::class.java)
+    }
+
+    override suspend fun requestJoin(pairId: String, guestId: String) {
+        db.collection("pairs").document(pairId)
+            .update(
+                "pending_request", mapOf(
+                    "guest_id" to guestId,
+                    "requested_at" to FieldValue.serverTimestamp()
+                )
+            )
+            .await()
+    }
+
+    override suspend fun acceptJoinRequest(pairId: String, guestId: String) {
+        db.runTransaction { transaction ->
+            val ref = db.collection("pairs").document(pairId)
+            val snapshot = transaction.get(ref)
+
+            transaction.update(ref, "user_id_2", guestId)
+            transaction.update(ref, "status", "ACTIVE")
+            transaction.update(ref, "pending_request", null)
+            transaction.update(ref, "updated_at", System.currentTimeMillis())
+        }.await()
+    }
+
+    override suspend fun rejectJoinRequest(pairId: String, guestId: String) {
+        db.collection("pairs").document(pairId)
+            .update("pending_request", null)
+            .await()
+    }
+
+    override suspend fun leaveSession(pairId: String, userId: String) {
+        db.collection("pairs").document(pairId)
+            .update("user_id_2", null, "status", "PENDING", "updated_at", System.currentTimeMillis())
+            .await()
+    }
+
+    override suspend fun endSession(pairId: String, callerId: String) {
+        db.collection("pairs").document(pairId)
+            .update("status", "ENDED", "ended_at", FieldValue.serverTimestamp(), "updated_at", System.currentTimeMillis())
+            .await()
+    }
+
+    override suspend fun kickPartner(pairId: String, callerId: String) {
+        db.collection("pairs").document(pairId)
+            .update("user_id_2", null, "status", "PENDING", "updated_at", System.currentTimeMillis())
+            .await()
+    }
+
+    override suspend fun generateInviteKey(pairId: String, code: String, expiresAt: Long) {
+        db.collection("pairs").document(pairId)
+            .update(
+                "invite_key", mapOf(
+                    "code" to code,
+                    "expires_at" to expiresAt
+                )
+            )
+            .await()
+    }
+
+    override fun observePendingRequests(pairId: String): Flow<List<Map<String, Any?>>> = callbackFlow {
+        Log.d("FIREBASE_DEBUG", "🔍 [observePendingRequests] Starting observation for pair: $pairId")
+
+        val registration = db.collection("pairs").document(pairId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    Log.e("FIREBASE_DEBUG", "❌ [observePendingRequests] Error: ${error.message}", error)
+                    trySend(emptyList())
+                    return@addSnapshotListener
+                }
+
+                if (snapshot == null || !snapshot.exists()) {
+                    Log.d("FIREBASE_DEBUG", "⚠️ [observePendingRequests] Pair document doesn't exist: $pairId")
+                    trySend(emptyList())
+                    return@addSnapshotListener
+                }
+
+                val requestData = snapshot.get("pending_request") as? Map<*, *>
+                Log.d("FIREBASE_DEBUG", "📋 [observePendingRequests] Raw pending_request  $requestData")
+
+                val list = if (requestData != null && requestData["guest_id"] != null) {
+                    listOf(requestData)
+                } else {
+                    emptyList()
+                }
+//                trySend(list)
+            }
+
+        awaitClose {
+            registration.remove()
+            Log.d("FIREBASE_DEBUG", "🔌 [observePendingRequests] Removed listener for pair: $pairId")
+        }
+    }
 }

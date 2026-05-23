@@ -2,7 +2,11 @@ package com.github.bobryanskiy.tamagotchiforlovers.data.repository
 
 import android.util.Log
 import com.github.bobryanskiy.tamagotchiforlovers.data.exception.RepositoryException
+import com.github.bobryanskiy.tamagotchiforlovers.data.local.dao.PairDao
+import com.github.bobryanskiy.tamagotchiforlovers.data.local.datasource.LocalPairDataSource
 import com.github.bobryanskiy.tamagotchiforlovers.data.model.mapper.toDomain
+import com.github.bobryanskiy.tamagotchiforlovers.data.model.mapper.toEntity
+import com.github.bobryanskiy.tamagotchiforlovers.data.remote.datasource.RemoteDataSource
 import com.github.bobryanskiy.tamagotchiforlovers.data.remote.dto.InviteKeyDto
 import com.github.bobryanskiy.tamagotchiforlovers.data.remote.dto.PairDto
 import com.github.bobryanskiy.tamagotchiforlovers.data.remote.dto.PendingRequestDto
@@ -32,6 +36,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -39,6 +44,7 @@ import javax.inject.Singleton
 @Singleton
 class PairRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore,
+    private val local: LocalPairDataSource,
     private val petRepository: PetRepository,
     private val userRepository: UserRepository,
     private val clock: Clock,
@@ -55,6 +61,10 @@ class PairRepositoryImpl @Inject constructor(
     override fun observePair(pairId: String): Flow<Pair?> = callbackFlow {
         Log.d("FIREBASE_DEBUG", "🔗 [REPO] Attaching listener: $pairId")
 
+        local.getPair(pairId)?.let { entity ->
+            trySend(entity.toDomain())
+        }
+
         val registration = firestore.collection("pairs").document(pairId)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
@@ -65,7 +75,14 @@ class PairRepositoryImpl @Inject constructor(
                 if (snapshot?.exists() == true) {
                     val dto = snapshot.toObject<PairDto>()
                     Log.d("FIREBASE_DEBUG", "📦 [REPO] Received: invite_key=${dto?.inviteKey?.code}")
-                    dto?.let { trySend(it.toDomain(snapshot.id)) }
+                    dto?.let {
+                        val pair = it.toDomain(snapshot.id)
+                        // Сохраняем в локальную БД для кэширования
+                        scope.launch {
+                            local.savePair(it.toEntity(snapshot.id))
+                        }
+                        trySend(pair)
+                    }
                 } else {
                     trySend(null)
                 }
@@ -189,6 +206,10 @@ class PairRepositoryImpl @Inject constructor(
             return DomainResult.Failure(PairError.AlreadyJoined)
         }
 
+        if (pair.status != PairStatus.PENDING) {
+            return DomainResult.Failure(PairError.InvalidRequest)
+        }
+
         DomainResult.Success(pair)
     } catch (e: Throwable) {
         if (e is CancellationException) throw e
@@ -200,15 +221,31 @@ class PairRepositoryImpl @Inject constructor(
             val ref = firestore.collection("pairs").document(pairId)
             val snapshot = transaction.get(ref)
 
-            if (!snapshot.exists()) throw IllegalArgumentException("Пара не найдена")
+            Log.d("FIREBASE_DEBUG", "📄 [REPO] Transaction snapshot exists: ${snapshot.exists()}")
+
+            if (!snapshot.exists()) {
+                Log.e("FIREBASE_DEBUG", "❌ [REPO] Pair not found: $pairId")
+                throw IllegalArgumentException("Пара не найдена")
+            }
 
             val userId1 = snapshot.getString("user_id_1")
             val userId2 = snapshot.getString("user_id_2")
             val status = snapshot.getString("status")
 
-            if (userId2 != null) throw IllegalStateException("Пара уже заполнена")
-            if (status != PairStatus.PENDING.name) throw IllegalStateException("Пара не активна")
-            if (guestId == userId1) throw IllegalStateException("Вы уже являетесь создателем пары")
+            Log.d("FIREBASE_DEBUG", "📋 [REPO] Pair info: userId1=$userId1, userId2=$userId2, status=$status")
+
+            if (userId2 != null) {
+                Log.e("FIREBASE_DEBUG", "❌ [REPO] Pair already filled: $pairId")
+                throw IllegalStateException("Пара уже заполнена")
+            }
+            if (status != PairStatus.PENDING.name) {
+                Log.e("FIREBASE_DEBUG", "❌ [REPO] Pair not active: $status")
+                throw IllegalStateException("Пара не активна")
+            }
+            if (guestId == userId1) {
+                Log.e("FIREBASE_DEBUG", "❌ [REPO] Guest is creator: $guestId")
+                throw IllegalStateException("Вы уже являетесь создателем пары")
+            }
 
             transaction.update(
                 ref,

@@ -5,24 +5,30 @@ import com.google.firebase.firestore.PropertyName
 import com.google.firebase.firestore.ServerTimestamp
 
 data class PairDto(
-    @PropertyName("name") val name: String = "",
-    @PropertyName("user_id_1") val userId1: String = "",
-    @PropertyName("user_id_2") val userId2: String? = null,
-    @PropertyName("current_pet_id") val currentPetId: String = "",
-    @PropertyName("status") val status: String = "PENDING",
-    @PropertyName("invite_key") val inviteKey: InviteKeyDto? = null,
-    @PropertyName("pending_request") val pendingRequest: PendingRequestDto? = null,
-    @PropertyName("created_at") val createdAt: Long = 0L,
-    @PropertyName("updated_at") val updatedAt: Long = 0L,
-    @PropertyName("ended_at") @ServerTimestamp val endedAt: Timestamp? = null
-)
+    @get:PropertyName("name") @set:PropertyName("name") var name: String = "",
+    @get:PropertyName("user_id_1") @set:PropertyName("user_id_1") var userId1: String = "",
+    @get:PropertyName("user_id_2") @set:PropertyName("user_id_2") var userId2: String? = null,
+    @get:PropertyName("current_pet_id") @set:PropertyName("current_pet_id") var currentPetId: String = "",
+    @get:PropertyName("status") @set:PropertyName("status") var status: String = "PENDING",
+    @get:PropertyName("invite_key") @set:PropertyName("invite_key") var inviteKey: InviteKeyDto? = null,
+    @get:PropertyName("pending_request") @set:PropertyName("pending_request") var pendingRequest: PendingRequestDto? = null,
+    @get:PropertyName("created_at") @set:PropertyName("created_at") var createdAt: Long = 0L,
+    @get:PropertyName("updated_at") @set:PropertyName("updated_at") var updatedAt: Long = 0L,
+    @get:PropertyName("ended_at") @set:PropertyName("ended_at") @ServerTimestamp var endedAt: Timestamp? = null
+) {
+    constructor() : this("", "", null, "", "PENDING", null, null, 0L, 0L, null)
+}
 
 data class InviteKeyDto(
-    @PropertyName("code") val code: String = "",
-    @PropertyName("expires_at") val expiresAt: Long = 0L
-)
+    @get:PropertyName("code") @set:PropertyName("code") var code: String = "",
+    @get:PropertyName("expires_at") @set:PropertyName("expires_at") var expiresAt: Long = 0L
+) {
+    constructor() : this("", 0L)
+}
 
 data class PendingRequestDto(
-    @PropertyName("guest_id") val guestId: String = "",
-    @PropertyName("requested_at") @ServerTimestamp val requestedAt: Timestamp? = null
-)
+    @get:PropertyName("guest_id") @set:PropertyName("guest_id") var guestId: String = "",
+    @get:PropertyName("requested_at") @set:PropertyName("requested_at") @ServerTimestamp var requestedAt: Timestamp? = null
+) {
+    constructor() : this("", null)
+}

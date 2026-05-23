@@ -36,4 +36,21 @@ interface PairDao {
 
     @Query("DELETE FROM pairs WHERE id = :pairId")
     suspend fun deletePair(pairId: String)
+
+    @Query("""
+        UPDATE pairs SET
+            invite_code = :code,
+            invite_expires_at = :expiresAt,
+            updated_at = :timestamp
+        WHERE id = :pairId
+    """)
+    suspend fun updateInviteKey(pairId: String, code: String?, expiresAt: Long?, timestamp: Long)
+
+    @Query("""
+        UPDATE pairs SET
+            request_guest_id = :guestId,
+            request_requested_at = :requestedAt
+        WHERE id = :pairId
+    """)
+    suspend fun updatePendingRequest(pairId: String, guestId: String?, requestedAt: Long?)
 }

@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.bobryanskiy.tamagotchiforlovers.R
+import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pet
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetAction
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.MathTaskGeneratorUseCase
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.PetUiState
@@ -150,9 +151,23 @@ fun PetScreen(
 @Composable
 private fun PetContent(
     modifier: Modifier = Modifier,
-    pet: com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pet,
+    pet: Pet,
     onActionRequested: (PetAction) -> Unit
 ) {
+    var isAnimating by remember { mutableStateOf(false) }
+    var lastStats by remember { mutableStateOf(pet.stats) }
+
+    // Check if stats changed to trigger animation
+    LaunchedEffect(pet.stats) {
+        if (pet.stats != lastStats) {
+            isAnimating = true
+            lastStats = pet.stats
+            // Animation duration
+            kotlinx.coroutines.delay(1500)
+            isAnimating = false
+        }
+    }
+
     LazyColumn(
         modifier = modifier.fillMaxSize().padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -161,7 +176,9 @@ private fun PetContent(
         item {
             // Маскот (Ворон)
             Image(
-                painter = painterResource(id = R.drawable.ic_pet_icon), // Замени на своего ворона
+                painter = painterResource(
+                    id = if (isAnimating) R.drawable.ic_hse_bird_action else R.drawable.ic_hse_bird_idle
+                ),
                 contentDescription = stringResource(R.string.pet_cd_mascot),
                 modifier = Modifier.size(200.dp),
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)

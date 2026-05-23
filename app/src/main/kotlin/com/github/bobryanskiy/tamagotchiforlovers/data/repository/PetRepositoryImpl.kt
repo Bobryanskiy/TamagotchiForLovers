@@ -1,11 +1,12 @@
 package com.github.bobryanskiy.tamagotchiforlovers.data.repository
 
-import com.github.bobryanskiy.tamagotchiforlovers.data.local.datasource.RoomLocalPetDataSource
+import com.github.bobryanskiy.tamagotchiforlovers.data.local.datasource.LocalPetDataSource
 import com.github.bobryanskiy.tamagotchiforlovers.data.model.mapper.toDomain
 import com.github.bobryanskiy.tamagotchiforlovers.data.model.mapper.toDto
 import com.github.bobryanskiy.tamagotchiforlovers.data.model.mapper.toEntity
 import com.github.bobryanskiy.tamagotchiforlovers.data.remote.datasource.RemoteDataSource
 import com.github.bobryanskiy.tamagotchiforlovers.data.remote.dto.PetDto
+import com.github.bobryanskiy.tamagotchiforlovers.data.sync.PetSyncManager
 import com.github.bobryanskiy.tamagotchiforlovers.di.IoDispatcher
 import com.github.bobryanskiy.tamagotchiforlovers.domain.error.PetError
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pet
@@ -14,7 +15,6 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.AuthReposito
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PetRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.PetResult
-import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.CalculateTimeDecayUseCase
 import com.github.bobryanskiy.tamagotchiforlovers.domain.util.Clock
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
@@ -30,14 +30,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.collections.map
 
 @Singleton
 class PetRepositoryImpl @Inject constructor(
-    private val local: RoomLocalPetDataSource,
+    private val local: LocalPetDataSource,
     private val remote: RemoteDataSource,
     private val authRepository: AuthRepository,
-    private val timeDecayUseCase: CalculateTimeDecayUseCase,
+    private val petSyncManager: PetSyncManager,
     private val clock: Clock,
     @param:IoDispatcher private val io: CoroutineDispatcher
 ) : PetRepository {
@@ -236,6 +235,11 @@ class PetRepositoryImpl @Inject constructor(
             pets
         }
     }
+
+    override suspend fun syncPendingChanges(): Boolean {
+        return petSyncManager.syncPending()
+    }
+
 
     override suspend fun deletePet(petId: String): PetResult<Unit> = withContext(io) {
         try {

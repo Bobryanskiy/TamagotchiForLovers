@@ -15,6 +15,7 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.result.onSuccess
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.ApplyPetActionUseCase
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.CalculateTimeDecayUseCase
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.MathTaskGeneratorUseCase
+import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.SyncPetsUseCase
 import com.github.bobryanskiy.tamagotchiforlovers.domain.util.Clock
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.mapper.toUiErrorStringRes
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -53,7 +54,7 @@ class PetViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val petRepository: PetRepository,
     private val sessionRepository: SessionRepository,
-    private val petSyncManager: PetSyncManager,
+    private val syncPetsUseCase: SyncPetsUseCase,
     private val applyActionUseCase: ApplyPetActionUseCase,
     private val timeDecayUseCase: CalculateTimeDecayUseCase,
     val taskGenerator: MathTaskGeneratorUseCase,
@@ -143,7 +144,7 @@ class PetViewModel @Inject constructor(
                     _dialogState.value = null
                 }
                 .onSuccess {
-                    launch { petSyncManager.syncPending() }
+                    launch { syncPetsUseCase() }
                     _dialogState.value = null
                 }
         }

@@ -18,4 +18,8 @@ class RoomLocalPairDataSource @Inject constructor(
     override suspend fun updateUserId2(pairId: String, userId2: String?, timestamp: Long) =
         pairDao.updateUserId2(pairId, userId2, timestamp)
     override suspend fun deletePair(pairId: String) = pairDao.deletePair(pairId)
+    override suspend fun updateInviteKey(pairId: String, code: String?, expiresAt: Long?, timestamp: Long) =
+        pairDao.updateInviteKey(pairId, code, expiresAt, timestamp)
+    override suspend fun updatePendingRequest(pairId: String, guestId: String?, requestedAt: Long?) =
+        pairDao.updatePendingRequest(pairId, guestId, requestedAt)
 }

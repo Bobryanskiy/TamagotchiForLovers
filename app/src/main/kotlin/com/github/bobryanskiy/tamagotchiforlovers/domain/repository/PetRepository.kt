@@ -33,4 +33,5 @@ interface PetRepository {
     suspend fun getAllActivePets(): PetResult<List<Pet>>
     suspend fun migrateOwnerUserId(oldOwnerId: String?, newOwnerId: String): PetResult<Unit>
     suspend fun syncPetsForOwner(ownerId: String): PetResult<List<Pet>>
+    suspend fun syncPendingChanges(): Boolean
 }

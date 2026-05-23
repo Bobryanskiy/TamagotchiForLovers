@@ -14,6 +14,7 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.UserReposito
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.AcceptJoinRequestUseCase
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.CreatePairWithInviteUseCase
+import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.EndSessionUseCase
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.KickPartnerUseCase
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.ObservePendingRequestsUseCase
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.RejectJoinRequestUseCase
@@ -51,6 +52,7 @@ class HostPairViewModel @Inject constructor(
     private val acceptRequestUseCase: AcceptJoinRequestUseCase,
     private val rejectRequestUseCase: RejectJoinRequestUseCase,
     private val observeRequestsUseCase: ObservePendingRequestsUseCase,
+    private val endSessionUseCase: EndSessionUseCase,
     private val kickPartnerUseCase: KickPartnerUseCase,
     private val pairRepository: PairRepository,
     private val sessionRepository: SessionRepository,
@@ -254,7 +256,7 @@ class HostPairViewModel @Inject constructor(
         val callerId = currentCreatorId ?: return
 
         viewModelScope.launch {
-            when (val result = pairRepository.endSession(pairId, callerId)) {
+            when (val result = endSessionUseCase(pairId, callerId)) {
                 is DomainResult.Success -> {
                     sessionRepository.clearActivePairId()
                     sessionRepository.clearPairStatus()
