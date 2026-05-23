@@ -8,6 +8,7 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pair
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PairStatus
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PendingRequest
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PairRepository
+import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PetRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.SessionRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.UserRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
@@ -53,6 +54,7 @@ class HostPairViewModel @Inject constructor(
     private val kickPartnerUseCase: KickPartnerUseCase,
     private val pairRepository: PairRepository,
     private val sessionRepository: SessionRepository,
+    private val petRepository: PetRepository,
     private val userRepository: UserRepository,
     private val clock: Clock
 ) : ViewModel() {
@@ -64,9 +66,21 @@ class HostPairViewModel @Inject constructor(
     private var currentCreatorId: String? = null
     private var requestsJob: Job? = null
 
-    fun initScreen() {
+    fun initScreen(petId: String? = null) {
         viewModelScope.launch {
-            val savedPairId = sessionRepository.getActivePairId()
+            var savedPairId = sessionRepository.getActivePairId()
+            var savedPetId = petId
+
+            Log.d("HOST_VM", "🔍 initScreen called with petId=$petId")
+            Log.d("HOST_VM", "📦 Session pairId=$savedPairId")
+
+            // Если нет savedPairId, пробуем найти пару через petId
+            if (savedPairId == null && petId != null) {
+                // Получаем питомца и проверяем, есть ли у него pairId
+                val pet = petRepository.getPetById(petId)
+                savedPairId = pet.getOrNull()?.profile?.currentPairId
+                Log.d("HOST_VM", "🔍 Found pairId from pet $petId: $savedPairId")
+            }
             if (savedPairId != null) {
                 currentPairId = savedPairId
                 currentCreatorId = userRepository.getCurrentUserId()

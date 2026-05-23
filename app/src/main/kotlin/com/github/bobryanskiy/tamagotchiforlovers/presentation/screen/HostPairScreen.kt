@@ -37,7 +37,7 @@ fun HostPairScreen(
     var currentTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
 
     LaunchedEffect(Unit) {
-        viewModel.initScreen()
+        viewModel.initScreen(petId)
     }
 
     LaunchedEffect(Unit) {

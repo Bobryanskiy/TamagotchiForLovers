@@ -2,6 +2,7 @@ package com.github.bobryanskiy.tamagotchiforlovers.di
 
 import android.content.Context
 import androidx.room.Room
+import com.github.bobryanskiy.tamagotchiforlovers.data.local.dao.PairDao
 import com.github.bobryanskiy.tamagotchiforlovers.data.local.dao.PetDao
 import com.github.bobryanskiy.tamagotchiforlovers.data.local.database.AppDatabase
 import dagger.Module
@@ -23,4 +24,8 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun providePetDao(database: AppDatabase): PetDao = database.petDao()
+
+    @Provides
+    @Singleton
+    fun providePairDao(database: AppDatabase): PairDao = database.pairDao()
 }

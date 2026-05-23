@@ -19,6 +19,8 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.util.Clock
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.mapper.toUiErrorStringRes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -26,6 +28,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -68,8 +71,16 @@ class PetViewModel @Inject constructor(
     private val _dialogState = MutableStateFlow<TaskDialogState?>(null)
     val dialogState: StateFlow<TaskDialogState?> = _dialogState.asStateFlow()
 
+    private var timeUpdateJob: Job? = null
+
     init {
         observePet()
+        startTimeDecayUpdates()
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        timeUpdateJob?.cancel()
     }
 
     private fun observePet() {
@@ -92,6 +103,24 @@ class PetViewModel @Inject constructor(
                         _uiState.value = newState
                     }
                 }
+        }
+    }
+
+    private fun startTimeDecayUpdates() {
+        timeUpdateJob = viewModelScope.launch {
+            while (isActive) {
+                delay(1000) // Обновляем каждую секунду
+                val currentState = _uiState.value
+                if (currentState is PetUiState.Content) {
+                    val now = clock.currentTimeMillis()
+                    val updatedPet = timeDecayUseCase(currentState.pet, now)
+                    // Проверяем, изменились ли статистики или состояние жизни
+                    if (updatedPet.stats != currentState.pet.stats ||
+                        updatedPet.lifeState != currentState.pet.lifeState) {
+                        _uiState.value = PetUiState.Content(updatedPet)
+                    }
+                }
+            }
         }
     }
 
