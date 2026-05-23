@@ -120,16 +120,6 @@ fun AppNavGraph(
             )
         }
 
-        composable<AppRoute.JoinRequests> { backStackEntry ->
-            val route = backStackEntry.toRoute<AppRoute.JoinRequests>()
-            JoinRequestsScreen(
-                pairId = route.pairId,
-                onNavigateBack = {
-                    navController.popBackStack()
-                }
-            )
-        }
-
         composable<AppRoute.JoinPair> {
             JoinPairScreen(
                 onNavigateBack = {
