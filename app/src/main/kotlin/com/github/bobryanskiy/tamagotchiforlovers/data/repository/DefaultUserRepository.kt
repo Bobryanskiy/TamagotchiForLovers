@@ -1,15 +1,21 @@
 package com.github.bobryanskiy.tamagotchiforlovers.data.repository
 
 import android.util.Log
-import com.github.bobryanskiy.tamagotchiforlovers.data.remote.dto.UserDto
 import com.github.bobryanskiy.tamagotchiforlovers.data.model.mapper.toDomain
+import com.github.bobryanskiy.tamagotchiforlovers.data.remote.dto.UserDto
+import com.github.bobryanskiy.tamagotchiforlovers.di.IoDispatcher
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.User
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.UserRepository
+import com.github.bobryanskiy.tamagotchiforlovers.domain.util.Clock
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.snapshots
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -17,15 +23,38 @@ import javax.inject.Singleton
 
 @Singleton
 class DefaultUserRepository @Inject constructor(
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    private val auth: FirebaseAuth,
+    private val clock: Clock,
+    @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : UserRepository {
+    override fun observeCurrentUser(): Flow<User?> {
+        return flow {
+            val uid = auth.currentUser?.uid
+            if (uid != null) {
+                firestore.collection("users").document(uid)
+                    .snapshots()
+                    .map { snapshot ->
+                        snapshot.toObject(UserDto::class.java)?.toDomain()
+                    }
+                    .catch { e ->
+                        Log.e("UserRepo", "Error observing user", e)
+                        emit(null)
+                    }
+                    .collect { emit(it) }
+            } else {
+                emit(null)
+            }
+        }.flowOn(ioDispatcher + CoroutineName("UserRepo"))
+    }
+
     override fun getCurrentUserId(): String? {
-        return FirebaseAuth.getInstance().currentUser?.uid
+        return auth.currentUser?.uid
     }
 
     override suspend fun createUser(uid: String) {
         firestore.collection("users").document(uid)
-            .set(UserDto(uid = uid, createdAt = System.currentTimeMillis()))
+            .set(UserDto(uid = uid, createdAt = clock.currentTimeMillis()))
             .await()
     }
 

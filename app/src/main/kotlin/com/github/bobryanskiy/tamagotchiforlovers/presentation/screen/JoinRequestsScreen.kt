@@ -87,11 +87,11 @@ fun JoinRequestsScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         items(state.requests) { request ->
-                            RequestItem(
-                                request = request,
-                                onAccept = { viewModel.acceptRequest(pairId, request.guestId) },
-                                onReject = { viewModel.rejectRequest(pairId, request.guestId) }
-                            )
+//                            RequestItem(
+//                                request = request,
+////                                onAccept = { viewModel.acceptRequest(pairId, request.guestId) },
+//                                onReject = { viewModel.rejectRequest(pairId, request.guestId) }
+//                            )
                         }
                     }
                 }

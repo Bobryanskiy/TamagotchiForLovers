@@ -26,7 +26,7 @@ class AuthRepositoryImpl @Inject constructor(
         auth.signInWithEmailAndPassword(email, password).await()
         DomainResult.Success(Unit)
     } catch (e: Exception) {
-        DomainResult.Failure(PetError.Network)
+        DomainResult.Failure(UserError.LoginError)
     }
 
     override suspend fun signUp(email: String, password: String): DomainResult<Unit> = try {

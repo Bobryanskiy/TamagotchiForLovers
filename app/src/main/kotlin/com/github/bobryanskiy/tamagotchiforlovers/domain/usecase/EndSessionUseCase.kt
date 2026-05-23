@@ -10,11 +10,11 @@ import javax.inject.Inject
 class EndSessionUseCase @Inject constructor(
     private val pairRepository: PairRepository
 ) {
-    suspend operator fun invoke(pairId: String, currentPair: Pair, creatorId: String): DomainResult<Unit> {
-        if (pairId.isBlank() || creatorId.isBlank()) return DomainResult.Failure(PairError.InvalidInput)
-        if (currentPair.userId1 != creatorId) return DomainResult.Failure(PairError.CreatorOnly)
+    suspend operator fun invoke(pairId: String, currentPair: Pair, callerId: String): DomainResult<Unit> {
+        if (pairId.isBlank() || callerId.isBlank()) return DomainResult.Failure(PairError.InvalidInput)
+        if (currentPair.userId1 != callerId) return DomainResult.Failure(PairError.CreatorOnly)
         if (currentPair.status == PairStatus.ENDED) return DomainResult.Failure(PairError.AlreadyEnded)
 
-        return pairRepository.endSession(pairId)
+        return pairRepository.endSession(pairId, callerId)
     }
 }

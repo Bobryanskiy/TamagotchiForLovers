@@ -5,10 +5,10 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PairReposito
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
 import javax.inject.Inject
 
-class GetPendingRequestsUseCase @Inject constructor(
-    private val pairRepository: PairRepository
-) {
-    suspend operator fun invoke(pairId: String): DomainResult<List<PendingRequest>> {
-        return pairRepository.getPendingRequests(pairId)
-    }
-}
+//class GetPendingRequestsUseCase @Inject constructor(
+//    private val pairRepository: PairRepository
+//) {
+//    suspend operator fun invoke(pairId: String): DomainResult<List<PendingRequest>> {
+////        return pairRepository.getPendingRequests(pairId)
+//    }
+//}

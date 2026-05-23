@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
@@ -31,11 +32,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
-import com.github.bobryanskiy.tamagotchiforlovers.presentation.mapper.UiErrorMapper
+import com.github.bobryanskiy.tamagotchiforlovers.R
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.AuthUiState
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.AuthViewModel
 import com.github.bobryanskiy.tamagotchiforlovers.util.ValidationUtils
@@ -50,6 +54,7 @@ fun AuthScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
     var isSignUpMode by remember { mutableStateOf(false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
@@ -92,6 +97,7 @@ fun AuthScreen(
             modifier = Modifier.padding(padding).padding(24.dp),
             email = email,
             password = password,
+            passwordVisible = passwordVisible,
             isSignUpMode = isSignUpMode,
             isLoading = uiState is AuthUiState.Loading,
             emailError = emailError,
@@ -115,6 +121,7 @@ private fun AuthContent(
     modifier: Modifier = Modifier,
     email: String,
     password: String,
+    passwordVisible: Boolean,
     isSignUpMode: Boolean,
     isLoading: Boolean,
     emailError: String?,
@@ -132,7 +139,8 @@ private fun AuthContent(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = if (isSignUpMode) "Создать аккаунт" else "Вход в аккаунт",
+            text = if (isSignUpMode) stringResource(R.string.auth_title_register)
+                else stringResource(R.string.auth_title_login),
             style = MaterialTheme.typography.headlineMedium
         )
 
@@ -141,7 +149,7 @@ private fun AuthContent(
         OutlinedTextField(
             value = email,
             onValueChange = onEmailChange,
-            label = { Text("Email") },
+            label = { Text(stringResource(R.string.email)) },
             modifier = Modifier.fillMaxWidth(),
             enabled = !isLoading,
             singleLine = true,
@@ -154,7 +162,9 @@ private fun AuthContent(
         OutlinedTextField(
             value = password,
             onValueChange = onPasswordChange,
-            label = { Text("Пароль") },
+            label = { Text(stringResource(R.string.password)) },
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             modifier = Modifier.fillMaxWidth(),
             enabled = !isLoading,
             singleLine = true,
@@ -175,7 +185,7 @@ private fun AuthContent(
                     color = MaterialTheme.colorScheme.onPrimary
                 )
             } else {
-                Text(if (isSignUpMode) "Создать" else "Войти")
+                Text(stringResource(if (isSignUpMode) R.string.register else R.string.login))
             }
         }
 
@@ -186,7 +196,8 @@ private fun AuthContent(
             modifier = Modifier.fillMaxWidth(),
             enabled = !isLoading
         ) {
-            Text(if (isSignUpMode) "Уже есть аккаунт? Войти" else "Нет аккаунта? Создать")
+            Text(if (isSignUpMode) stringResource(R.string.have_account) + " " + stringResource(R.string.login)
+            else stringResource(R.string.no_account) + " " + stringResource(R.string.auth_title_register))
         }
     }
 }

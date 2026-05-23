@@ -18,7 +18,7 @@ import javax.inject.Inject
 sealed class ProfileUiState {
     object Loading : ProfileUiState()
     data class Content(val pet: Pet, val ownerEmail: String?) : ProfileUiState()
-    object Error : ProfileUiState()
+    data class Error(val message: String) : ProfileUiState()
 }
 
 @HiltViewModel
@@ -34,35 +34,32 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = ProfileUiState.Loading
 
+            if (petId.isBlank()) {
+                _uiState.value = ProfileUiState.Error("Питомец не выбран")
+                return@launch
+            }
+
             petRepository.getPetById(petId).onSuccess { pet ->
                 if (pet != null) {
                     val email = authRepository.getCurrentUserEmail()
                     _uiState.value = ProfileUiState.Content(pet, email)
                 } else {
-                    _uiState.value = ProfileUiState.Error
+                    _uiState.value =
+                        ProfileUiState.Error("Питомец не найден. Возможно, он был удален.")
                 }
-            }.onFailure {
-                _uiState.value = ProfileUiState.Error
+            }.onFailure { e ->
+                _uiState.value = ProfileUiState.Error("Ошибка загрузки: $e")
             }
         }
     }
 
-    fun logout(petId: String) {
+    fun logout() {
         viewModelScope.launch {
-            try {
-                if (authRepository.isLoggedIn()) {
-                    authRepository.signOut()
-                }
-
-//                petRepository.deletePet(petId)
-
-                sessionRepository.clearActivePetId()
-                sessionRepository.clearActivePairId()
-
-            } catch (e: Exception) {
-                sessionRepository.clearActivePetId()
-                sessionRepository.clearActivePairId()
+            if (authRepository.isLoggedIn()) {
+                authRepository.signOut()
             }
+
+            sessionRepository.clearAllSessionData()
         }
     }
 }

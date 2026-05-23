@@ -2,13 +2,18 @@ package com.github.bobryanskiy.tamagotchiforlovers.presentation.screen
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -22,11 +27,10 @@ import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.Profile
 fun ProfileScreen(
     petId: String,
     onNavigateBack: () -> Unit,
+    onNavigateToLogin: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-    // Состояние для диалога выхода
     var showLogoutDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(petId) {
@@ -39,7 +43,7 @@ fun ProfileScreen(
                 title = { Text(stringResource(R.string.menu_profile)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.back))
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 }
             )
@@ -56,13 +60,18 @@ fun ProfileScreen(
                     modifier = Modifier.padding(padding),
                     pet = state.pet,
                     ownerEmail = state.ownerEmail,
-                    onRequestLogout = { showLogoutDialog = true } // Показываем диалог
+                    isAuthenticated = state.ownerEmail != null,
+                    onRequestLogout = { showLogoutDialog = true },
+                    onRequestLogin = onNavigateToLogin
                 )
             }
             is ProfileUiState.Error -> {
-                Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                    Text(stringResource(R.string.error_unknown))
-                }
+                ErrorPlaceholder(
+                    modifier = Modifier.padding(padding),
+                    message = state.message,
+                    onRetry = { viewModel.loadProfile(petId) },
+                    onCreatePet = { /* Навигация на создание питомца */ }
+                )
             }
         }
     }
@@ -75,7 +84,7 @@ fun ProfileScreen(
             confirmButton = {
                 Button(
                     onClick = {
-                        viewModel.logout(petId)
+                        viewModel.logout()
                         showLogoutDialog = false
                         onNavigateBack()
                     }
@@ -97,44 +106,135 @@ private fun ProfileContent(
     modifier: Modifier = Modifier,
     pet: Pet,
     ownerEmail: String?,
-    onRequestLogout: () -> Unit // Колбэк для вызова диалога
+    isAuthenticated: Boolean,
+    onRequestLogout: () -> Unit,
+    onRequestLogin: () -> Unit
 ) {
     Column(
         modifier = modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        // ... Карточки профиля и статов (как было ранее) ...
-
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text(text = "Owner", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                Text(
+                    text = stringResource(R.string.profile_owner_label),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
                 Spacer(Modifier.height(4.dp))
-                Text(text = ownerEmail ?: "Guest User", style = MaterialTheme.typography.titleLarge)
+                Text(
+                    text = ownerEmail ?: stringResource(R.string.guest_user),
+                    style = MaterialTheme.typography.titleLarge
+                )
             }
         }
 
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text(text = "Stats", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                Text(
+                    text = stringResource(R.string.profile_pet_stats_label),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(Modifier.height(8.dp))
+
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    StatItem(stringResource(R.string.stat_hunger), "${pet.stats.hunger}%")
+                    StatItem(stringResource(R.string.stat_energy), "${pet.stats.energy}%")
+                }
                 Spacer(Modifier.height(8.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("Hunger: ${pet.stats.hunger}%")
-                    Text("Energy: ${pet.stats.energy}%")
+                    StatItem(stringResource(R.string.stat_cleanliness), "${pet.stats.cleanliness}%")
+                    StatItem(stringResource(R.string.stat_happiness), "${pet.stats.happiness}%")
                 }
             }
         }
 
         Spacer(Modifier.weight(1f))
 
-        // Кнопка вызывает диалог, а не действие сразу
-        Button(
-            onClick = onRequestLogout,
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.errorContainer)
-        ) {
-            Icon(Icons.Default.ExitToApp, contentDescription = null)
-            Spacer(Modifier.width(8.dp))
-            Text(stringResource(R.string.btn_logout))
+        if (isAuthenticated) {
+            Button(
+                onClick = onRequestLogout,
+                modifier = Modifier.fillMaxWidth(),
+                enabled = true,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                    contentColor = MaterialTheme.colorScheme.onErrorContainer
+                )
+            ) {
+                Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.btn_logout))
+            }
+        } else {
+            Button(
+                onClick = onRequestLogin,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            ) {
+                Icon(Icons.AutoMirrored.Filled.Login, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.login))
+            }
+        }
+    }
+}
+
+@Composable
+private fun StatItem(label: String, value: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(value, style = MaterialTheme.typography.titleMedium, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+        Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+@Composable
+private fun ErrorPlaceholder(
+    modifier: Modifier = Modifier,
+    message: String,
+    onRetry: () -> Unit,
+    onCreatePet: () -> Unit
+) {
+    Column(
+        modifier = modifier.fillMaxSize().padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = Icons.Default.Warning,
+            contentDescription = null,
+            modifier = Modifier.size(64.dp),
+            tint = MaterialTheme.colorScheme.error
+        )
+
+        Spacer(Modifier.height(16.dp))
+
+        Text(
+            text = "Упс!",
+            style = MaterialTheme.typography.headlineSmall
+        )
+
+        Spacer(Modifier.height(8.dp))
+
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Spacer(Modifier.height(24.dp))
+
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            OutlinedButton(onClick = onRetry) {
+                Text("Обновить")
+            }
+
+            Button(onClick = onCreatePet) {
+                Text("Создать питомца")
+            }
         }
     }
 }

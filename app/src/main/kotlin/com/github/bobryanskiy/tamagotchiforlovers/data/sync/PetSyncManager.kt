@@ -2,15 +2,12 @@ package com.github.bobryanskiy.tamagotchiforlovers.data.sync
 
 import android.util.Log
 import com.github.bobryanskiy.tamagotchiforlovers.data.local.datasource.LocalPetDataSource
-import com.github.bobryanskiy.tamagotchiforlovers.data.local.entity.PetEntity
 import com.github.bobryanskiy.tamagotchiforlovers.data.model.mapper.toDto
 import com.github.bobryanskiy.tamagotchiforlovers.data.model.mapper.toEntity
 import com.github.bobryanskiy.tamagotchiforlovers.data.remote.datasource.RemoteDataSource
 import com.github.bobryanskiy.tamagotchiforlovers.di.IoDispatcher
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.AuthRepository
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -22,60 +19,55 @@ class PetSyncManager @Inject constructor(
     private val authRepository: AuthRepository,
     @param:IoDispatcher private val io: CoroutineDispatcher
 ) {
-
     private val tag = "PetSyncManager"
 
-    suspend fun syncAll(): Boolean = withContext(io) {
+    suspend fun syncPending(): Boolean = withContext(io) {
         val userId = authRepository.getCurrentUserId() ?: return@withContext false
+        val pendingPets = local.getPendingPets()
 
-        val pendingIds = local.getPendingPets().map { it.id }.toSet()
-        if (pendingIds.isEmpty()) return@withContext true
+        if (pendingPets.isEmpty()) return@withContext true
 
-        Log.d(tag, "Syncing ${pendingIds.size} pending pets")
+        Log.d(tag, "Syncing ${pendingPets.size} pending pets")
+        var allSuccess = true
 
-        val results = pendingIds.map { petId ->
-            async { syncSinglePet(petId, userId) }
-        }.awaitAll()
+        for (entity in pendingPets) {
+            try {
+                val remoteDto = remote.getPet(entity.id)
 
-        val success = results.all { it }
-        Log.d(tag, "Sync finished. Success: $success")
-        success
-    }
+                when {
+                    remoteDto == null -> {
+                        // Питомца нет в облаке — создаём
+                        remote.upsertPet(entity.id, entity.toDto())
+                        local.markSynced(entity.id)
+                    }
+                    else -> {
+                        val localTime = entity.updatedAt
+                        val remoteTime = remoteDto.stats?.updatedAt ?: 0L
 
-    private suspend fun syncSinglePet(petId: String, userId: String): Boolean {
-        val localEntity = local.getPet(petId) ?: return false
-        val localUpdatedAt = localEntity.updatedAt
-
-        return try {
-            val cloudDto = remote.getPet(petId)
-
-            if (cloudDto == null) {
-                Log.d(tag, "Cloud is empty for $petId. Pushing local version as new.")
-                pushToCloud(localEntity, userId)
-                return true
+                        when {
+                            localTime > remoteTime -> {
+                                // Локаль новее — пушим в облако
+                                remote.upsertPet(entity.id, entity.toDto())
+                                local.markSynced(entity.id)
+                            }
+                            remoteTime > localTime -> {
+                                // Облако новее — пулим в локалку
+                                val syncedEntity = remoteDto.toEntity(entity.id).copy(syncStatus = "SYNCED")
+                                local.savePet(syncedEntity)
+                            }
+                            else -> {
+                                // Версии совпадают — просто снимаем PENDING
+                                local.markSynced(entity.id)
+                            }
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(tag, "Sync failed for pet ${entity.id}", e)
+                allSuccess = false
+                // Не прерываем цикл — пытаемся синхронизировать остальных
             }
-
-            val cloudUpdatedAt = cloudDto.stats?.updatedAt?.time ?: 0L
-
-            if (cloudUpdatedAt > localUpdatedAt) {
-                Log.d(tag, "Cloud is newer ($cloudUpdatedAt > $localUpdatedAt). Pulling.")
-                local.savePet(cloudDto.toEntity(petId).copy(syncStatus = "SYNCED"))
-                return true
-            }  else {
-                Log.d(tag, "Local is newer or equal ($localUpdatedAt >= $cloudUpdatedAt). Pushing.")
-                pushToCloud(localEntity, userId)
-                return true
-            }
-        } catch (e: Exception) {
-            Log.e(tag, "Sync failed for $petId", e)
-            false
         }
-    }
-    private suspend fun pushToCloud(entity: PetEntity, userId: String) {
-        val dto = entity.toDto().copy(
-            profile = entity.toDto().profile?.copy(ownerUserId = userId)
-        )
-        remote.upsertPet(entity.id, dto)
-        local.markSynced(entity.id)
+        return@withContext allSuccess
     }
 }

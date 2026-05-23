@@ -1,5 +1,6 @@
 package com.github.bobryanskiy.tamagotchiforlovers.data.remote.dto
 
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.PropertyName
 import com.google.firebase.firestore.ServerTimestamp
 
@@ -13,7 +14,7 @@ data class PairDto(
     @PropertyName("pending_request") val pendingRequest: PendingRequestDto? = null,
     @PropertyName("created_at") val createdAt: Long = 0L,
     @PropertyName("updated_at") val updatedAt: Long = 0L,
-    @PropertyName("ended_at") @ServerTimestamp val endedAt: Long? = null
+    @PropertyName("ended_at") @ServerTimestamp val endedAt: Timestamp? = null
 )
 
 data class InviteKeyDto(
@@ -23,5 +24,5 @@ data class InviteKeyDto(
 
 data class PendingRequestDto(
     @PropertyName("guest_id") val guestId: String = "",
-    @PropertyName("requested_at") @ServerTimestamp val requestedAt: Long? = null
+    @PropertyName("requested_at") @ServerTimestamp val requestedAt: Timestamp? = null
 )

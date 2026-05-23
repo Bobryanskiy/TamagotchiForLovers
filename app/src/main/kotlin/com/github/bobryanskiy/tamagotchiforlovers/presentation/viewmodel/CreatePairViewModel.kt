@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.UserRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
-import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.CreatePairUseCase
+import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.CreatePairWithInviteUseCase
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.GenerateInviteKeyUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,7 +23,7 @@ sealed interface CreatePairUiState {
 
 @HiltViewModel
 class CreatePairViewModel @Inject constructor(
-    private val createPairUseCase: CreatePairUseCase,
+    private val createPairWithInviteUseCase: CreatePairWithInviteUseCase,
     private val generateInviteKeyUseCase: GenerateInviteKeyUseCase,
     private val userRepository: UserRepository,
     savedStateHandle: SavedStateHandle
@@ -44,16 +44,16 @@ class CreatePairViewModel @Inject constructor(
                 return@launch
             }
             
-            when (val result = createPairUseCase(userId, pairName, petId)) {
-                is DomainResult.Success -> {
-                    currentPairId = result.data
-                    // Generate invite key after creating pair
-                    generateInviteKey(result.data)
-                }
-                is DomainResult.Failure -> {
-                    _uiState.value = CreatePairUiState.Error("Ошибка создания пары: ${result.error}")
-                }
-            }
+//            when (val result = createPairWithInviteUseCase(userId, pairName, petId)) {
+//                is DomainResult.Success -> {
+//                    currentPairId = result.data
+//                    // Generate invite key after creating pair
+//                    generateInviteKey(result.data)
+//                }
+//                is DomainResult.Failure -> {
+//                    _uiState.value = CreatePairUiState.Error("Ошибка создания пары: ${result.error}")
+//                }
+//            }
         }
     }
 

@@ -12,16 +12,16 @@ import dagger.assisted.AssistedInject
 @HiltWorker
 class SyncWorker @AssistedInject constructor(
     @Assisted context: Context,
-    @Assisted workerParams: WorkerParameters,
+    @Assisted params: WorkerParameters,
     private val syncManager: PetSyncManager,
     private val authRepository: AuthRepository
-) : CoroutineWorker(context, workerParams) {
+) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
         if (!authRepository.isLoggedIn()) return Result.success()
 
         return try {
-            val success = syncManager.syncAll()
+            val success = syncManager.syncPending()
             if (success) Result.success() else Result.retry()
         } catch (e: Exception) {
             Result.retry()

@@ -4,9 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PendingRequest
-import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
-import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.AcceptPlayerUseCase
-import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.GetPendingRequestsUseCase
+import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.AcceptJoinRequestUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,8 +20,7 @@ sealed interface JoinRequestsUiState {
 
 @HiltViewModel
 class JoinRequestsViewModel @Inject constructor(
-    private val getPendingRequestsUseCase: GetPendingRequestsUseCase,
-    private val acceptPlayerUseCase: AcceptPlayerUseCase,
+    private val acceptJoinRequestUseCase: AcceptJoinRequestUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -33,29 +30,29 @@ class JoinRequestsViewModel @Inject constructor(
     fun loadRequests(pairId: String) {
         viewModelScope.launch {
             _uiState.value = JoinRequestsUiState.Loading
-            when (val result = getPendingRequestsUseCase(pairId)) {
-                is DomainResult.Success -> {
-                    _uiState.value = JoinRequestsUiState.Content(result.data)
-                }
-                is DomainResult.Failure -> {
-                    _uiState.value = JoinRequestsUiState.Error("Ошибка загрузки запросов: ${result.error}")
-                }
-            }
+//            when (val result = getPendingRequestsUseCase(pairId)) {
+//                is DomainResult.Success -> {
+//                    _uiState.value = JoinRequestsUiState.Content(result.data)
+//                }
+//                is DomainResult.Failure -> {
+//                    _uiState.value = JoinRequestsUiState.Error("Ошибка загрузки запросов: ${result.error}")
+//                }
+//            }
         }
     }
 
-    fun acceptRequest(pairId: String, guestId: String) {
-        viewModelScope.launch {
-            when (val result = acceptPlayerUseCase(pairId, guestId)) {
-                is DomainResult.Success -> {
-                    loadRequests(pairId) // Reload requests after accepting
-                }
-                is DomainResult.Failure -> {
-                    _uiState.value = JoinRequestsUiState.Error("Ошибка принятия запроса: ${result.error}")
-                }
-            }
-        }
-    }
+//    fun acceptRequest(pairId: String, guestId: String) {
+//        viewModelScope.launch {
+//            when (val result = acceptJoinRequestUseCase(pairId, guestId)) {
+//                is DomainResult.Success -> {
+//                    loadRequests(pairId) // Reload requests after accepting
+//                }
+//                is DomainResult.Failure -> {
+//                    _uiState.value = JoinRequestsUiState.Error("Ошибка принятия запроса: ${result.error}")
+//                }
+//            }
+//        }
+//    }
 
     fun rejectRequest(pairId: String, guestId: String) {
         // For now, just reload without the request

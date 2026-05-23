@@ -1,6 +1,7 @@
 package com.github.bobryanskiy.tamagotchiforlovers.presentation.screen
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,23 +10,28 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.bobryanskiy.tamagotchiforlovers.R
+import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.AuthButtonState
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -33,30 +39,58 @@ import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.MainVie
 fun MainScreen(
     viewModel: MainViewModel = hiltViewModel(),
     onNavigateToAuth: () -> Unit,
+    onNavigateToProfile: (userId: String) -> Unit,
     onNavigateToGame: () -> Unit,
     onNavigateToPairConnect: () -> Unit
 ) {
+    val authState by viewModel.authButtonState.collectAsStateWithLifecycle()
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.app_name)) },
                 actions = {
-                    TextButton(onClick = onNavigateToAuth) {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = stringResource(R.string.login),
-                            modifier = Modifier.size(24.dp)
-                        )
+                    when (val state = authState) {
+                        is AuthButtonState.Loading -> {
+                        }
+                        is AuthButtonState.Login -> {
+                            IconButton(onClick = onNavigateToAuth) {
+                                Icon(
+                                    imageVector = Icons.Default.Person,
+                                    contentDescription = stringResource(R.string.login)
+                                )
+                            }
+                        }
+                        is AuthButtonState.Profile -> {
+                            IconButton(onClick = { onNavigateToProfile(state.userId) }) {
+                                Icon(
+                                    imageVector = Icons.Default.AccountCircle,
+                                    contentDescription = "Profile"
+                                )
+                            }
+                        }
                     }
                 }
             )
         }
     ) { padding ->
-        MainContent(
-            modifier = Modifier.padding(padding).padding(24.dp),
-            onStartGame = onNavigateToGame,
-            onPairConnect = onNavigateToPairConnect
-        )
+        when (authState) {
+            is AuthButtonState.Loading -> {
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(padding),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+            else -> {
+                MainContent(
+                    modifier = Modifier.padding(padding).padding(24.dp),
+                    onStartGame = onNavigateToGame,
+                    onPairConnect = onNavigateToPairConnect
+                )
+            }
+        }
     }
 }
 

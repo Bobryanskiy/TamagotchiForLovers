@@ -16,26 +16,21 @@ class CriticalStateWorker @AssistedInject constructor(
     private val checkAndNotifyPetsUseCase: CheckAndNotifyPetsUseCase
 ) : CoroutineWorker(context, params) {
 
-    private val TAG = "CriticalStateWorker"
+    private val tag = "CriticalStateWorker"
 
     override suspend fun doWork(): Result {
-        Log.d(TAG, "Starting critical state check for all pets")
+        Log.d(tag, "Starting critical state check for all pets")
 
         return try {
-            val result = checkAndNotifyPetsUseCase.invoke()
-
-            when (result) {
-                true -> {
-                    Log.d(TAG, "Critical state check completed successfully")
-                    Result.success()
-                }
-                false -> {
-                    Log.w(TAG, "Critical state check completed with errors")
-                    Result.success()
-                }
+            val success = checkAndNotifyPetsUseCase.invoke()
+            if (success) {
+                Result.success()
+            } else {
+                // Если что-то пошло не так — пробуем снова позже
+                Result.retry()
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Critical error during critical state check", e)
+            Log.e(tag, "Critical error during check", e)
             Result.retry()
         }
     }

@@ -18,4 +18,5 @@ interface LocalPetDataSource {
     suspend fun getAllActivePets(): List<PetEntity>
     suspend fun migrateOwnerUserId(oldOwnerId: String?, newOwnerId: String, timestamp: Long)
     suspend fun markAllPending()
+    suspend fun markPending(petId: String)
 }
