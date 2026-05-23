@@ -34,7 +34,7 @@ fun PetDto.toEntity(petId: String): PetEntity {
         energy = s.energy,
         cleanliness = s.cleanliness,
         happiness = s.happiness,
-        updatedAt = s.updatedAt?.time ?: System.currentTimeMillis(),
+        updatedAt = s.updatedAt,
         syncStatus = "SYNCED"
     )
 }
@@ -78,7 +78,7 @@ fun PetEntity.toDto(): PetDto = PetDto(
     ),
     stats = StatsDto(
         hunger = hunger, energy = energy, cleanliness = cleanliness,
-        happiness = happiness, updatedAt = Date(updatedAt)
+        happiness = happiness, updatedAt = updatedAt
     ),
     lifeState = LifeStateDto(
         lifeStatus = lifeStatus,

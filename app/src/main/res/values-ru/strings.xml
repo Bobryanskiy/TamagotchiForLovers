@@ -161,4 +161,44 @@
     <string name="confirm_logout_title">Выйти из аккаунта?</string>
     <string name="confirm_logout_message">Вы выйдете из аккаунта. Питомец останется в облаке для вашего партнера. Локальные данные будут удалены.</string>
     <string name="btn_confirm_logout">Выйти</string>
+    <string name="login_error">Неверная почта или пароль</string>
+
+    <!-- JOIN PAIR SCREEN -->
+    <string name="join_pair_title">Присоединиться к паре</string>
+    <string name="join_pair_subtitle">Введите код приглашения</string>
+    <string name="join_pair_button">Подключиться</string>
+    <string name="cancel_button">Отменить</string>
+
+    <string name="searching_pair">Поиск пары…</string>
+    <string name="sending_request">Отправка запроса…</string>
+    <string name="waiting_approval_title">Запрос отправлен!</string>
+    <string name="waiting_approval_message">Ожидайте одобрения создателя пары…</string>
+
+    <!-- HOST PAIR SCREEN -->
+    <string name="create_pair_title">Создание пары</string>
+    <string name="waiting_partner_title">Ожидание партнера</string>
+    <string name="pair_active_title">Пара активна</string>
+
+    <string name="your_invite_key">Ваш ключ доступа:</string>
+    <string name="key_valid_for">Действителен:</string>
+    <string name="key_expired">⚠️ Ключ истёк</string>
+    <string name="regenerate_code">Сгенерировать новый код</string>
+
+    <string name="join_requests_title">Запросы на вступление:</string>
+    <string name="key_expired_message">Срок действия истёк. Создайте новую пару.</string>
+
+    <string name="guest_label">Гость:</string>
+    <string name="wants_to_join">Хочет присоединиться</string>
+
+    <string name="partner_connected">Партнер подключился!</string>
+    <string name="rename">Переименовать</string>
+    <string name="kick_partner">Выгнать партнера</string>
+    <string name="finish_and_exit">Завершить и выйти</string>
+
+    <!-- ERRORS -->
+    <string name="error_pair_request_rejected">Ваш запрос был отклонён создателем пары</string>
+    <string name="error_pair_kicked">Вы были удалены из сессии</string>
+    <string name="error_pair_session_expired">Сессия истекла. Попробуйте снова.</string>
+
+    <string name="try_again">Попробовать снова</string>
 </resources>

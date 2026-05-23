@@ -81,6 +81,8 @@ interface PetDao {
 
     @Query("UPDATE pets SET sync_status = 'PENDING' WHERE sync_status = 'SYNCED'")
     suspend fun markAllPending()
+    @Query("UPDATE pets SET sync_status = 'PENDING' WHERE id = :petId")
+    suspend fun markPending(petId: String)
 
     @Query("SELECT * FROM pets WHERE sync_status = 'PENDING'")
     suspend fun getPendingPets(): List<PetEntity>

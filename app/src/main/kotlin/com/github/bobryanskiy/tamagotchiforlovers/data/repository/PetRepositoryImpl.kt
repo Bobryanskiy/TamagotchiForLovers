@@ -49,7 +49,6 @@ class PetRepositoryImpl @Inject constructor(
             local.getPet(petId)?.let { emit(it.toDomain()) }
 
             val flows = mutableListOf<Flow<Pet?>>()
-
             flows.add(local.observePet(petId).mapNotNull { it?.toDomain() })
 
             if (authRepository.isLoggedIn()) {
@@ -61,8 +60,8 @@ class PetRepositoryImpl @Inject constructor(
                         }
 
                         val entity = dto.toEntity(petId).copy(syncStatus = "SYNCED")
-
                         val localEntity = local.getPet(petId)
+
                         if (localEntity != null && localEntity.updatedAt >= entity.updatedAt) {
                             return@mapNotNull localEntity.toDomain()
                         }
@@ -78,18 +77,7 @@ class PetRepositoryImpl @Inject constructor(
             merge(*flows.toTypedArray())
                 .distinctUntilChanged()
                 .collect { pet ->
-                    val now = clock.currentTimeMillis()
-                    pet?.let { nonNullPet ->
-                        val updatedPet = timeDecayUseCase(nonNullPet, currentTime = now)
-
-                        if (updatedPet.stats.updatedAt != pet.stats.updatedAt) {
-                            syncScope.launch {
-                                local.savePet(entity = updatedPet.toEntity().copy(syncStatus = "PENDING"))
-                            }
-                        }
-
-                        emit(value = updatedPet)
-                    } ?: emit(value = null)
+                    emit(pet)
                 }
 
         } catch (e: Exception) {
@@ -136,10 +124,12 @@ class PetRepositoryImpl @Inject constructor(
     ): DomainResult<Unit> = execute {
         val now = clock.currentTimeMillis()
         local.updateStats(petId, hunger, energy, cleanliness, happiness, now)
+        local.markPending(petId)
 
         syncScope.launch {
             try {
                 remote.updatePetStats(petId, hunger, energy, cleanliness, happiness, now)
+                local.markSynced(petId)
             } catch (_: Exception) {}
         }
     }
@@ -154,6 +144,7 @@ class PetRepositoryImpl @Inject constructor(
             state.recoveryEndTime,
             now
         )
+        local.markPending(petId)
 
         syncScope.launch {
             try {
@@ -165,6 +156,7 @@ class PetRepositoryImpl @Inject constructor(
                     state.recoveryEndTime,
                     now
                 )
+                local.markSynced(petId)
             } catch (_: Exception) {}
         }
     }
@@ -172,10 +164,12 @@ class PetRepositoryImpl @Inject constructor(
     override suspend fun updatePairId(petId: String, pairId: String?): DomainResult<Unit> = execute {
         val now = clock.currentTimeMillis()
         local.updatePairId(petId, pairId, now)
+        local.markPending(petId)
 
         syncScope.launch {
             try {
                 remote.updatePetPairId(petId, pairId, now)
+                local.markSynced(petId)
             } catch (_: Exception) {}
         }
     }
@@ -183,10 +177,12 @@ class PetRepositoryImpl @Inject constructor(
     override suspend fun updatePetName(petId: String, name: String): DomainResult<Unit> = execute {
         val now = clock.currentTimeMillis()
         local.updateName(petId, name, now)
+        local.markPending(petId)
 
         syncScope.launch {
             try {
                 remote.updatePetName(petId, name, now)
+                local.markSynced(petId)
             } catch (_: Exception) {}
         }
     }

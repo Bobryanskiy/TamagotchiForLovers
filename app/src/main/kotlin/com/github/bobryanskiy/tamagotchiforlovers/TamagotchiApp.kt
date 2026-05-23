@@ -1,14 +1,17 @@
 package com.github.bobryanskiy.tamagotchiforlovers
 
 import android.app.Application
+import com.github.bobryanskiy.tamagotchiforlovers.core.work.SyncScheduler
 import dagger.hilt.android.HiltAndroidApp
+import javax.inject.Inject
 
-// 🔑 Эта аннотация генерирует весь код для внедрения зависимостей
 @HiltAndroidApp
 class TamagotchiApp : Application() {
-    // Здесь можно инициализировать Firebase, Timber и т.д.
+    @Inject
+    lateinit var syncScheduler: SyncScheduler
+
     override fun onCreate() {
         super.onCreate()
-        // Пример: FirebaseApp.initializeApp(this)
+        syncScheduler.schedulePeriodicSync()
     }
 }

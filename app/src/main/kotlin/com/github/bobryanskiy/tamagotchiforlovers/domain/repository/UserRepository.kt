@@ -4,6 +4,7 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.model.User
 import kotlinx.coroutines.flow.Flow
 
 interface UserRepository {
+    fun observeCurrentUser(): Flow<User?>
     fun getCurrentUserId(): String?
     suspend fun createUser(uid: String)
     suspend fun updateUserSession(uid: String, petId: String?, pairId: String?)

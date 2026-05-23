@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.bobryanskiy.tamagotchiforlovers.R
+import com.github.bobryanskiy.tamagotchiforlovers.data.sync.PetSyncManager
 import com.github.bobryanskiy.tamagotchiforlovers.domain.error.PetError
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pet
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetAction
@@ -12,11 +13,19 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.SessionRepos
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.onFailure
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.onSuccess
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.ApplyPetActionUseCase
+import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.CalculateTimeDecayUseCase
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.MathTaskGeneratorUseCase
-import com.github.bobryanskiy.tamagotchiforlovers.presentation.mapper.UiErrorMapper.toUiErrorStringRes
+import com.github.bobryanskiy.tamagotchiforlovers.domain.util.Clock
+import com.github.bobryanskiy.tamagotchiforlovers.presentation.mapper.toUiErrorStringRes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -41,8 +50,11 @@ class PetViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val petRepository: PetRepository,
     private val sessionRepository: SessionRepository,
+    private val petSyncManager: PetSyncManager,
     private val applyActionUseCase: ApplyPetActionUseCase,
-    val taskGenerator: MathTaskGeneratorUseCase
+    private val timeDecayUseCase: CalculateTimeDecayUseCase,
+    val taskGenerator: MathTaskGeneratorUseCase,
+    private val clock: Clock
 ) : ViewModel() {
 
     private val petId: String = checkNotNull(savedStateHandle["petId"]) { "petId missing" }
@@ -67,7 +79,11 @@ class PetViewModel @Inject constructor(
                     when {
                         pet == null -> PetUiState.Loading
                         pet.lifeState.isTerminal() -> PetUiState.GameOver
-                        else -> PetUiState.Content(pet)
+                        else -> {
+                            val now = clock.currentTimeMillis()
+                            val livePet = timeDecayUseCase(pet, now)
+                            PetUiState.Content(livePet)
+                        }
                     }
                 }
                 .collect { _uiState.value = it }
@@ -80,10 +96,8 @@ class PetViewModel @Inject constructor(
 
     fun onTaskCompleted() {
         val currentDialog = _dialogState.value ?: return
-
         viewModelScope.launch {
             _dialogState.value = currentDialog.copy(isProcessing = true)
-
             applyActionUseCase(petId, currentDialog.action)
                 .onFailure { error ->
                     val resId = if (error is PetError) {
@@ -95,6 +109,7 @@ class PetViewModel @Inject constructor(
                     _dialogState.value = null
                 }
                 .onSuccess {
+                    launch { petSyncManager.syncPending() }
                     _dialogState.value = null
                 }
         }

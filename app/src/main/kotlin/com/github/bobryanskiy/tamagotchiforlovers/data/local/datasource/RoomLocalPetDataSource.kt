@@ -29,4 +29,5 @@ class RoomLocalPetDataSource @Inject constructor(
     override suspend fun migrateOwnerUserId(oldOwnerId: String?, newOwnerId: String, timestamp: Long) =
         petDao.migrateOwnerUserId(oldOwnerId, newOwnerId, timestamp)
     override suspend fun markAllPending() = petDao.markAllPending()
+    override suspend fun markPending(petId: String) = petDao.markPending(petId)
 }

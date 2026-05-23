@@ -4,11 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.bobryanskiy.tamagotchiforlovers.R
 import com.github.bobryanskiy.tamagotchiforlovers.domain.error.PetError
+import com.github.bobryanskiy.tamagotchiforlovers.domain.error.toUiErrorStringRes
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.AuthRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.onFailure
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.onSuccess
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.LinkAccountUseCase
-import com.github.bobryanskiy.tamagotchiforlovers.presentation.mapper.UiErrorMapper.toUiErrorStringRes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -73,11 +73,7 @@ class AuthViewModel @Inject constructor(
                     _event.emit(AuthEvent.NavigateToMain)
                 }
                 .onFailure { error ->
-                    val resId = if (error is PetError) {
-                        error.toUiErrorStringRes()
-                    } else {
-                        R.string.error_unknown
-                    }
+                    val resId =  error.toUiErrorStringRes()
                     _uiState.value = AuthUiState.Error(resId)
                     _event.emit(AuthEvent.ShowError(resId))
                 }

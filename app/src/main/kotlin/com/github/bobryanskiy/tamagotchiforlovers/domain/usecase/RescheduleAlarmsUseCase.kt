@@ -15,27 +15,29 @@ class RescheduleAlarmsUseCase @Inject constructor(
 
     private val tag = "RescheduleAlarmsUseCase"
 
-    suspend operator fun invoke() {
-        when (val result = petRepository.getAllActivePets()) {
+    suspend operator fun invoke(): Boolean {
+        return when (val result = petRepository.getAllActivePets()) {
             is DomainResult.Success -> {
                 val pets = result.data
-
                 if (pets.isEmpty()) {
-                    Log.d(tag, "No active pets found to reschedule alarms.")
-                    return
+                    Log.d(tag, "No active pets found")
+                    return true
                 }
 
+                var allSuccess = true
                 pets.forEach { pet ->
                     try {
                         alarmManager.scheduleCheck(pet.id, pet.lifeState)
-                        Log.d(tag, "Alarm rescheduled for pet: ${pet.id}")
                     } catch (e: Exception) {
-                        Log.e(tag, "Failed to schedule alarm for pet: ${pet.id}", e)
+                        Log.e(tag, "Failed to schedule for ${pet.id}", e)
+                        allSuccess = false
                     }
                 }
+                allSuccess
             }
             is DomainResult.Failure -> {
-                Log.e(tag, "Failed to load active pets: ${result.error}")
+                Log.e(tag, "Failed to load pets: ${result.error}")
+                false
             }
         }
     }

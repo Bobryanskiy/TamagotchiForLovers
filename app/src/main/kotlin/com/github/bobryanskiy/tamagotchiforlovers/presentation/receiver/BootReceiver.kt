@@ -4,20 +4,17 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.RescheduleAlarmsUseCase
+import androidx.work.*
+import com.github.bobryanskiy.tamagotchiforlovers.core.work.RescheduleAlarmsWorker
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.*
-import javax.inject.Inject
 
+/**
+ * Receiver для восстановления алармов после перезагрузки устройства.
+ */
 @AndroidEntryPoint
 class BootReceiver : BroadcastReceiver() {
 
-    @Inject
-    lateinit var rescheduleAlarmsUseCase: RescheduleAlarmsUseCase
-
     private val tag = "BootReceiver"
-
-    private val receiverScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != Intent.ACTION_BOOT_COMPLETED) {
@@ -25,15 +22,23 @@ class BootReceiver : BroadcastReceiver() {
             return
         }
 
-        Log.d(tag, "Boot completed. Rescheduling alarms...")
+        Log.d(tag, "Boot completed. Scheduling alarm reschedule work...")
 
-        receiverScope.launch {
-            try {
-                rescheduleAlarmsUseCase.invoke()
-                Log.d(tag, "Alarms rescheduled successfully")
-            } catch (e: Exception) {
-                Log.e(tag, "Critical error during alarm rescheduling", e)
-            }
-        }
+        val workRequest = OneTimeWorkRequestBuilder<RescheduleAlarmsWorker>()
+            .setConstraints(
+                Constraints.Builder()
+                    .setRequiresBatteryNotLow(true)
+                    .build()
+            )
+            .addTag("reschedule_alarms")
+            .build()
+
+        WorkManager.getInstance(context).enqueueUniqueWork(
+            "reschedule_alarms",
+            ExistingWorkPolicy.REPLACE,
+            workRequest
+        )
+
+        Log.d(tag, "Work scheduled successfully")
     }
 }

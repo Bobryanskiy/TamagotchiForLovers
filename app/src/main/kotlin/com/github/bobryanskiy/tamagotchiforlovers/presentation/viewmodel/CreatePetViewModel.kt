@@ -21,8 +21,7 @@ sealed interface CreatePetUiState {
 
 @HiltViewModel
 class CreatePetViewModel @Inject constructor(
-    private val createPetUseCase: CreatePetUseCase,
-    private val auth: FirebaseAuth
+    private val createPetUseCase: CreatePetUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<CreatePetUiState>(CreatePetUiState.Idle)

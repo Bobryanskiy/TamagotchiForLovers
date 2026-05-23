@@ -18,17 +18,22 @@ class DataStoreSessionRepository @Inject constructor(
 
     private val petIdKey = stringPreferencesKey("active_pet_id")
     private val pairIdKey = stringPreferencesKey("active_pair_id")
+    private val pairStatusKey = stringPreferencesKey("pair_status")
     private val linkedKey = booleanPreferencesKey("account_linked")
 
     override fun getActivePetId(): String? = runBlocking { dataStore.data.first()[petIdKey] }
     override fun getActivePairId(): String? = runBlocking { dataStore.data.first()[pairIdKey] }
+    override fun getActivePairStatus(): String? = runBlocking {  dataStore.data.first()[pairStatusKey] }
     override fun isAccountLinked(): Boolean = runBlocking { dataStore.data.first()[linkedKey] == true }
+
     override suspend fun saveActivePetId(id: String) { dataStore.edit { it[petIdKey] = id } }
     override suspend fun saveActivePairId(id: String) { dataStore.edit { it[pairIdKey] = id } }
-    override suspend fun clearActivePetId() { dataStore.edit { it.remove(petIdKey) } }
+    override suspend fun savePairStatus(status: String) { dataStore.edit { it[pairStatusKey] = status } }
+    override suspend fun setAccountLinked(linked: Boolean) { dataStore.edit { it[linkedKey] = linked } }
 
     override suspend fun clearActivePairId() { dataStore.edit { it.remove(pairIdKey) } }
-    override suspend fun setAccountLinked(linked: Boolean) { dataStore.edit { it[linkedKey] = linked } }
+    override suspend fun clearPairStatus() { dataStore.edit { it.remove(pairStatusKey) } }
+    override suspend fun clearActivePetId() { dataStore.edit { it.remove(petIdKey) } }
 
     override suspend fun clearAllSessionData() { dataStore.edit { it.clear() } }
 }

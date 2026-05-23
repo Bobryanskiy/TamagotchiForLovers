@@ -2,6 +2,7 @@ package com.github.bobryanskiy.tamagotchiforlovers.presentation.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -41,21 +42,23 @@ fun AppNavGraph(
         composable<AppRoute.Main> {
             MainScreen(
                 onNavigateToAuth = {
-                    navController.navigate(AppRoute.Auth) {
-                        popUpTo<AppRoute.Main> { inclusive = false }
-                    }
+                    navController.navigate(AppRoute.Auth)
+                },
+                onNavigateToProfile = { userId ->
+                    navController.navigate(AppRoute.Profile(userId))
                 },
                 onNavigateToGame = {
                     navController.navigate(AppRoute.CreatePet)
                 },
                 onNavigateToPairConnect = {
-                    navController.navigate(AppRoute.PairConnect)
+                    navController.navigate(AppRoute.JoinPair)
                 }
             )
         }
 
         composable<AppRoute.CreatePet> {
             CreatePetScreen(
+                onNavigateBack = { navController.popBackStack() },
                 onNavigateToPet = { petId ->
                     navController.navigate(AppRoute.Pet(petId)) {
                         popUpTo<AppRoute.Main> { inclusive = true }
@@ -69,7 +72,7 @@ fun AppNavGraph(
             PetScreen(
                 petId = route.petId,
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToCreatePair = { id -> navController.navigate(AppRoute.CreatePair(id)) },
+                onNavigateToPair = { id -> navController.navigate(AppRoute.Pair(id)) },
                 onNavigateToProfile = { id ->
                     navController.navigate(AppRoute.Profile(id))
                 },
@@ -85,7 +88,15 @@ fun AppNavGraph(
             val route = backStackEntry.toRoute<AppRoute.Profile>()
             ProfileScreen(
                 petId = route.petId,
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToLogin = {
+                    navController.navigate(AppRoute.Auth) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
+                }
             )
         }
 
@@ -98,11 +109,12 @@ fun AppNavGraph(
             )
         }
 
-        composable<AppRoute.CreatePair> { backStackEntry ->
-            val route = backStackEntry.toRoute<AppRoute.CreatePair>()
-            CreatePairScreen(
+        composable<AppRoute.Pair> { backStackEntry ->
+            val route = backStackEntry.toRoute<AppRoute.Pair>()
+            HostPairScreen(
                 petId = route.petId,
-                onNavigateBack = {
+                onNavigateBack = { navController.popBackStack() },
+                onPairReady = {
                     navController.popBackStack()
                 }
             )
@@ -118,14 +130,14 @@ fun AppNavGraph(
             )
         }
 
-        composable<AppRoute.PairConnect> {
-            PairConnectScreen(
+        composable<AppRoute.JoinPair> {
+            JoinPairScreen(
                 onNavigateBack = {
                     navController.popBackStack()
                 },
-                onNavigateToPet = { petId ->
-                    navController.navigate(AppRoute.Pet(petId)) {
-                        popUpTo<AppRoute.Main> { inclusive = false }
+                onJoinedSuccess = { petId ->
+                    navController.navigate(AppRoute.Pet(petId = petId)) {
+                        popUpTo<AppRoute.JoinPair> { inclusive = true }
                     }
                 }
             )

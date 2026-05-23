@@ -4,7 +4,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Link
@@ -18,7 +17,6 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -28,18 +26,16 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetAction
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.MathTaskGeneratorUseCase
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.PetUiState
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.PetViewModel
-import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.TaskDialogState
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.UiEvent
-import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PetScreen(
     petId: String,
     onNavigateBack: () -> Unit,
-    onNavigateToCreatePair: (String) -> Unit,
+    onNavigateToPair: (String) -> Unit,
     onNavigateToProfile: (String) -> Unit,
-    onNavigateToMain: () -> Unit, // ✅ Для корректного выхода после удаления
+    onNavigateToMain: () -> Unit,
     viewModel: PetViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -48,8 +44,7 @@ fun PetScreen(
     var showMenu by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
-
-    // Обработка ошибок (Toast/Snackbar)
+    
     LaunchedEffect(Unit) {
         viewModel.uiEvent.collect { event ->
             if (event is UiEvent.ShowError) {
@@ -69,23 +64,20 @@ fun PetScreen(
                         style = MaterialTheme.typography.titleLarge
                     )
                 },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.back))
-                    }
-                },
+//                navigationIcon = {
+//                    IconButton(onClick = onNavigateBack) {
+//                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+//                    }
+//                },
                 actions = {
-                    // ✅ Кнопка создания пары
-                    IconButton(onClick = { onNavigateToCreatePair(petId) }) {
+                    IconButton(onClick = { onNavigateToPair(petId) }) {
                         Icon(Icons.Default.Link, contentDescription = "Create Pair")
                     }
 
-                    // ✅ Кнопка Профиля
                     IconButton(onClick = { onNavigateToProfile(petId) }) {
                         Icon(Icons.Default.Person, contentDescription = stringResource(R.string.menu_profile))
                     }
 
-                    // ✅ Меню настроек
                     IconButton(onClick = { showMenu = true }) {
                         Icon(Icons.Default.MoreVert, contentDescription = "Settings")
                     }

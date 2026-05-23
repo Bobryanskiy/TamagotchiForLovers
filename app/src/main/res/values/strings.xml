@@ -160,4 +160,44 @@
     <string name="confirm_logout_title">Log Out?</string>
     <string name="confirm_logout_message">You will leave your account. Your pet will remain in the cloud for your partner. Local data will be cleared.</string>
     <string name="btn_confirm_logout">Log Out</string>
+    <string name="login_error">Invalid email or password</string>
+
+    <!-- JOIN PAIR SCREEN -->
+    <string name="join_pair_title">Join a Session</string>
+    <string name="join_pair_subtitle">Enter invite code</string>
+    <string name="join_pair_button">Connect</string>
+    <string name="cancel_button">Cancel</string>
+
+    <string name="searching_pair">Searching for pair…</string>
+    <string name="sending_request">Sending request…</string>
+    <string name="waiting_approval_title">Request Sent!</string>
+    <string name="waiting_approval_message">Waiting for host approval…</string>
+
+    <!-- HOST PAIR SCREEN -->
+    <string name="create_pair_title">Create Pair</string>
+    <string name="waiting_partner_title">Waiting for Partner</string>
+    <string name="pair_active_title">Pair Active</string>
+
+    <string name="your_invite_key">Your access key:</string>
+    <string name="key_valid_for">Valid for:</string>
+    <string name="key_expired">⚠️ Key expired</string>
+    <string name="regenerate_code">Generate new code</string>
+
+    <string name="join_requests_title">Join Requests:</string>
+    <string name="key_expired_message">Key expired. Create a new pair.</string>
+
+    <string name="guest_label">Guest:</string>
+    <string name="wants_to_join">Wants to join</string>
+
+    <string name="partner_connected">Partner Connected!</string>
+    <string name="rename">Rename</string>
+    <string name="kick_partner">Kick Partner</string>
+    <string name="finish_and_exit">Finish and Exit</string>
+
+    <!-- ERRORS -->
+    <string name="error_pair_request_rejected">Your request was rejected by the host</string>
+    <string name="error_pair_kicked">You were removed from the session</string>
+    <string name="error_pair_session_expired">Session expired. Please try again.</string>
+
+    <string name="try_again">Try Again</string>
 </resources>

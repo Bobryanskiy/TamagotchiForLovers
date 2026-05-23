@@ -8,6 +8,8 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.model.InviteKey
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PairStatus
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PendingRequest
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pair
+import com.google.firebase.Timestamp
+import java.util.Date
 
 // DTO → Entity
 fun PairDto.toEntity(pairId: String): PairEntity {
@@ -21,10 +23,10 @@ fun PairDto.toEntity(pairId: String): PairEntity {
         inviteCode = inviteKey?.code,
         inviteExpiresAt = inviteKey?.expiresAt,
         requestGuestId = pendingRequest?.guestId,
-        requestRequestedAt = pendingRequest?.requestedAt,
+        requestRequestedAt = pendingRequest?.requestedAt?.toDate()?.time,
         createdAt = createdAt,
         updatedAt = updatedAt,
-        endedAt = endedAt
+        endedAt = endedAt?.toDate()?.time
     )
 }
 
@@ -42,10 +44,10 @@ fun PairEntity.toDto(): PairDto {
         ) else null,
         pendingRequest = if (requestGuestId != null) PendingRequestDto(
             guestId = requestGuestId,
-            requestedAt = requestRequestedAt
+            requestedAt = Timestamp(Date(requestRequestedAt?: 0L))
         ) else null,
         createdAt = createdAt,
-        endedAt = endedAt
+        endedAt = Timestamp(Date(endedAt ?: 0L))
     )
 }
 
@@ -61,7 +63,7 @@ fun PairDto.toDomain(pairId: String): Pair {
     }
 
     val request = pendingRequest?.let {
-        PendingRequest(guestId = it.guestId, requestedAt = it.requestedAt)
+        PendingRequest(guestId = it.guestId, requestedAt = it.requestedAt?.toDate()?.time ?: 0L)
     }
 
     return Pair(
@@ -75,7 +77,7 @@ fun PairDto.toDomain(pairId: String): Pair {
         pendingRequest = request,
         createdAt = createdAt,
         updatedAt = updatedAt,
-        endedAt = endedAt
+        endedAt = endedAt?.toDate()?.time
     )
 }
 
@@ -93,7 +95,7 @@ fun PairEntity.toDomain(): Pair {
     val request = if (requestGuestId != null) {
         PendingRequest(
             guestId = requestGuestId,
-            requestedAt = requestRequestedAt
+            requestedAt = requestRequestedAt ?: 0L
         )
     } else null
 
