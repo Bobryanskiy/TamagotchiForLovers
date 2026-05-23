@@ -128,7 +128,7 @@ private fun IdleContent(onCreate: (String) -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "Придумайте имя для вашей пары",
+            text = stringResource(R.string.host_pair_name_hint),
             style = MaterialTheme.typography.headlineSmall
         )
         Spacer(Modifier.height(24.dp))
@@ -136,7 +136,7 @@ private fun IdleContent(onCreate: (String) -> Unit) {
         OutlinedTextField(
             value = name,
             onValueChange = { name = it },
-            label = { Text("Имя пары") },
+            label = { Text(stringResource(R.string.host_pair_name_label)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
@@ -148,7 +148,7 @@ private fun IdleContent(onCreate: (String) -> Unit) {
             modifier = Modifier.fillMaxWidth(),
             enabled = name.isNotBlank()
         ) {
-            Text("Сгенерировать ключ")
+            Text(stringResource(R.string.host_pair_generate_key))
         }
     }
 }
@@ -314,7 +314,7 @@ private fun ConnectedContent(
                         containerColor = MaterialTheme.colorScheme.error
                     )
                 ) {
-                    Text("Завершить сессию")
+                    Text(stringResource(R.string.host_pair_end_session))
                 }
 
                 Spacer(Modifier.height(8.dp))

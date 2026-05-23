@@ -149,6 +149,8 @@
     <string name="notif_crit_happy">❗ %1$s is stressed!</string>
     <string name="notif_dead">%1$s passed away…</string>
     <string name="notif_escaped">%1$s ran away.</string>
+    <string name="notif_dead_message">Your pet has passed away. Create a new one to continue playing.</string>
+    <string name="notif_escaped_message">Your pet ran away due to neglect. Find and bring it back!</string>
 
     <!-- System -->
     <string name="sync_success">Data synced</string>
@@ -200,4 +202,42 @@
     <string name="error_pair_session_expired">Session expired. Please try again.</string>
 
     <string name="try_again">Try Again</string>
+    
+    <!-- Host Pair Screen -->
+    <string name="host_pair_name_hint">Придумайте имя для вашей пары</string>
+    <string name="host_pair_name_label">Имя пары</string>
+    <string name="host_pair_generate_key">Сгенерировать ключ</string>
+    <string name="host_pair_end_session">Завершить сессию</string>
+    
+    <!-- Join Pair Screen -->
+    <string name="join_pair_screen_title">Присоединиться к паре</string>
+    <string name="join_pair_back">Назад</string>
+    <string name="join_pair_searching">Поиск пары…</string>
+    <string name="join_pair_sending">Отправка запроса…</string>
+    <string name="join_pair_waiting_title">Запрос отправлен!</string>
+    <string name="join_pair_waiting_message">Ожидайте одобрения создателя пары…</string>
+    <string name="join_pair_connecting">Подключение к сессии…</string>
+    <string name="join_pair_invite_label">Invite Code</string>
+    <string name="join_pair_invite_placeholder">ABC123</string>
+    <string name="join_pair_connect_btn">Подключиться</string>
+    <string name="join_pair_cancel_btn">Отменить</string>
+    
+    <!-- Boot Screen -->
+    <string name="boot_loading">Загрузка…</string>
+    
+    <!-- Profile Screen Errors -->
+    <string name="profile_error_pet_not_selected">Питомец не выбран</string>
+    <string name="profile_error_pet_not_found">Питомец не найден. Возможно, он был удален.</string>
+    <string name="profile_error_load_failed">Ошибка загрузки: %1$s</string>
+    <string name="profile_error_title">Упс!</string>
+    <string name="profile_btn_refresh">Обновить</string>
+    <string name="profile_btn_create_pet">Создать питомца</string>
+    
+    <!-- Pet Screen -->
+    <string name="pet_cd_create_pair">Create Pair</string>
+    <string name="pet_cd_settings">Settings</string>
+    <string name="pet_cd_mascot">Mascot</string>
+    
+    <!-- Common retry -->
+    <string name="btn_retry">Попробовать снова</string>
 </resources>

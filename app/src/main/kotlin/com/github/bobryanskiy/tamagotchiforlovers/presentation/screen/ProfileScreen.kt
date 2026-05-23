@@ -5,8 +5,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.Login
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -68,7 +66,8 @@ fun ProfileScreen(
             is ProfileUiState.Error -> {
                 ErrorPlaceholder(
                     modifier = Modifier.padding(padding),
-                    message = state.message,
+                    messageResId = state.messageResId,
+                    formatArg = state.formatArg,
                     onRetry = { viewModel.loadProfile(petId) },
                     onCreatePet = { /* Навигация на создание питомца */ }
                 )
@@ -193,7 +192,8 @@ private fun StatItem(label: String, value: String) {
 @Composable
 private fun ErrorPlaceholder(
     modifier: Modifier = Modifier,
-    message: String,
+    messageResId: Int,
+    formatArg: String? = null,
     onRetry: () -> Unit,
     onCreatePet: () -> Unit
 ) {
@@ -212,14 +212,14 @@ private fun ErrorPlaceholder(
         Spacer(Modifier.height(16.dp))
 
         Text(
-            text = "Упс!",
+            text = stringResource(R.string.profile_error_title),
             style = MaterialTheme.typography.headlineSmall
         )
 
         Spacer(Modifier.height(8.dp))
 
         Text(
-            text = message,
+            text = if (formatArg != null) stringResource(messageResId, formatArg) else stringResource(messageResId),
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -229,11 +229,11 @@ private fun ErrorPlaceholder(
 
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             OutlinedButton(onClick = onRetry) {
-                Text("Обновить")
+                Text(stringResource(R.string.profile_btn_refresh))
             }
 
             Button(onClick = onCreatePet) {
-                Text("Создать питомца")
+                Text(stringResource(R.string.profile_btn_create_pet))
             }
         }
     }

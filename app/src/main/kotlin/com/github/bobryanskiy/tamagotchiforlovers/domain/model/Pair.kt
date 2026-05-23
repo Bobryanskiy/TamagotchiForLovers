@@ -1,5 +1,7 @@
 package com.github.bobryanskiy.tamagotchiforlovers.domain.model
 
+import com.github.bobryanskiy.tamagotchiforlovers.domain.util.Clock
+
 data class Pair(
     val id: String,
     val name: String,
@@ -24,8 +26,7 @@ data class InviteKey(
     val code: String,
     val expiresAt: Long
 ) {
-    val isValid: Boolean
-        get() = System.currentTimeMillis() < expiresAt
+    fun isValid(clock: Clock): Boolean = clock.currentTimeMillis() < expiresAt
 }
 
 data class PendingRequest(
