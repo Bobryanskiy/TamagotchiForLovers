@@ -55,7 +55,6 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PairWaitingScreen(
-    pairId: String,
     onNavigateBack: () -> Unit,
     onPairActivated: () -> Unit,
     viewModel: PairWaitingViewModel = hiltViewModel()

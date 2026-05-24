@@ -1,15 +1,11 @@
 package com.github.bobryanskiy.tamagotchiforlovers.presentation.screen
 
-import android.app.AlarmManager
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import android.os.Build
-import android.provider.Settings
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,7 +14,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -75,13 +70,11 @@ import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.PetUiSt
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.PetViewModel
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.UiEvent
 import kotlinx.coroutines.delay
-import androidx.core.net.toUri
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PetScreen(
     petId: String,
-    onNavigateBack: () -> Unit,
     onNavigateToCreatePair: (String) -> Unit,
     onNavigateToPairWaiting: (String) -> Unit,
     onNavigateToPairActive: (String) -> Unit,
@@ -100,18 +93,6 @@ fun PetScreen(
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-            if (!alarmManager.canScheduleExactAlarms()) {
-                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
-                    data = "package:${context.packageName}".toUri()
-                }
-                context.startActivity(intent)
-            }
-        }
-    }
-
-    LaunchedEffect(Unit) {
         while (true) {
             delay(10_000L)
             currentTimeMs = System.currentTimeMillis()
@@ -120,9 +101,11 @@ fun PetScreen(
 
     LaunchedEffect(Unit) {
         viewModel.uiEvent.collect { event ->
-            if (event is UiEvent.ShowError) {
-                val message = context.applicationContext.getString(event.messageResId)
-                snackbarHostState.showSnackbar(message)
+            when (event) {
+                is UiEvent.ShowError -> {
+                    val message = context.applicationContext.getString(event.messageResId)
+                    snackbarHostState.showSnackbar(message)
+                }
             }
         }
     }
@@ -161,7 +144,7 @@ fun PetScreen(
                                 text = { Text("🔔 Test notification", color = MaterialTheme.colorScheme.tertiary) },
                                 onClick = {
                                     showMenu = false
-                                    viewModel.testNotification()
+                                    viewModel.triggerAlarmManually()
                                 },
                                 leadingIcon = { Icon(Icons.Default.Notifications, null) }
                             )
@@ -294,46 +277,68 @@ private fun PetContent(
         }
     }
 
-    LazyColumn(
+    BoxWithConstraints(
         modifier = modifier.fillMaxSize().padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+        contentAlignment = Alignment.TopCenter
     ) {
-        item {
+        val screenHeight = maxHeight
+        val mascotSize = (screenHeight * 0.28f).coerceIn(120.dp, 220.dp)
+        val spacing = 8.dp
+
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(spacing)
+        ) {
+
             Image(
                 painter = painterResource(
                     id = if (isAnimating) R.drawable.ic_hse_bird_action
                     else R.drawable.ic_hse_bird_idle
                 ),
                 contentDescription = stringResource(R.string.pet_cd_mascot),
-                modifier = Modifier.size(200.dp),
+                modifier = Modifier.size(mascotSize),
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
             )
 
-            Spacer(Modifier.height(16.dp))
-
-            StatCard(stringResource(R.string.stat_hunger), pet.stats.hunger, "🍖")
-            Spacer(Modifier.height(8.dp))
-            StatCard(stringResource(R.string.stat_energy), pet.stats.energy, "⚡")
-            Spacer(Modifier.height(8.dp))
-            StatCard(stringResource(R.string.stat_cleanliness), pet.stats.cleanliness, "✨")
-            Spacer(Modifier.height(8.dp))
-            StatCard(stringResource(R.string.stat_happiness), pet.stats.happiness, "😄")
-        }
-
-        item {
-            Text(stringResource(R.string.actions_title), style = MaterialTheme.typography.titleMedium)
-            Spacer(Modifier.height(8.dp))
-
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                ActionBtn(PetAction.Feed, "🍖", stringResource(R.string.action_feed), onActionRequested)
-                ActionBtn(PetAction.Play, "🎮", stringResource(R.string.action_play), onActionRequested)
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(spacing)
+            ) {
+                StatCard(stringResource(R.string.stat_hunger), pet.stats.hunger, "🍖")
+                StatCard(stringResource(R.string.stat_energy), pet.stats.energy, "⚡")
+                StatCard(stringResource(R.string.stat_cleanliness), pet.stats.cleanliness, "✨")
+                StatCard(stringResource(R.string.stat_happiness), pet.stats.happiness, "😄")
             }
-            Spacer(Modifier.height(8.dp))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                ActionBtn(PetAction.Clean, "🧼", stringResource(R.string.action_clean), onActionRequested)
-                ActionBtn(PetAction.Rest, "😴", stringResource(R.string.action_rest), onActionRequested)
+
+            // Заголовок действий
+            Text(
+                stringResource(R.string.actions_title),
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            // Кнопки действий — фиксированная высота
+            Column(
+                verticalArrangement = Arrangement.spacedBy(spacing * 0.5f),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    ActionBtn(PetAction.Feed, "🍖", stringResource(R.string.action_feed), onActionRequested)
+                    ActionBtn(PetAction.Play, "🎮", stringResource(R.string.action_play), onActionRequested)
+                }
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    ActionBtn(PetAction.Clean, "🧼", stringResource(R.string.action_clean), onActionRequested)
+                    ActionBtn(PetAction.Rest, "😴", stringResource(R.string.action_rest), onActionRequested)
+                }
             }
+
+            Spacer(Modifier.weight(1f))
         }
     }
 }
@@ -378,8 +383,12 @@ private fun MathTaskDialog(
         confirmButton = {
             Button(
                 onClick = {
-                    if (userAnswer.toIntOrNull() == currentTask.correctAnswer) onTaskCompleted()
-                    else isError = true
+                    val answer = userAnswer.toIntOrNull()
+                    if (answer == currentTask.correctAnswer) {
+                        onTaskCompleted()
+                    } else {
+                        isError = true
+                    }
                 },
                 enabled = !isProcessing && userAnswer.isNotBlank()
             ) {
@@ -406,11 +415,11 @@ private fun getActionText(action: PetAction): String = when (action) {
 private fun StatCard(label: String, value: Int, icon: String) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(icon, fontSize = MaterialTheme.typography.titleLarge.fontSize)
-            Spacer(Modifier.width(16.dp))
+            Text(icon, fontSize = 20.sp)
+            Spacer(Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(label, style = MaterialTheme.typography.labelMedium)
                 LinearProgressIndicator(
@@ -423,26 +432,24 @@ private fun StatCard(label: String, value: Int, icon: String) {
                     }
                 )
             }
-            Spacer(Modifier.width(16.dp))
-            Text("$value%", fontWeight = FontWeight.Bold)
+            Spacer(Modifier.width(12.dp))
+            Text("$value%", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge)
         }
     }
 }
 
 @Composable
-private fun ActionBtn(
-    action: PetAction,
-    icon: String,
-    label: String,
-    onClick: (PetAction) -> Unit
-) {
+private fun ActionBtn(action: PetAction, icon: String, label: String, onClick: (PetAction) -> Unit) {
     Button(
         onClick = { onClick(action) },
-        modifier = Modifier.width(100.dp).height(80.dp)
+        modifier = Modifier
+            .width(100.dp)
+            .height(70.dp),
+        contentPadding = PaddingValues(4.dp)
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(icon, fontSize = 24.sp)
-            Text(label, fontSize = 12.sp)
+            Text(icon, fontSize = 22.sp)
+            Text(label, fontSize = 11.sp, maxLines = 1)
         }
     }
 }

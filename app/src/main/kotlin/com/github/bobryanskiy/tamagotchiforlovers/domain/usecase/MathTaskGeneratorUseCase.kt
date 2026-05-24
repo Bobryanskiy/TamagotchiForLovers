@@ -1,7 +1,6 @@
 package com.github.bobryanskiy.tamagotchiforlovers.domain.usecase
 
 import javax.inject.Inject
-import javax.inject.Singleton
 import kotlin.random.Random
 
 data class MathTask(

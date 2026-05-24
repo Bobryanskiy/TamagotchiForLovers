@@ -1,18 +1,49 @@
 package com.github.bobryanskiy.tamagotchiforlovers.presentation.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
+import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.SessionRepository
+import com.github.bobryanskiy.tamagotchiforlovers.domain.util.Loadable
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.screen.*
+import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.AppViewModel
 
 @Composable
 fun AppNavGraph(
+    modifier: Modifier = Modifier,
     navController: NavHostController,
-    modifier: Modifier = Modifier
+    appViewModel: AppViewModel,
 ) {
+    val activePetIdState by appViewModel.activePetId.collectAsStateWithLifecycle()
+
+    LaunchedEffect(activePetIdState) {
+        when (val state = activePetIdState) {
+            is Loadable.Loading -> {
+                return@LaunchedEffect
+            }
+            is Loadable.Loaded -> {
+                if (state.value == null) {
+                    val currentRoute = navController.currentDestination?.route ?: ""
+                    val safeRoutes = listOf("Main", "Auth", "Boot", "CreatePet")
+                    val isOnSafeRoute = safeRoutes.any { currentRoute.contains(it) }
+
+                    if (!isOnSafeRoute) {
+                        navController.navigate(AppRoute.Main) {
+                            popUpTo<AppRoute.Main> { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = AppRoute.Boot,
@@ -37,6 +68,7 @@ fun AppNavGraph(
             MainScreen(
                 onNavigateToAuth = { navController.navigate(AppRoute.Auth) },
                 onNavigateToProfile = { navController.navigate(AppRoute.Profile) },
+                onNavigateToSettings = { navController.navigate(AppRoute.Settings) },
                 onNavigateToGame = { navController.navigate(AppRoute.CreatePet) },
                 onNavigateToPairConnect = { navController.navigate(AppRoute.JoinPair) }
             )
@@ -57,7 +89,6 @@ fun AppNavGraph(
             val route = backStackEntry.toRoute<AppRoute.Pet>()
             PetScreen(
                 petId = route.petId,
-                onNavigateBack = { navController.popBackStack() },
                 onNavigateToCreatePair = { petId ->
                     navController.navigate(AppRoute.CreatePair(petId))
                 },
@@ -83,8 +114,12 @@ fun AppNavGraph(
             ProfileScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToLogin = {
-                    navController.navigate(AppRoute.Auth)
-                }
+                    navController.navigate(AppRoute.Auth) {
+                        popUpTo<AppRoute.Boot> { inclusive = true }
+                    }
+                },
+                onNavigateToSettings = {navController.navigate(AppRoute.Settings)},
+                onNavigateToEditNickname = { navController.navigate(AppRoute.EditNickname) }
             )
         }
 
@@ -95,10 +130,13 @@ fun AppNavGraph(
             )
         }
 
+        composable<AppRoute.Settings> {
+            SettingsScreen(onNavigateBack = { navController.popBackStack() })
+        }
+
         composable<AppRoute.CreatePair> { backStackEntry ->
             val route = backStackEntry.toRoute<AppRoute.CreatePair>()
             CreatePairScreen(
-                petId = route.petId,
                 onNavigateBack = { navController.popBackStack() },
                 onPairCreated = { pairId ->
                     navController.navigate(AppRoute.PairWaiting(pairId)) {
@@ -111,7 +149,6 @@ fun AppNavGraph(
         composable<AppRoute.PairWaiting> { backStackEntry ->
             val route = backStackEntry.toRoute<AppRoute.PairWaiting>()
             PairWaitingScreen(
-                pairId = route.pairId,
                 onNavigateBack = { navController.popBackStack() },
                 onPairActivated = {
                     navController.popBackStack()
@@ -122,7 +159,6 @@ fun AppNavGraph(
         composable<AppRoute.PairActive> { backStackEntry ->
             val route = backStackEntry.toRoute<AppRoute.PairActive>()
             PairActiveScreen(
-                pairId = route.pairId,
                 onNavigateBack = { navController.popBackStack() },
                 onSessionEnded = {
                     navController.popBackStack()
@@ -142,9 +178,14 @@ fun AppNavGraph(
         composable<AppRoute.RenamePet> { backStackEntry ->
             val route = backStackEntry.toRoute<AppRoute.RenamePet>()
             RenamePetScreen(
-                petId = route.petId,
                 onNavigateBack = { navController.popBackStack() },
                 onRenamed = { navController.popBackStack() }
+            )
+        }
+
+        composable<AppRoute.EditNickname> {
+            EditNicknameScreen(
+                onNavigateBack = { navController.popBackStack() }
             )
         }
     }

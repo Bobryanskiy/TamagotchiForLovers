@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -39,6 +40,7 @@ fun MainScreen(
     viewModel: MainViewModel = hiltViewModel(),
     onNavigateToAuth: () -> Unit,
     onNavigateToProfile: () -> Unit,
+    onNavigateToSettings: () -> Unit,
     onNavigateToGame: () -> Unit,
     onNavigateToPairConnect: () -> Unit
 ) {
@@ -49,18 +51,33 @@ fun MainScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.app_name)) },
                 actions = {
-                    when (val state = authState) {
+                    IconButton(onClick = onNavigateToSettings) {
+                        Icon(
+                            Icons.Default.Settings,
+                            contentDescription = stringResource(R.string.settings_title)
+                        )
+                    }
+
+                    when (authState) {
                         is AuthButtonState.Login -> {
                             IconButton(onClick = onNavigateToAuth) {
-                                Icon(Icons.Default.Person, stringResource(R.string.login))
+                                Icon(
+                                    imageVector = Icons.Default.Person,
+                                    contentDescription = stringResource(R.string.login)
+                                )
                             }
                         }
                         is AuthButtonState.Profile -> {
                             IconButton(onClick = onNavigateToProfile) {
-                                Icon(Icons.Default.AccountCircle, "Profile")
+                                Icon(
+                                    imageVector = Icons.Default.AccountCircle,
+                                    contentDescription = stringResource(R.string.menu_profile)
+                                )
                             }
                         }
-                        is AuthButtonState.Loading -> {}
+                        is AuthButtonState.Loading -> {
+                            // Ничего не показываем
+                        }
                     }
                 }
             )
@@ -97,7 +114,7 @@ private fun MainContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
     ) {
-        Spacer(Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
         Text(
             text = stringResource(R.string.welcome_message),

@@ -1,5 +1,6 @@
 package com.github.bobryanskiy.tamagotchiforlovers.domain.repository
 
+import com.github.bobryanskiy.tamagotchiforlovers.domain.util.Loadable
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -11,8 +12,8 @@ import kotlinx.coroutines.flow.Flow
 interface SessionRepository {
 
     // ── Наблюдение (основной API) ───────────────────────────────────
-    fun observeActivePetId(): Flow<String?>
-    fun observeActivePairId(): Flow<String?>
+    fun observeActivePetId(): Flow<Loadable<String?>>
+    fun observeActivePairId(): Flow<Loadable<String?>>
     fun observeActivePairStatus(): Flow<String?>
 
     // ── Однократное чтение (suspend!) ────────────────────────────────

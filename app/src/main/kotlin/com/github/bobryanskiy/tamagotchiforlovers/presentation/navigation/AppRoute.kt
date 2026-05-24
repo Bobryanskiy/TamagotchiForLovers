@@ -11,6 +11,8 @@ sealed interface AppRoute {
     @Serializable data class Pet(val petId: String) : AppRoute
     @Serializable data object Profile : AppRoute
 
+    @Serializable data object Settings : AppRoute
+
     // Три состояния пары
     @Serializable data class CreatePair(val petId: String) : AppRoute
     @Serializable data class PairWaiting(val pairId: String) : AppRoute
@@ -19,4 +21,6 @@ sealed interface AppRoute {
     @Serializable data object JoinPair : AppRoute
 
     @Serializable data class RenamePet(val petId: String) : AppRoute
+
+    @Serializable data object EditNickname : AppRoute
 }

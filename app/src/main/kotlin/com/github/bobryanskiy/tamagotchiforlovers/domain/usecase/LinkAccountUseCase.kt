@@ -41,41 +41,46 @@ class LinkAccountUseCase @Inject constructor(
             ?: return DomainResult.Failure(PetError.NotAuthenticated)
 
         val activePetId = sessionRepository.getActivePetId()
-        val localPet = activePetId?.let {
-            petRepository.getPetById(it).getOrNull()
-        }
+        val localPet = activePetId?.let { petRepository.getPetById(it).getOrNull() }
 
-        // Если есть локальный питомец без ownerId — привязываем
-        if (localPet != null && localPet.profile.ownerUserId == null) {
-            val updatedPet = localPet.copy(
-                profile = localPet.profile.copy(ownerUserId = currentUserId),
-                syncStatus = SyncStatus.PENDING  // ← отправим в облако
-            )
-            petRepository.savePet(updatedPet)
-            return DomainResult.Success(LinkResult.Success)
+        val remotePetsResult = petRepository.syncPetsForOwner(currentUserId)
+        if (remotePetsResult is DomainResult.Failure) {
+            return DomainResult.Failure(remotePetsResult.error)
         }
+        val remotePet = (remotePetsResult as DomainResult.Success).data.firstOrNull()
 
-        // Если локального нет — тянем из облака
-        if (localPet == null) {
-            val remotePetsResult = petRepository.syncPetsForOwner(currentUserId)
-            if (remotePetsResult is DomainResult.Success) {
-                val remotePet = remotePetsResult.data.firstOrNull()
-                if (remotePet != null) {
-                    sessionRepository.saveActivePetId(remotePet.id)
+        return when {
+            // Сценарий А: Только локальный → пушим в облако
+            localPet != null && remotePet == null -> {
+                val updatedPet = localPet.copy(
+                    profile = localPet.profile.copy(ownerUserId = currentUserId)
+                )
+                petRepository.savePet(updatedPet)
+                DomainResult.Success(LinkResult.Success)
+            }
+
+            // Сценарий Б: Только remote → используем его
+            localPet == null && remotePet != null -> {
+                sessionRepository.saveActivePetId(remotePet.id)
+                DomainResult.Success(LinkResult.Success)
+            }
+
+            // Сценарий В: КОНФЛИКТ — оба есть
+            localPet != null && remotePet != null -> {
+                val timeDiff = abs(localPet.stats.updatedAt - remotePet.stats.updatedAt)
+                if (timeDiff < 5000L) {
+                    // Разница < 5 сек — берём свежее
+                    val winner = if (remotePet.stats.updatedAt > localPet.stats.updatedAt)
+                        remotePet else localPet
+                    petRepository.savePet(winner)
+                    DomainResult.Success(LinkResult.Success)
+                } else {
+                    // Большая разница — пусть пользователь выбирает
+                    DomainResult.Success(LinkResult.Conflict(localPet, remotePet))
                 }
             }
-            return DomainResult.Success(LinkResult.Success)
-        }
 
-        // Конфликт — оба есть
-        val remotePetsResult = petRepository.syncPetsForOwner(currentUserId)
-        if (remotePetsResult is DomainResult.Success) {
-            val remotePet = remotePetsResult.data.firstOrNull()
-            if (remotePet != null) {
-                return DomainResult.Success(LinkResult.Conflict(localPet, remotePet))
-            }
+            else -> DomainResult.Success(LinkResult.Success)
         }
-
-        return DomainResult.Success(LinkResult.Success)
     }
 }

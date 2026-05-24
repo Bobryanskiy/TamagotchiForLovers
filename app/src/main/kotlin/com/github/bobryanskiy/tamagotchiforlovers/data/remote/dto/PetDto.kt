@@ -1,8 +1,6 @@
 package com.github.bobryanskiy.tamagotchiforlovers.data.remote.dto
 
 import com.google.firebase.firestore.PropertyName
-import com.google.firebase.firestore.ServerTimestamp
-import java.util.Date
 
 data class PetDto(
     @get:PropertyName("profile") @set:PropertyName("profile") var profile: ProfileDto? = null,
@@ -35,9 +33,8 @@ data class StatsDto(
 
 data class LifeStateDto(
     @get:PropertyName("life_status") @set:PropertyName("life_status") var lifeStatus: String = "NORMAL",
-    @get:PropertyName("actions_blocked") @set:PropertyName("actions_blocked") var isActionsBlocked: Boolean = false,
     @get:PropertyName("decay_multiplier") @set:PropertyName("decay_multiplier") var decayMultiplier: Float = 1.0f,
     @get:PropertyName("recovery_end_time") @set:PropertyName("recovery_end_time") var recoveryEndTime: Long? = null
 ) {
-    constructor() : this("NORMAL", false, 1.0f, null)
+    constructor() : this("NORMAL", 1.0f, null)
 }

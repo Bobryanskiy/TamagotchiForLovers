@@ -5,20 +5,32 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetLifeStatus
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetStats
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-import javax.inject.Singleton
 
 class EvaluatePetCriticalStateUseCase @Inject constructor() {
     operator fun invoke(stats: PetStats, currentTime: Long): PetLifeState {
+        val minStat = minOf(stats.hunger, stats.energy, stats.cleanliness, stats.happiness)
+
         return when {
-            stats.hunger <= 0 -> PetLifeState(PetLifeStatus.DEAD, isActionsBlocked = true)
-            stats.happiness <= 0 -> PetLifeState(PetLifeStatus.ESCAPED, isActionsBlocked = true)
-            stats.energy <= 0 -> PetLifeState(
-                status = PetLifeStatus.COLLAPSED,
-                recoveryEndTime = currentTime + java.util.concurrent.TimeUnit.HOURS.toMillis(2),
-                isActionsBlocked = true
+            minStat <= 0 -> PetLifeState(
+                status = PetLifeStatus.DEAD,
+                recoveryEndTime = null,
+                decayMultiplier = 0f
             )
-            stats.cleanliness <= 0 -> PetLifeState(PetLifeStatus.SICK, decayMultiplier = 2.0f)
-            else -> PetLifeState(PetLifeStatus.NORMAL, decayMultiplier = 1.0f)
+            minStat <= 10 -> PetLifeState(
+                status = PetLifeStatus.COLLAPSED,
+                recoveryEndTime = currentTime + 30 * 60 * 1000,
+                decayMultiplier = 2.0f
+            )
+            minStat <= 25 -> PetLifeState(
+                status = PetLifeStatus.SICK,
+                recoveryEndTime = currentTime + 60 * 60 * 1000,
+                decayMultiplier = 1.5f
+            )
+            else -> PetLifeState(
+                status = PetLifeStatus.NORMAL,
+                recoveryEndTime = null,
+                decayMultiplier = 1.0f
+            )
         }
     }
 }

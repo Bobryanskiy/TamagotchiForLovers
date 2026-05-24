@@ -1,14 +1,12 @@
 package com.github.bobryanskiy.tamagotchiforlovers.domain.usecase
 
 import com.github.bobryanskiy.tamagotchiforlovers.domain.error.PairError
-import com.github.bobryanskiy.tamagotchiforlovers.domain.error.UserError
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PairRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.UserRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.PairResult
-import com.github.bobryanskiy.tamagotchiforlovers.domain.result.onFailure
-import com.github.bobryanskiy.tamagotchiforlovers.domain.result.onSuccess
 import com.github.bobryanskiy.tamagotchiforlovers.domain.util.Clock
+import com.github.bobryanskiy.tamagotchiforlovers.domain.util.NameLimits
 import javax.inject.Inject
 
 class CreatePairWithInviteUseCase @Inject constructor(
@@ -16,15 +14,17 @@ class CreatePairWithInviteUseCase @Inject constructor(
     private val userRepository: UserRepository,
     private val clock: Clock
 ) {
-    suspend operator fun invoke(
-        pairName: String,
-        petId: String
-    ): PairResult<PairInviteData> {
-        val creatorId = userRepository.getCurrentUserId()
-        if (pairName.isBlank()) return DomainResult.Failure(PairError.InvalidInput)
-        if (creatorId == null) return DomainResult.Failure(PairError.NotAuthenticated)
+    suspend operator fun invoke(pairName: String, petId: String): PairResult<PairInviteData> {
+        val trimmed = pairName.trim()
 
-        val pairIdResult = pairRepository.createPair(creatorId, pairName, petId)
+        if (trimmed.length !in NameLimits.PAIR_NAME_MIN..NameLimits.PAIR_NAME_MAX) {
+            return DomainResult.Failure(PairError.InvalidInput)
+        }
+
+        val creatorId = userRepository.getCurrentUserId()
+            ?: return DomainResult.Failure(PairError.NotAuthenticated)
+
+        val pairIdResult = pairRepository.createPair(creatorId, trimmed, petId)
         if (pairIdResult is DomainResult.Failure) return pairIdResult
 
         val pairId = (pairIdResult as DomainResult.Success).data
@@ -43,7 +43,7 @@ class CreatePairWithInviteUseCase @Inject constructor(
     }
 
     companion object {
-        private const val INVITE_VALIDITY_MS = 5 * 60 * 1000L // 5 минут
+        private const val INVITE_VALIDITY_MS = 5 * 60 * 1000L
     }
 }
 

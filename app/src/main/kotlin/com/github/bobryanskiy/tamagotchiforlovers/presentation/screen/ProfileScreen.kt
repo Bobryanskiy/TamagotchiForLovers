@@ -11,10 +11,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.Login
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -25,12 +29,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,9 +46,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.DefaultLifecycleObserver
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.bobryanskiy.tamagotchiforlovers.R
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pet
@@ -56,19 +57,12 @@ import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.Profile
 fun ProfileScreen(
     onNavigateBack: () -> Unit,
     onNavigateToLogin: () -> Unit,
+    onNavigateToSettings: () -> Unit,
+    onNavigateToEditNickname: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var showLogoutDialog by remember { mutableStateOf(false) }
-    val lifecycleOwner = LocalLifecycleOwner.current
-
-    LaunchedEffect(lifecycleOwner) {
-        lifecycleOwner.lifecycle.addObserver(object : DefaultLifecycleObserver {
-            override fun onResume(owner: LifecycleOwner) {
-                viewModel.loadProfile()
-            }
-        })
-    }
 
     Scaffold(
         topBar = {
@@ -78,7 +72,12 @@ fun ProfileScreen(
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back))
                     }
-                }
+                },
+//                actions = {
+//                    IconButton(onClick = onNavigateToSettings) {
+//                        Icon(Icons.Default.Settings, stringResource(R.string.settings_title))
+//                    }
+//                }
             )
         }
     ) { padding ->
@@ -98,7 +97,9 @@ fun ProfileScreen(
                     isGuest = state.isGuest,
                     pet = state.activePet,
                     onRequestLogout = { showLogoutDialog = true },
-                    onRequestLogin = onNavigateToLogin
+                    onRequestLogin = onNavigateToLogin,
+                    onNavigateToSettings = onNavigateToSettings,
+                    onNavigateToEditNickname = onNavigateToEditNickname
                 )
             }
             is ProfileUiState.Error -> {
@@ -143,13 +144,18 @@ private fun ProfileContent(
     isGuest: Boolean,
     pet: Pet?,
     onRequestLogout: () -> Unit,
-    onRequestLogin: () -> Unit
+    onRequestLogin: () -> Unit,
+    onNavigateToSettings: () -> Unit,
+    onNavigateToEditNickname: () -> Unit
 ) {
     Column(
-        modifier = modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())  // ← скролл если много контента
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Карточка пользователя
+        // ═══ Карточка пользователя ═══
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
@@ -169,7 +175,7 @@ private fun ProfileContent(
             }
         }
 
-        // Карточка активного питомца
+        // ═══ Карточка активного питомца ═══
         if (pet != null) {
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -179,10 +185,7 @@ private fun ProfileContent(
                         color = MaterialTheme.colorScheme.primary
                     )
                     Spacer(Modifier.height(4.dp))
-                    Text(
-                        text = pet.profile.name,
-                        style = MaterialTheme.typography.titleLarge
-                    )
+                    Text(text = pet.profile.name, style = MaterialTheme.typography.titleLarge)
                     Spacer(Modifier.height(12.dp))
 
                     Text(
@@ -218,42 +221,55 @@ private fun ProfileContent(
             }
         }
 
+        // ═══ Кнопки управления аккаунтом ═══
+
+        // Редактировать никнейм (только для авторизованных)
+        if (!isGuest) {
+            OutlinedButton(
+                onClick = onNavigateToEditNickname,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.Default.Edit, null)
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.edit_nickname))
+            }
+        }
+
+        // ✅ КНОПКА НАСТРОЕК — здесь, в основном потоке кнопок
+        OutlinedButton(
+            onClick = onNavigateToSettings,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Icon(Icons.Default.Settings, null)
+            Spacer(Modifier.width(8.dp))
+            Text(stringResource(R.string.settings_title))
+        }
+
+        // Растягиваем пустое место (чтобы кнопка выхода была внизу)
         Spacer(Modifier.weight(1f))
 
-        // Кнопки входа/выхода
+        // ═══ Кнопка выхода / привязки — всегда внизу ═══
         if (isGuest) {
-            // Гость — предлагаем привязать аккаунт
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        "Привяжите аккаунт чтобы:",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    Text("• Сохранить питомца в облаке", style = MaterialTheme.typography.bodyMedium)
-                    Text("• Играть с друзьями", style = MaterialTheme.typography.bodyMedium)
-                    Text("• Синхронизировать между устройствами", style = MaterialTheme.typography.bodyMedium)
-
-                    Spacer(Modifier.height(16.dp))
-
-                    Button(
-                        onClick = onRequestLogin,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Привязать аккаунт")
-                    }
-                }
+            Button(
+                onClick = onRequestLogin,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.AutoMirrored.Filled.Login, null)
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.btn_link_account))
             }
         } else {
-            // Авторизован — кнопка выхода
             Button(
                 onClick = onRequestLogout,
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.error
+                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                    contentColor = MaterialTheme.colorScheme.onErrorContainer
                 )
             ) {
-                Text("Выйти")
+                Icon(Icons.AutoMirrored.Filled.ExitToApp, null)
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.btn_logout))
             }
         }
     }

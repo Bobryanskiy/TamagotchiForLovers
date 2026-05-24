@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.coroutines.cancellation.CancellationException
 
 @Singleton
 class FirestoreRemoteDataSource @Inject constructor(
@@ -34,37 +35,55 @@ class FirestoreRemoteDataSource @Inject constructor(
     // ────────────────────────────────────────────────────────────────
 
     override fun observePet(petId: String): Flow<PetDto?> = callbackFlow {
-        logger.d(TAG, "🔗 Attaching pet listener: $petId")
+        logger.d(TAG, "🔗 Attaching Firestore listener for pet: $petId")
 
         val registration = db.collection("pets").document(petId)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
-                    logger.w(TAG, "⚠️ Pet $petId snapshot error, closing for retry", error)
+                    logger.w(TAG, "⚠️ Snapshot error for $petId", error)
                     close(error)
                     return@addSnapshotListener
                 }
 
-                if (snapshot?.exists() == true) {
-                    trySend(snapshot.toObject(PetDto::class.java))
+                val dto = if (snapshot?.exists() == true) {
+                    try {
+                        snapshot.toObject(PetDto::class.java)
+                    } catch (e: Exception) {
+                        logger.e(TAG, "Failed to parse PetDto for $petId", e)
+                        null
+                    }
                 } else {
-                    trySend(null)
+                    null
+                }
+
+                val result = trySend(dto)
+                if (result.isFailure) {
+                    logger.w(TAG, "trySend failed for $petId: ${result.exceptionOrNull()?.message}")
                 }
             }
 
         awaitClose {
             registration.remove()
-            logger.d(TAG, "🔌 Removed pet listener: $petId")
+            logger.d(TAG, "🔌 Removed Firestore listener for pet: $petId")
         }
     }.retryWhen { cause, attempt ->
-        if (attempt >= MAX_RETRY_ATTEMPTS) {
-            logger.e(TAG, "❌ Max retries reached for pet $petId", cause)
+        if (cause is CancellationException) {
+            // При отмене Flow — НЕ ретраим
             return@retryWhen false
         }
 
-        val delayMs = (BASE_DELAY_MS * (attempt + 1)).coerceAtMost(MAX_DELAY_MS)
-        logger.w(TAG, "🔄 Retrying pet $petId (attempt ${attempt + 1}) in ${delayMs}ms")
+        if (attempt >= MAX_RETRY_ATTEMPTS) {
+            logger.e(TAG, "❌ Max retries ($MAX_RETRY_ATTEMPTS) reached for pet $petId", cause)
+            return@retryWhen false
+        }
+
+        // Exponential backoff: 1s, 2s, 4s, 8s, ... до MAX
+        val delayMs = (BASE_DELAY_MS * (1L shl attempt.toInt()))
+            .coerceAtMost(MAX_DELAY_MS)
+
+        logger.w(TAG, "🔄 Retrying pet $petId (attempt ${attempt + 1}/$MAX_RETRY_ATTEMPTS) in ${delayMs}ms")
         delay(delayMs)
-        true  // повторяем
+        true
     }
 
     override suspend fun getPet(petId: String): PetDto? =
@@ -96,7 +115,6 @@ class FirestoreRemoteDataSource @Inject constructor(
     override suspend fun updatePetLifeState(
         petId: String,
         status: String,
-        isBlocked: Boolean,
         multiplier: Float,
         recoveryTime: Long?,
         updatedAt: Long
@@ -104,7 +122,6 @@ class FirestoreRemoteDataSource @Inject constructor(
         db.collection("pets").document(petId).update(
             mapOf(
                 PetKeys.LIFE_STATUS to status,
-                PetKeys.LIFE_IS_ACTIONS_BLOCKED to isBlocked,
                 PetKeys.LIFE_DECAY_MULTIPLIER to multiplier,
                 PetKeys.LIFE_RECOVERY_END_TIME to recoveryTime,
                 PetKeys.STATS_UPDATED_AT to updatedAt
@@ -134,7 +151,7 @@ class FirestoreRemoteDataSource @Inject constructor(
         db.collection("pets").document(petId).delete().await()
     }
 
-    override suspend fun getPetsByOwner(ownerId: String): List<kotlin.Pair<String, PetDto>> {
+    override suspend fun getPetsByOwner(ownerId: String): List<Pair<String, PetDto>> {
         val snapshot = db.collection("pets")
             .whereEqualTo(PetKeys.PROFILE_OWNER_USER_ID, ownerId)
             .get()

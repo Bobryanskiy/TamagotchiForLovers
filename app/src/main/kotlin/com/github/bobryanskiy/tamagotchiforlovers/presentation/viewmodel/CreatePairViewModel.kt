@@ -4,10 +4,10 @@ import androidx.annotation.StringRes
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.bobryanskiy.tamagotchiforlovers.R
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.CreatePairWithInviteUseCase
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.mapper.toUiErrorStringRes
+import com.github.bobryanskiy.tamagotchiforlovers.util.ValidationUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -45,8 +45,10 @@ class CreatePairViewModel @Inject constructor(
 
     fun createPair() {
         val name = _pairName.value.trim()
-        if (name.isBlank()) {
-            _uiState.value = CreatePairUiState.Error(R.string.error_empty_pair_name)
+
+        val errorResId = ValidationUtils.getPairNameErrorResId(name)
+        if (errorResId != null) {
+            _uiState.value = CreatePairUiState.Error(errorResId)
             return
         }
 

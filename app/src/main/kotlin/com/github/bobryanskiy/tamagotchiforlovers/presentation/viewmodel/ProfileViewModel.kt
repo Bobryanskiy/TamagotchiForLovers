@@ -3,7 +3,6 @@ package com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel
 import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.bobryanskiy.tamagotchiforlovers.R
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pet
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.AuthRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PetRepository

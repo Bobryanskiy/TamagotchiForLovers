@@ -3,7 +3,9 @@ package com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.bobryanskiy.tamagotchiforlovers.core.logging.AppLogger
+import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pet
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.AuthRepository
+import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PetRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.SessionRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.UserResult
@@ -37,6 +39,7 @@ class AuthViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val linkAccountUseCase: LinkAccountUseCase,
     private val sessionRepository: SessionRepository,
+    private val petRepository: PetRepository,
     private val logger: AppLogger
 ) : ViewModel() {
 
@@ -46,8 +49,53 @@ class AuthViewModel @Inject constructor(
     private val _event = MutableSharedFlow<AuthEvent>(extraBufferCapacity = 1)
     val event: SharedFlow<AuthEvent> = _event.asSharedFlow()
 
+    private val _linkConflict = MutableStateFlow<Pair<Pet, Pet>?>(null)
+    val linkConflict: StateFlow<Pair<Pet, Pet>?> = _linkConflict.asStateFlow()
+
     companion object {
         private const val TAG = "AuthVM"
+    }
+
+    private fun executeAuthAction(authOperation: suspend () -> UserResult<Unit>) {
+        _uiState.value = AuthUiState.Loading
+        viewModelScope.launch {
+            when (val result = authOperation()) {
+                is DomainResult.Success -> {
+                    when (val linkResult = linkAccountUseCase()) {
+                        is DomainResult.Success -> {
+                            when (val data = linkResult.data) {
+                                is LinkAccountUseCase.LinkResult.Success -> {
+                                    logger.d(TAG, "Account linked successfully")
+                                }
+                                is LinkAccountUseCase.LinkResult.Conflict -> {
+                                    _linkConflict.value = Pair(data.localPet, data.remotePet)
+                                    logger.w(TAG, "Link conflict detected")
+                                }
+                            }
+                        }
+                        is DomainResult.Failure -> {
+                            logger.w(TAG, "Link failed: ${linkResult.error}")
+                        }
+                    }
+                    _uiState.value = AuthUiState.Success
+                    _event.emit(AuthEvent.NavigateToMain)
+                }
+                is DomainResult.Failure -> {
+                    _uiState.value = AuthUiState.Error(result.error.toUiErrorStringRes())
+                    _event.emit(AuthEvent.ShowError(result.error.toUiErrorStringRes()))
+                }
+            }
+        }
+    }
+
+    fun resolveConflict(chooseLocal: Boolean) {
+        val conflict = _linkConflict.value ?: return
+        viewModelScope.launch {
+            val winner = if (chooseLocal) conflict.first else conflict.second
+            petRepository.savePet(winner)
+            sessionRepository.saveActivePetId(winner.id)
+            _linkConflict.value = null
+        }
     }
 
     fun login(email: String, password: String) {
@@ -56,39 +104,5 @@ class AuthViewModel @Inject constructor(
 
     fun register(email: String, password: String) {
         executeAuthAction { authRepository.signUp(email, password) }
-    }
-
-    private fun executeAuthAction(authOperation: suspend () -> UserResult<Unit>) {
-        _uiState.value = AuthUiState.Loading
-        viewModelScope.launch {
-            when (val result = authOperation()) {
-                is DomainResult.Success -> {
-                    // Привязываем аккаунт
-                    when (val linkResult = linkAccountUseCase()) {
-                        is DomainResult.Success -> {
-                            logger.d(TAG, "Account linked successfully")
-                        }
-                        is DomainResult.Failure -> {
-                            logger.w(TAG, "Link account failed (non-blocking): ${linkResult.error}")
-                        }
-                    }
-
-                    _uiState.value = AuthUiState.Success
-
-                    // ✅ Проверяем есть ли активный пет
-                    val activePetId = sessionRepository.getActivePetId()
-                    if (activePetId != null) {
-                        _event.emit(AuthEvent.NavigateToPet(activePetId))
-                    } else {
-                        _event.emit(AuthEvent.NavigateToMain)
-                    }
-                }
-                is DomainResult.Failure -> {
-                    val resId = result.error.toUiErrorStringRes()
-                    _uiState.value = AuthUiState.Error(resId)
-                    _event.emit(AuthEvent.ShowError(resId))
-                }
-            }
-        }
     }
 }

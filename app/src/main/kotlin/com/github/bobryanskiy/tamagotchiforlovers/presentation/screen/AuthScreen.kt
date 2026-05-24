@@ -16,7 +16,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -64,8 +63,12 @@ fun AuthScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
 
-    val emailError = if (email.isNotEmpty()) ValidationUtils.getEmailError(email) else null
-    val passwordError = if (password.isNotEmpty()) ValidationUtils.getPasswordError(password) else null
+    val emailErrorResId = remember(email) {
+        if (email.isNotEmpty()) ValidationUtils.getEmailErrorResId(email) else null
+    }
+    val passwordErrorResId = remember(password) {
+        if (password.isNotEmpty()) ValidationUtils.getPasswordErrorResId(password) else null
+    }
 
     LaunchedEffect(uiState) {
         when (val state = uiState) {
@@ -74,6 +77,7 @@ fun AuthScreen(
                 snackbarHostState.showSnackbar(message)
             }
             is AuthUiState.Success -> {
+                // Навигация обрабатывается через event
             }
             else -> {}
         }
@@ -123,8 +127,8 @@ fun AuthScreen(
             passwordVisible = passwordVisible,
             isSignUpMode = isSignUpMode,
             isLoading = uiState is AuthUiState.Loading,
-            emailError = emailError,
-            passwordError = passwordError,
+            emailErrorResId = emailErrorResId,
+            passwordErrorResId = passwordErrorResId,
             onEmailChange = { email = it },
             onPasswordChange = { password = it },
             onToggleMode = { isSignUpMode = !isSignUpMode },
@@ -144,14 +148,17 @@ private fun AuthContent(
     passwordVisible: Boolean,
     isSignUpMode: Boolean,
     isLoading: Boolean,
-    emailError: String?,
-    passwordError: String?,
+    emailErrorResId: Int?,
+    passwordErrorResId: Int?,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     onToggleMode: () -> Unit,
     onSubmit: () -> Unit
 ) {
-    val isFormValid = emailError == null && passwordError == null && email.isNotBlank() && password.isNotBlank()
+    val isFormValid = emailErrorResId == null
+            && passwordErrorResId == null
+            && email.isNotBlank()
+            && password.isNotBlank()
 
     Column(
         modifier = modifier.fillMaxSize(),
@@ -173,9 +180,9 @@ private fun AuthContent(
             modifier = Modifier.fillMaxWidth(),
             enabled = !isLoading,
             singleLine = true,
-            isError = emailError != null,
-            supportingText = if (emailError != null) {
-                { Text(emailError) }
+            isError = emailErrorResId != null,
+            supportingText = if (emailErrorResId != null) {
+                { Text(stringResource(emailErrorResId), color = MaterialTheme.colorScheme.error) }
             } else null
         )
 
@@ -190,9 +197,9 @@ private fun AuthContent(
             modifier = Modifier.fillMaxWidth(),
             enabled = !isLoading,
             singleLine = true,
-            isError = passwordError != null,
-            supportingText = if (passwordError != null) {
-                { Text(passwordError) }
+            isError = passwordErrorResId != null,
+            supportingText = if (passwordErrorResId != null) {
+                { Text(stringResource(passwordErrorResId), color = MaterialTheme.colorScheme.error) }
             } else null
         )
 

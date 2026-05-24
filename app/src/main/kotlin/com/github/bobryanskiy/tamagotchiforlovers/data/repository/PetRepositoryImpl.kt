@@ -18,10 +18,12 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.PetResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.SyncResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.util.Clock
+import com.github.bobryanskiy.tamagotchiforlovers.domain.util.NameLimits
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
@@ -52,45 +54,50 @@ class PetRepositoryImpl @Inject constructor(
     }
 
     override fun observePet(petId: String): Flow<Pet?> = flow {
-        try {
-            local.getPet(petId)?.let { emit(it.toDomain()) }
+        // 1. Сначала эмитим текущее значение из Room (мгновенно)
+        local.getPet(petId)?.let { emit(it.toDomain()) }
 
-            val flows = mutableListOf<Flow<Pet?>>()
-            flows.add(local.observePet(petId).mapNotNull { it?.toDomain() })
-
-            if (authRepository.isLoggedIn()) {
-                scope.launch {
-                    try {
-                        remote.observePet(petId).collect { dto ->
-                            if (dto == null) {
-                                syncScope.launch { local.deletePet(petId) }
-                                return@collect
-                            }
-
-                            val entity = dto.toEntity(petId).copy(syncStatus = "SYNCED")
-                            val localEntity = local.getPet(petId)
-
-                            if (localEntity == null || entity.updatedAt > localEntity.updatedAt) {
-                                local.savePet(entity)
-                                logger.d(TAG, "🔄 Synced from Firestore: ${entity.updatedAt} > ${localEntity?.updatedAt}")
-                            } else {
-                                logger.d(TAG, "⏭️ Local is newer: ${localEntity.updatedAt} >= ${entity.updatedAt}")
-                            }
-                        }
-                    } catch (e: Exception) {
-                        logger.e(TAG, "Firestore observe error: ${e.message}", e)
-                    }
+        // 2. Используем coroutineScope — он отменится вместе с Flow
+        coroutineScope {
+            val syncJob = launch {
+                if (!authRepository.isLoggedIn()) {
+                    logger.d(TAG, "User not authenticated, skipping Firestore sync for $petId")
+                    return@launch
                 }
-            } else {
-                logger.d(TAG, "User not authenticated. Skipping Firestore listen for pet $petId")
+
+                try {
+                    remote.observePet(petId).collect { dto ->
+                        if (dto == null) {
+                            // Пет удалён в облаке — удаляем локально
+                            local.deletePet(petId)
+                            logger.d(TAG, "🗑️ Pet deleted in cloud, removed locally: $petId")
+                            return@collect
+                        }
+
+                        val remoteEntity = dto.toEntity(petId).copy(syncStatus = "SYNCED")
+                        val localEntity = local.getPet(petId)
+
+                        // Применяем только если remote новее
+                        if (localEntity == null || remoteEntity.updatedAt > localEntity.updatedAt) {
+                            local.savePet(remoteEntity)
+                            logger.d(TAG, "🔄 Synced from Firestore: ${remoteEntity.updatedAt} > ${localEntity?.updatedAt}")
+                        } else {
+                            logger.d(TAG, "⏭️ Local is newer, skipping: ${localEntity.updatedAt} >= ${remoteEntity.updatedAt}")
+                        }
+                    }
+                } catch (e: CancellationException) {
+                    throw e  // Нормальное поведение при отмене
+                } catch (e: Exception) {
+                    logger.e(TAG, "Firestore observe error for $petId", e)
+                }
             }
 
-            merge(*flows.toTypedArray())
-                .distinctUntilChanged()
+            // 3. Наблюдаем ТОЛЬКО за Room — он наш single source of truth
+            // Когда Firestore запишет в Room, Room автоматически эмитит новое значение
+            local.observePet(petId)
+                .mapNotNull { it?.toDomain() }
+                .distinctUntilChanged()  // Избегаем дублей
                 .collect { pet -> emit(pet) }
-
-        } catch (e: Exception) {
-            logger.e(TAG, "Error in observePet: ${e.message}", e)
         }
     }.flowOn(io)
 
@@ -155,7 +162,6 @@ class PetRepositoryImpl @Inject constructor(
         local.updateLifeState(
             petId,
             state.status.name,
-            state.isActionsBlocked,
             state.decayMultiplier,
             state.recoveryEndTime,
             now
@@ -167,7 +173,6 @@ class PetRepositoryImpl @Inject constructor(
                 remote.updatePetLifeState(
                     petId,
                     state.status.name,
-                    state.isActionsBlocked,
                     state.decayMultiplier,
                     state.recoveryEndTime,
                     now
@@ -195,13 +200,18 @@ class PetRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updatePetName(petId: String, name: String): PetResult<Unit> = execute {
+        val trimmed = name.trim()
+        if (trimmed.length !in NameLimits.PET_NAME_MIN..NameLimits.PET_NAME_MAX) {
+            throw IllegalArgumentException("Invalid pet name length")
+        }
+
         val now = clock.currentTimeMillis()
-        local.updateName(petId, name, now)
+        local.updateName(petId, trimmed, now)
         local.markPending(petId)
 
         syncScope.launch {
             try {
-                remote.updatePetName(petId, name, now)
+                remote.updatePetName(petId, trimmed, now)
                 local.markSynced(petId)
             } catch (e: Exception) {
                 logger.w(TAG, "Remote updatePetName failed", e)

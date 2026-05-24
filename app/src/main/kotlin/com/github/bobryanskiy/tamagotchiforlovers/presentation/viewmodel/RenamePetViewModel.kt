@@ -5,8 +5,9 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.bobryanskiy.tamagotchiforlovers.R
-import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PetRepository
+import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
+import com.github.bobryanskiy.tamagotchiforlovers.util.ValidationUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -51,21 +52,33 @@ class RenamePetViewModel @Inject constructor(
                         _uiState.value = RenamePetUiState.Error(R.string.error_pet_not_found)
                     }
                 }
-                is DomainResult.Failure -> {
-                    _uiState.value = RenamePetUiState.Error(R.string.error_unknown)
-                }
+                is DomainResult.Failure -> _uiState.value = RenamePetUiState.Error(R.string.error_unknown)
             }
         }
     }
 
     fun onNameChange(name: String) {
         _newName.value = name
+        if (_uiState.value is RenamePetUiState.Error) {
+            val currentError = (_uiState.value as RenamePetUiState.Error).messageResId
+            // Сбрасываем только если это ошибка валидации, не загрузки
+            if (currentError in listOf(
+                    R.string.error_empty_pet_name,
+                    R.string.error_pet_name_too_short,
+                    R.string.error_pet_name_too_long,
+                    R.string.error_pet_name_invalid_chars
+                )) {
+                _uiState.value = RenamePetUiState.Loaded(_newName.value)
+            }
+        }
     }
 
     fun rename() {
         val name = _newName.value.trim()
-        if (name.isBlank()) {
-            _uiState.value = RenamePetUiState.Error(R.string.error_empty_pet_name)
+
+        val errorResId = ValidationUtils.getPetNameErrorResId(name)
+        if (errorResId != null) {
+            _uiState.value = RenamePetUiState.Error(errorResId)
             return
         }
 

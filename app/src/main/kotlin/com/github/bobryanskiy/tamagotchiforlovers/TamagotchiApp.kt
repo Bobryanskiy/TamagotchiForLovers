@@ -34,10 +34,6 @@ class TamagotchiApp : Application(), Configuration.Provider {
             Timber.plant(Timber.DebugTree())
         }
 
-        // 2. Явно инициализируем WorkManager с нашей конфигурацией
-        // Это гарантирует что HiltWorkerFactory будет использоваться
-        androidx.work.WorkManager.initialize(this, workManagerConfiguration)
-
         // 3. Планируем периодическую синхронизацию
         syncScheduler.schedulePeriodicSync()
     }

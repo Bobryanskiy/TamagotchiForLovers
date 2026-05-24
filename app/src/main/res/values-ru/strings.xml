@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- App -->
-    <string name="app_name">Тамагочи для Влюбленных</string>
+<!--    <string name="app_name">Тамагочи для Влюбленных</string>-->
 
     <!-- Common -->
     <string name="back">Назад</string>
@@ -68,7 +68,6 @@
     <string name="pet_name">Имя питомца</string>
     <string name="create_pet_button">Создать</string>
     <string name="creating_pet">Создание…</string>
-    <string name="error_empty_pet_name">Имя не может быть пустым</string>
 
     <!-- Pet Screen -->
     <string name="pet_screen_title">Мой Питомец</string>
@@ -134,6 +133,7 @@
     <string name="error_database">Ошибка базы данных</string>
     <string name="error_network">Ошибка сети</string>
     <string name="error_pet_invalid_input">Неверные данные питомца</string>
+    <string name="error_action_would_kill_pet">Питомец слишком слаб для этого действия. Сначала позаботьтесь о базовых нуждах.</string>
 
     <!-- Notifications -->
     <string name="notif_channel_name">Оповещения о питомце</string>
@@ -150,6 +150,8 @@
     <string name="notif_crit_happy">❗ %1$s в стрессе!</string>
     <string name="notif_dead">%1$s погиб…</string>
     <string name="notif_escaped">%1$s убежал.</string>
+    <string name="notif_sick">%1$s заболел!</string>
+    <string name="notif_collapsed">%1$s без сил!</string>
 
     <!-- System -->
     <string name="sync_success">Данные синхронизированы</string>
@@ -244,6 +246,9 @@
     <!-- Notification Messages -->
     <string name="notif_dead_message">Ваш питомец погиб. Создайте нового, чтобы продолжить игру.</string>
     <string name="notif_escaped_message">Ваш питомец сбежал из-за плохого ухода. Найдите и верните его!</string>
+    <string name="notif_sick_message">Питомец заболел и нуждается в срочной заботе. Позаботьтесь обо всех его нуждах, чтобы помочь выздороветь.</string>
+    <string name="notif_collapsed_message">Питомец обессилен и на грани смерти. Действуйте немедленно!</string>
+
     <string name="btn_confirm">Подтвердить</string>
     <string name="btn_cancel">Отменить</string>
 
@@ -264,7 +269,6 @@
     <string name="unknown_user">Неизвестный пользователь</string>
     <string name="btn_link_account">Привязать аккаунт</string>
     <string name="btn_save">Сохранить</string>
-    <string name="error_empty_pair_name">Введите название пары</string>
 
     <!-- Nickname -->
     <string name="edit_nickname_title">Изменить никнейм</string>
@@ -272,4 +276,46 @@
     <string name="edit_nickname">Изменить никнейм</string>
     <string name="nickname_hint">Введите никнейм</string>
     <string name="nickname_too_long">Никнейм слишком длинный (макс. 20 символов)</string>
+
+    <string name="error_empty_pet_name">Имя питомца не может быть пустым</string>
+    <string name="error_pet_name_too_short">Имя слишком короткое</string>
+    <string name="error_pet_name_too_long">Имя слишком длинное</string>
+    <string name="error_pet_name_invalid_chars">Имя содержит недопустимые символы</string>
+
+    <string name="error_empty_pair_name">Название пары не может быть пустым</string>
+    <string name="error_pair_name_too_short">Название слишком короткое</string>
+    <string name="error_pair_name_too_long">Название слишком длинное</string>
+    <string name="error_pair_name_invalid_chars">Название содержит недопустимые символы</string>
+
+    <string name="error_empty_nickname">Никнейм не может быть пустым</string>
+    <string name="error_nickname_too_short">Никнейм слишком короткий</string>
+    <string name="error_nickname_too_long">Никнейм слишком длинный</string>
+    <string name="error_nickname_invalid_chars">Никнейм содержит недопустимые символы</string>
+
+    <!-- Настройки -->
+    <string name="settings_title">Настройки</string>
+    <string name="settings_section_account">Аккаунт</string>
+    <string name="settings_section_notifications">Уведомления</string>
+    <string name="settings_section_about">О приложении</string>
+
+    <string name="settings_language">Язык</string>
+    <string name="settings_language_system">Системный</string>
+
+    <string name="settings_notifications">Включить уведомления</string>
+    <string name="settings_notifications_desc">Напоминания о нуждах питомца</string>
+    <string name="settings_sound">Звук</string>
+    <string name="settings_sound_desc">Воспроизводить звук уведомлений</string>
+
+    <string name="settings_version">Версия приложения</string>
+
+    <string name="error_empty_email">Email не может быть пустым</string>
+    <string name="error_invalid_email_format">Некорректный формат email</string>
+
+    <!-- Каналы уведомлений -->
+    <string name="notif_channel_urgent">Срочные оповещения</string>
+    <string name="notif_channel_urgent_desc">Критические уведомления со звуком и вибрацией</string>
+    <string name="notif_channel_normal">Оповещения (без звука)</string>
+    <string name="notif_channel_normal_desc">Критические уведомления без звука</string>
+    <string name="notif_channel_silent">Обычные обновления</string>
+    <string name="notif_channel_silent_desc">Некритические уведомления</string>
 </resources>

@@ -16,9 +16,11 @@ class NotificationStringResolver @Inject constructor(
 ) {
     fun resolveTitle(notification: PetNotification): String {
         val petName = notification.petName
-        return when (notification.titleKey) {
+        return when (notification.key) {
             NotificationKey.Dead -> context.getString(R.string.notif_dead, petName)
             NotificationKey.Escaped -> context.getString(R.string.notif_escaped, petName)
+            NotificationKey.Sick -> context.getString(R.string.notif_sick, petName)
+            NotificationKey.Collapsed -> context.getString(R.string.notif_collapsed, petName)
             NotificationKey.CriticalHunger -> context.getString(R.string.notif_title_crit, petName)
             NotificationKey.CriticalEnergy -> context.getString(R.string.notif_title_crit, petName)
             NotificationKey.CriticalCleanliness -> context.getString(R.string.notif_title_crit, petName)
@@ -32,9 +34,11 @@ class NotificationStringResolver @Inject constructor(
 
     fun resolveMessage(notification: PetNotification): String {
         val petName = notification.petName
-        return when (notification.messageKey) {
+        return when (notification.key) {
             NotificationKey.Dead -> context.getString(R.string.notif_dead_message)
             NotificationKey.Escaped -> context.getString(R.string.notif_escaped_message)
+            NotificationKey.Sick -> context.getString(R.string.notif_sick_message)
+            NotificationKey.Collapsed -> context.getString(R.string.notif_sick_message)
             NotificationKey.CriticalHunger -> context.getString(R.string.notif_crit_hunger, petName)
             NotificationKey.CriticalEnergy -> context.getString(R.string.notif_crit_energy, petName)
             NotificationKey.CriticalCleanliness -> context.getString(R.string.notif_crit_clean, petName)

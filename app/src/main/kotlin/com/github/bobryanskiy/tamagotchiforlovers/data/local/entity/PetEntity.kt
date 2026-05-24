@@ -23,7 +23,6 @@ data class PetEntity(
     @ColumnInfo(name = "abandoned_at") val abandonedAt: Long?,
 
     @ColumnInfo(name = "life_status") val lifeStatus: String,
-    @ColumnInfo(name = "is_actions_blocked") val isActionsBlocked: Boolean,
     @ColumnInfo(name = "decay_multiplier") val decayMultiplier: Float,
     @ColumnInfo(name = "recovery_end_time") val recoveryEndTime: Long?,
 
@@ -48,7 +47,6 @@ data class PetEntity(
             currentPairId = null,
             createdAt = System.currentTimeMillis(),
             lifeStatus = "NORMAL",
-            isActionsBlocked = false,
             decayMultiplier = 1.0f,
             recoveryEndTime = null,
             abandonedAt = null,

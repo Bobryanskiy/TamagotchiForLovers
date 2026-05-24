@@ -21,6 +21,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -28,8 +29,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.bobryanskiy.tamagotchiforlovers.R
+import com.github.bobryanskiy.tamagotchiforlovers.domain.util.NameLimits
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.CreatePetUiState
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.CreatePetViewModel
+import com.github.bobryanskiy.tamagotchiforlovers.util.ValidationUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,6 +43,9 @@ fun CreatePetScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val petName by viewModel.petName.collectAsStateWithLifecycle()
+    val nameErrorResId = remember(petName) {
+        if (petName.isNotEmpty()) ValidationUtils.getPetNameErrorResId(petName) else null
+    }
 
     LaunchedEffect(uiState) {
         if (uiState is CreatePetUiState.Success) {
@@ -59,9 +65,6 @@ fun CreatePetScreen(
             )
         }
     ) { padding ->
-        val errorText = if (uiState is CreatePetUiState.Error) {
-            stringResource((uiState as CreatePetUiState.Error).messageResId)
-        } else null
 
         CreatePetContent(
             modifier = Modifier.padding(padding).padding(24.dp),
@@ -69,7 +72,7 @@ fun CreatePetScreen(
             onNameChange = viewModel::onNameChange,
             onCreateClick = viewModel::createPet,
             isLoading = uiState is CreatePetUiState.Loading,
-            error = errorText
+            error = nameErrorResId
         )
     }
 }
@@ -81,7 +84,7 @@ private fun CreatePetContent(
     onNameChange: (String) -> Unit,
     onCreateClick: () -> Unit,
     isLoading: Boolean,
-    error: String?
+    error: Int?
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
@@ -101,12 +104,15 @@ private fun CreatePetContent(
             label = { Text(stringResource(R.string.pet_name)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
+            supportingText = {
+                Text("${petName.length} / ${NameLimits.PET_NAME_MAX}")
+            },
             isError = error != null
         )
 
         if (error != null) {
             Text(
-                text = error,
+                text = stringResource(error),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.error
             )

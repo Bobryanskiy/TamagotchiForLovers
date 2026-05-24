@@ -25,37 +25,47 @@ data class PetStats(
     val updatedAt: Long
 ) {
     companion object {
-        // Игровые балансные константы
         const val FEED_HUNGER_BOOST = 30
         const val FEED_HAPPINESS_BOOST = 10
-        const val PLAY_HAPPINESS_BOOST = 30
+        const val FEED_ENERGY_COST = 5
+        const val FEED_CLEANLINESS_COST = 3
+
+        const val PLAY_HAPPINESS_BOOST = 25
         const val PLAY_ENERGY_COST = 15
         const val PLAY_HUNGER_COST = 10
-        const val REST_ENERGY_BOOST = 40
-        const val REST_HUNGER_COST = 5
-        const val CLEAN_HAPPINESS_BOOST = 5
+        const val PLAY_CLEANLINESS_COST = 5
+
+        const val CLEAN_CLEANLINESS_BOOST = 40
+        const val CLEAN_ENERGY_COST = 8
+        const val CLEAN_HAPPINESS_COST = 5
+
+        const val REST_ENERGY_BOOST = 35
+        const val REST_HUNGER_COST = 8
     }
 
     fun applyAction(action: PetAction, currentTime: Long): PetStats = when (action) {
         PetAction.Feed -> copy(
-            hunger = (hunger + FEED_HUNGER_BOOST).coerceIn(0, 100),
-            happiness = (happiness + FEED_HAPPINESS_BOOST).coerceIn(0, 100),
+            hunger = (hunger + FEED_HUNGER_BOOST).coerceAtMost(100),
+            energy = (energy - FEED_ENERGY_COST).coerceAtLeast(0),
+            cleanliness = (cleanliness - FEED_CLEANLINESS_COST).coerceAtLeast(0),
             updatedAt = currentTime
         )
         PetAction.Play -> copy(
-            happiness = (happiness + PLAY_HAPPINESS_BOOST).coerceIn(0, 100),
-            energy = (energy - PLAY_ENERGY_COST).coerceIn(0, 100),
-            hunger = (hunger - PLAY_HUNGER_COST).coerceIn(0, 100),
+            happiness = (happiness + PLAY_HAPPINESS_BOOST).coerceAtMost(100),
+            energy = (energy - PLAY_ENERGY_COST).coerceAtLeast(0),
+            hunger = (hunger - PLAY_HUNGER_COST).coerceAtLeast(0),
+            cleanliness = (cleanliness - PLAY_CLEANLINESS_COST).coerceAtLeast(0),
             updatedAt = currentTime
         )
         PetAction.Clean -> copy(
-            cleanliness = 100,
-            happiness = (happiness + CLEAN_HAPPINESS_BOOST).coerceIn(0, 100),
+            cleanliness = (cleanliness + CLEAN_CLEANLINESS_BOOST).coerceAtMost(100),
+            energy = (energy - CLEAN_ENERGY_COST).coerceAtLeast(0),
+            happiness = (happiness - CLEAN_HAPPINESS_COST).coerceAtLeast(0),
             updatedAt = currentTime
         )
         PetAction.Rest -> copy(
-            energy = (energy + REST_ENERGY_BOOST).coerceIn(0, 100),
-            hunger = (hunger - REST_HUNGER_COST).coerceIn(0, 100),
+            energy = (energy + REST_ENERGY_BOOST).coerceAtMost(100),
+            hunger = (hunger - REST_HUNGER_COST).coerceAtLeast(0),
             updatedAt = currentTime
         )
     }
@@ -70,8 +80,6 @@ data class PetStats(
 
 data class PetLifeState(
     val status: PetLifeStatus,
-    val isActionsBlocked: Boolean = false,
-    // Для COLLAPSED
     val recoveryEndTime: Long? = null,
     val decayMultiplier: Float = 1.0f
 ) {
@@ -79,15 +87,10 @@ data class PetLifeState(
 }
 
 enum class PetLifeStatus {
-    // Жив и здоров
     NORMAL,
-    // Болен (ускоренный декей статов)
     SICK,
-    // Без сознания (блокировка действий на время)
     COLLAPSED,
-    // Погиб (конец игры)
     DEAD,
-    // Убежал (конец игры)
     ESCAPED
 }
 

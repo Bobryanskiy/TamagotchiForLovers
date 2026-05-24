@@ -27,7 +27,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class DefaultUserRepository @Inject constructor(
+class UserRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val auth: FirebaseAuth,
     private val clock: Clock,

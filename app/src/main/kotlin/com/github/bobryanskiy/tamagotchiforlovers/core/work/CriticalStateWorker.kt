@@ -5,6 +5,7 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.github.bobryanskiy.tamagotchiforlovers.core.logging.AppLogger
+import com.github.bobryanskiy.tamagotchiforlovers.core.usecase.CheckAndNotifyPetsWorkerUseCase
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
@@ -23,8 +24,8 @@ class CriticalStateWorker @AssistedInject constructor(
     override suspend fun doWork(): Result {
         logger.d(TAG, "Starting critical state check for all pets")
         return try {
-            val success = checkAndNotifyPetsUseCase()
-            if (success) Result.success() else Result.retry()
+            checkAndNotifyPetsUseCase()
+            Result.success()
         } catch (e: Exception) {
             logger.e(TAG, "Critical error during check", e)
             Result.retry()

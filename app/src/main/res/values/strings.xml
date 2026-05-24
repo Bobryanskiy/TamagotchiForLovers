@@ -1,6 +1,6 @@
 <resources>
     <!-- App -->
-    <string name="app_name">Tamagotchi for Lovers</string>
+    <string name="app_name" translatable="false">Tamagotchi for Lovers</string>
 
     <!-- Common -->
     <string name="back">Back</string>
@@ -67,7 +67,6 @@
     <string name="pet_name">Pet Name</string>
     <string name="create_pet_button">Create Pet</string>
     <string name="creating_pet">Creating…</string>
-    <string name="error_empty_pet_name">Pet name cannot be empty</string>
 
     <!-- Pet Screen -->
     <string name="pet_screen_title">My Pet</string>
@@ -133,6 +132,7 @@
     <string name="error_database">Database error</string>
     <string name="error_network">Network error</string>
     <string name="error_pet_invalid_input">Invalid pet data</string>
+    <string name="error_action_would_kill_pet">Your pet is too weak for this action. Take care of their basic needs first.</string>
 
     <!-- Notifications -->
     <string name="notif_channel_name">Pet Care Alerts</string>
@@ -149,8 +149,12 @@
     <string name="notif_crit_happy">❗ %1$s is stressed!</string>
     <string name="notif_dead">%1$s passed away…</string>
     <string name="notif_escaped">%1$s ran away.</string>
+    <string name="notif_sick">%1$s is sick!</string>
+    <string name="notif_collapsed">%1$s collapsed!</string>
     <string name="notif_dead_message">Your pet has passed away. Create a new one to continue playing.</string>
     <string name="notif_escaped_message">Your pet ran away due to neglect. Find and bring it back!</string>
+    <string name="notif_sick_message">Your pet is sick and needs urgent care. Take care of all their needs to help them recover.</string>
+    <string name="notif_collapsed_message">Your pet is exhausted and on the verge of death. Act immediately!</string>
 
     <!-- System -->
     <string name="sync_success">Data synced</string>
@@ -261,7 +265,6 @@
     <string name="unknown_user">Unknown User</string>
     <string name="btn_link_account">Link Account</string>
     <string name="btn_save">Save</string>
-    <string name="error_empty_pair_name">Enter pair name</string>
 
     <!-- Nickname -->
     <string name="edit_nickname_title">Edit nickname</string>
@@ -269,4 +272,46 @@
     <string name="edit_nickname">Edit nickname</string>
     <string name="nickname_hint">Enter your nickname</string>
     <string name="nickname_too_long">Nickname is too long (max 20 characters)</string>
+
+    <string name="error_empty_pet_name">Pet name cannot be empty</string>
+    <string name="error_pet_name_too_short">Name is too short (min %1$d characters)</string>
+    <string name="error_pet_name_too_long">Name is too long (max %1$d characters)</string>
+    <string name="error_pet_name_invalid_chars">Name contains invalid characters</string>
+
+    <string name="error_empty_pair_name">Pair name cannot be empty</string>
+    <string name="error_pair_name_too_short">Name is too short (min %1$d characters)</string>
+    <string name="error_pair_name_too_long">Name is too long (max %1$d characters)</string>
+    <string name="error_pair_name_invalid_chars">Name contains invalid characters</string>
+
+    <string name="error_empty_nickname">Nickname cannot be empty</string>
+    <string name="error_nickname_too_short">Nickname is too short (min %1$d characters)</string>
+    <string name="error_nickname_too_long">Nickname is too long (max %1$d characters)</string>
+    <string name="error_nickname_invalid_chars">Nickname contains invalid characters</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_section_account">Account</string>
+    <string name="settings_section_notifications">Notifications</string>
+    <string name="settings_section_about">About</string>
+
+    <string name="settings_language">Language</string>
+    <string name="settings_language_system">System default</string>
+
+    <string name="settings_notifications">Enable notifications</string>
+    <string name="settings_notifications_desc">Reminders about pet needs</string>
+    <string name="settings_sound">Sound</string>
+    <string name="settings_sound_desc">Play sound for notifications</string>
+
+    <string name="settings_version">App version</string>
+
+    <string name="error_empty_email">Email cannot be empty</string>
+    <string name="error_invalid_email_format">Invalid email format</string>
+
+    <!-- Notification Channels -->
+    <string name="notif_channel_urgent">Urgent pet alerts</string>
+    <string name="notif_channel_urgent_desc">Critical notifications with sound and vibration</string>
+    <string name="notif_channel_normal">Pet alerts (silent)</string>
+    <string name="notif_channel_normal_desc">Critical notifications without sound</string>
+    <string name="notif_channel_silent">Regular pet updates</string>
+    <string name="notif_channel_silent_desc">Non-critical notifications</string>
 </resources>

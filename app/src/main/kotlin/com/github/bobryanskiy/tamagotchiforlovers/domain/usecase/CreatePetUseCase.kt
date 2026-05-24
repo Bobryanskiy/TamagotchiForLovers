@@ -14,23 +14,20 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.PetResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.util.Clock
 import com.github.bobryanskiy.tamagotchiforlovers.domain.util.IdGenerator
+import com.github.bobryanskiy.tamagotchiforlovers.domain.util.NameLimits
 import javax.inject.Inject
 
-/**
- * UseCase создания нового питомца.
- *
- * Создаёт доменную модель с начальными статами и сохраняет через Repository.
- * Если пользователь авторизован — привязывает питомца к его ownerId.
- */
 class CreatePetUseCase @Inject constructor(
     private val petRepository: PetRepository,
-    private val authRepository: AuthRepository,  // можно убрать если не нужен ownerId
+    private val authRepository: AuthRepository,
     private val sessionRepository: SessionRepository,
     private val clock: Clock,
     private val idGenerator: IdGenerator
 ) {
     suspend operator fun invoke(name: String): PetResult<String> {
-        if (name.isBlank()) {
+        val trimmed = name.trim()
+
+        if (trimmed.length !in NameLimits.PET_NAME_MIN..NameLimits.PET_NAME_MAX) {
             return DomainResult.Failure(PetError.InvalidInput)
         }
 
@@ -41,24 +38,15 @@ class CreatePetUseCase @Inject constructor(
         val newPet = Pet(
             id = id,
             profile = PetProfile(
-                name = name.trim(),
+                name = trimmed,
                 ownerUserId = ownerId,
                 currentPairId = null,
                 createdAt = now,
                 abandonedAt = null
             ),
-            stats = PetStats(
-                hunger = 80, energy = 80,
-                cleanliness = 80, happiness = 80,
-                updatedAt = now
-            ),
-            lifeState = PetLifeState(
-                status = PetLifeStatus.NORMAL,
-                isActionsBlocked = false,
-                recoveryEndTime = null,
-                decayMultiplier = 1.0f
-            ),
-            syncStatus = if (ownerId == null) SyncStatus.LOCAL_ONLY else SyncStatus.SYNCED
+            stats = PetStats(80, 80, 80, 80, now),
+            lifeState = PetLifeState(PetLifeStatus.NORMAL, null, 1.0f),
+            syncStatus = SyncStatus.SYNCED
         )
 
         val saveResult = petRepository.createPet(newPet)

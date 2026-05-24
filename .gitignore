@@ -36,7 +36,6 @@ debug/
 release/
 
 # APK files
-*.apk
 *.ap_
 
 # Proguard logs
@@ -58,4 +57,3 @@ proguard/
 # OS generated files
 .DS_Store
 Thumbs.db
-```

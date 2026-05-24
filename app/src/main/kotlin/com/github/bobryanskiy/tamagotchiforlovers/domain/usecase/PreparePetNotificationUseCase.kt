@@ -4,6 +4,7 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.model.NotificationKey
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pet
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetLifeStatus
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetNotification
+import com.github.bobryanskiy.tamagotchiforlovers.domain.model.StatType
 import javax.inject.Inject
 
 /**
@@ -13,57 +14,76 @@ import javax.inject.Inject
  * Возвращает NotificationKey — ключ, который Android-слой превратит в строку.
  */
 class PreparePetNotificationUseCase @Inject constructor() {
+    companion object {
+        /** Порог критичности: стат ниже этого значения → критическое уведомление */
+        private const val CRITICAL_THRESHOLD = 15
+    }
 
     operator fun invoke(pet: Pet): PetNotification {
         val stats = pet.stats
-        val minStat = minOf(stats.hunger, stats.energy, stats.cleanliness, stats.happiness)
-        val isCritical = minStat <= 15
 
-        // Terminal states
-        if (pet.lifeState.status == PetLifeStatus.DEAD) {
-            return PetNotification(
+        when (pet.lifeState.status) {
+            PetLifeStatus.DEAD -> return PetNotification(
                 petId = pet.id,
                 petName = pet.profile.name,
-                titleKey = NotificationKey.Dead,
-                messageKey = NotificationKey.Dead,  // одно и то же сообщение
+                key = NotificationKey.Dead,
                 isUrgent = true,
-                status = PetLifeStatus.DEAD
+                status = PetLifeStatus.DEAD,
+                shouldShow = true
             )
-        }
-        if (pet.lifeState.status == PetLifeStatus.ESCAPED) {
-            return PetNotification(
+            PetLifeStatus.ESCAPED -> return PetNotification(
                 petId = pet.id,
                 petName = pet.profile.name,
-                titleKey = NotificationKey.Escaped,
-                messageKey = NotificationKey.Escaped,
+                key = NotificationKey.Escaped,
                 isUrgent = true,
-                status = PetLifeStatus.ESCAPED
+                status = PetLifeStatus.ESCAPED,
+                shouldShow = true
             )
+            PetLifeStatus.SICK -> return PetNotification(
+                petId = pet.id,
+                petName = pet.profile.name,
+                key = NotificationKey.Sick,
+                isUrgent = true,
+                status = PetLifeStatus.SICK,
+                shouldShow = true
+            )
+            PetLifeStatus.COLLAPSED -> return PetNotification(
+                petId = pet.id,
+                petName = pet.profile.name,
+                key = NotificationKey.Collapsed,
+                isUrgent = true,
+                status = PetLifeStatus.COLLAPSED,
+                shouldShow = true
+            )
+            PetLifeStatus.NORMAL -> { /* продолжаем ниже */ }
         }
 
         // Live pet — определяем критичность по минимальной статистике
-        val (titleKey, messageKey) = when (minStat) {
-            stats.hunger -> if (isCritical)
-                NotificationKey.CriticalHunger to NotificationKey.CriticalHunger
-            else NotificationKey.WarningHunger to NotificationKey.WarningHunger
-            stats.energy -> if (isCritical)
-                NotificationKey.CriticalEnergy to NotificationKey.CriticalEnergy
-            else NotificationKey.WarningEnergy to NotificationKey.WarningEnergy
-            stats.cleanliness -> if (isCritical)
-                NotificationKey.CriticalCleanliness to NotificationKey.CriticalCleanliness
-            else NotificationKey.WarningCleanliness to NotificationKey.WarningCleanliness
-            else -> if (isCritical)
-                NotificationKey.CriticalHappiness to NotificationKey.CriticalHappiness
-            else NotificationKey.WarningHappiness to NotificationKey.WarningHappiness
+        val statsByType: Map<StatType, Int> = mapOf(
+            StatType.HUNGER to stats.hunger,
+            StatType.ENERGY to stats.energy,
+            StatType.CLEANLINESS to stats.cleanliness,
+            StatType.HAPPINESS to stats.happiness
+        )
+
+        val worstStat = statsByType.minByOrNull { it.value }?.key ?: StatType.HAPPINESS
+        val minStatValue = statsByType[worstStat] ?: 0
+        val isCritical = minStatValue <= CRITICAL_THRESHOLD
+
+        val key = when (worstStat) {
+            StatType.HUNGER -> if (isCritical) NotificationKey.CriticalHunger else NotificationKey.WarningHunger
+            StatType.ENERGY -> if (isCritical) NotificationKey.CriticalEnergy else NotificationKey.WarningEnergy
+            StatType.CLEANLINESS -> if (isCritical) NotificationKey.CriticalCleanliness else NotificationKey.WarningCleanliness
+            StatType.HAPPINESS -> if (isCritical) NotificationKey.CriticalHappiness else NotificationKey.WarningHappiness
         }
 
         return PetNotification(
             petId = pet.id,
             petName = pet.profile.name,
-            titleKey = titleKey,
-            messageKey = messageKey,
+            key = key,
             isUrgent = isCritical,
-            status = pet.lifeState.status
+            status = pet.lifeState.status,
+            shouldShow = true
         )
     }
 }

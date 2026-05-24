@@ -17,8 +17,8 @@ class RoomLocalPetDataSource @Inject constructor(
     override suspend fun markSynced(petId: String) = petDao.markSynced(petId)
     override suspend fun updateStats(petId: String, hunger: Int, energy: Int, cleanliness: Int, happiness: Int, timestamp: Long) =
         petDao.updateStats(petId, hunger, energy, cleanliness, happiness, timestamp)
-    override suspend fun updateLifeState(petId: String, status: String, isBlocked: Boolean, multiplier: Float, recoveryTime: Long?, timestamp: Long) =
-        petDao.updateLifeState(petId, status, isBlocked, multiplier, recoveryTime, timestamp)
+    override suspend fun updateLifeState(petId: String, status: String, multiplier: Float, recoveryTime: Long?, timestamp: Long) =
+        petDao.updateLifeState(petId, status, multiplier, recoveryTime, timestamp)
     override suspend fun updatePairId(petId: String, pairId: String?, timestamp: Long) =
         petDao.updatePairId(petId, pairId, timestamp)
     override suspend fun updateName(petId: String, name: String, timestamp: Long) =

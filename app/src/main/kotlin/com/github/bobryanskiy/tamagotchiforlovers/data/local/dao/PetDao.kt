@@ -39,8 +39,7 @@ interface PetDao {
 
     @Query("""
         UPDATE pets SET 
-            life_status = :status, 
-            is_actions_blocked = :isBlocked, 
+            life_status = :status,
             decay_multiplier = :multiplier, 
             recovery_end_time = :recoveryTime,
             updated_at = :timestamp, 
@@ -50,7 +49,6 @@ interface PetDao {
     suspend fun updateLifeState(
         petId: String,
         status: String,
-        isBlocked: Boolean,
         multiplier: Float,
         recoveryTime: Long?,
         timestamp: Long

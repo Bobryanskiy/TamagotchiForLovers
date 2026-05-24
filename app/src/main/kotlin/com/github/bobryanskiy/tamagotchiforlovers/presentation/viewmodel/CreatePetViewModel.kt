@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.github.bobryanskiy.tamagotchiforlovers.R
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.CreatePetUseCase
+import com.github.bobryanskiy.tamagotchiforlovers.util.ValidationUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,6 +34,7 @@ class CreatePetViewModel @Inject constructor(
 
     fun onNameChange(name: String) {
         _petName.value = name
+        // Сбрасываем ошибку при вводе
         if (_uiState.value is CreatePetUiState.Error) {
             _uiState.value = CreatePetUiState.Idle
         }
@@ -40,8 +42,10 @@ class CreatePetViewModel @Inject constructor(
 
     fun createPet() {
         val name = _petName.value.trim()
-        if (name.isBlank()) {
-            _uiState.value = CreatePetUiState.Error(R.string.error_empty_pet_name)
+
+        val errorResId = ValidationUtils.getPetNameErrorResId(name)
+        if (errorResId != null) {
+            _uiState.value = CreatePetUiState.Error(errorResId)
             return
         }
 

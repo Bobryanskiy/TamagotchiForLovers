@@ -1,35 +1,45 @@
 package com.github.bobryanskiy.tamagotchiforlovers.domain.usecase
 
-import com.github.bobryanskiy.tamagotchiforlovers.core.notification.PetAlarmManager
+import com.github.bobryanskiy.tamagotchiforlovers.core.alarm.PetAlarmManager
+import com.github.bobryanskiy.tamagotchiforlovers.core.logging.AppLogger
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PetRepository
-import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
+import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.SettingsRepository
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class RescheduleAlarmsUseCase @Inject constructor(
     private val petRepository: PetRepository,
-    private val alarmManager: PetAlarmManager
+    private val petAlarmManager: PetAlarmManager,
+    private val settingsRepository: SettingsRepository,
+    private val logger: AppLogger
 ) {
-    suspend operator fun invoke(): Boolean {
-        return when (val result = petRepository.getAllActivePets()) {
-            is DomainResult.Success -> {
-                val pets = result.data
-                if (pets.isEmpty()) {
-                    return true
-                }
+    companion object {
+        private const val TAG = "RescheduleAlarmsUseCase"
+    }
 
-                var allSuccess = true
-                pets.forEach { pet ->
-                    try {
-                        alarmManager.scheduleCheck(pet.id, pet.lifeState)
-                    } catch (e: Exception) {
-                        allSuccess = false
-                    }
-                }
-                allSuccess
-            }
-            is DomainResult.Failure -> false
+    suspend operator fun invoke(): Boolean {
+        // Проверка настроек перед перепланированием
+        val notificationsEnabled = settingsRepository.observeNotificationsEnabled().first()
+        if (!notificationsEnabled) {
+            logger.d(TAG, "🔕 Notifications disabled, skipping alarm reschedule")
+            return true  // успех, просто ничего не делаем
         }
+
+        val pets = petRepository.getAllActivePets().getOrNull() ?: run {
+            logger.w(TAG, "No active pets to reschedule")
+            return false
+        }
+
+        logger.d(TAG, "Rescheduling alarms for ${pets.size} pets")
+
+        pets.forEach { pet ->
+            petAlarmManager.scheduleSmartAlarm(
+                petId = pet.id,
+                pet = pet,
+                notificationsEnabled = true
+            )
+        }
+
+        return true
     }
 }

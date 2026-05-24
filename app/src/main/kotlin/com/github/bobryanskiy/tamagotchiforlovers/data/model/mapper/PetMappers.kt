@@ -10,7 +10,6 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetLifeState
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetLifeStatus
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetProfile
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetStats
-import java.util.Date
 
 /**
  * Firestore → Room
@@ -26,7 +25,6 @@ fun PetDto.toEntity(petId: String): PetEntity {
         currentPairId = p.currentPairId,
         createdAt = p.createdAt,
         lifeStatus = l.lifeStatus,
-        isActionsBlocked = l.isActionsBlocked,
         decayMultiplier = l.decayMultiplier,
         recoveryEndTime = l.recoveryEndTime,
         abandonedAt = p.abandonedAt,
@@ -61,7 +59,6 @@ fun PetEntity.toDomain(): Pet {
         ),
         lifeState = PetLifeState(
             status = PetLifeStatus.valueOf(lifeStatus),
-            isActionsBlocked = isActionsBlocked,
             decayMultiplier = decayMultiplier,
             recoveryEndTime = recoveryEndTime
         )
@@ -82,7 +79,6 @@ fun PetEntity.toDto(): PetDto = PetDto(
     ),
     lifeState = LifeStateDto(
         lifeStatus = lifeStatus,
-        isActionsBlocked = isActionsBlocked,
         decayMultiplier = decayMultiplier,
         recoveryEndTime = recoveryEndTime,
     )
@@ -98,7 +94,6 @@ fun Pet.toEntity(): PetEntity = PetEntity(
     currentPairId = this.profile.currentPairId,
     createdAt = this.profile.createdAt,
     lifeStatus = this.lifeState.status.name,
-    isActionsBlocked = this.lifeState.isActionsBlocked,
     decayMultiplier = this.lifeState.decayMultiplier,
     recoveryEndTime = this.lifeState.recoveryEndTime,
     abandonedAt = this.profile.abandonedAt,
@@ -107,5 +102,5 @@ fun Pet.toEntity(): PetEntity = PetEntity(
     cleanliness = this.stats.cleanliness,
     happiness = this.stats.happiness,
     updatedAt = this.stats.updatedAt,
-    syncStatus = "SYNCED" // Переопределяется в репозитории через .copy(syncStatus = "PENDING")
+    syncStatus = "SYNCED"
 )

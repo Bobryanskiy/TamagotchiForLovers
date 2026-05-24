@@ -50,6 +50,12 @@ class JoinPairViewModel @Inject constructor(
 
     fun submitInviteCode(inviteCode: String) {
         viewModelScope.launch {
+            val guestId = userRepository.getCurrentUserId()
+            if (guestId == null) {
+                _uiState.value = JoinPairUiState.Error(R.string.error_not_authenticated)
+                return@launch
+            }
+
             if (inviteCode.isBlank()) {
                 _uiState.value = JoinPairUiState.Error(R.string.error_pair_invalid_input)
                 return@launch
@@ -60,13 +66,6 @@ class JoinPairViewModel @Inject constructor(
             when (val pairResult = findPairByInviteKeyUseCase(inviteCode.uppercase())) {
                 is DomainResult.Success -> {
                     val pair = pairResult.data
-                    val guestId = userRepository.getCurrentUserId() ?: run {
-                        _uiState.value = JoinPairUiState.Error(R.string.error_not_authenticated)
-                        return@launch
-                    }
-
-                    // ✅ КРИТИЧНО: подписываемся ПЕРЕД отправкой запроса.
-                    // Иначе мгновенное одобрение host'ом может быть пропущено.
                     currentPairId = pair.id
                     startObservingPair(pair.id, pair.name)
 
@@ -102,14 +101,13 @@ class JoinPairViewModel @Inject constructor(
                     _uiState.value = JoinPairUiState.Error(R.string.error_unknown)
                 }
                 .collect { pair ->
-                    pair?.let { handlePairUpdate(it, fallbackName) }
+                    pair?.let { handlePairUpdate(it) }
                 }
         }
     }
 
     private fun handlePairUpdate(
-        petPair: com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetPair,
-        fallbackName: String
+        petPair: com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetPair
     ) {
         val currentUserId = userRepository.getCurrentUserId() ?: return
 

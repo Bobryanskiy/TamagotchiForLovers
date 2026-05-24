@@ -51,7 +51,6 @@ import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.PairAct
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PairActiveScreen(
-    pairId: String,
     onNavigateBack: () -> Unit,
     onSessionEnded: () -> Unit,
     viewModel: PairActiveViewModel = hiltViewModel()
@@ -109,78 +108,113 @@ fun PairActiveScreen(
     }
 
     if (showRenameDialog && uiState is PairActiveUiState.Content) {
-        val content = uiState as PairActiveUiState.Content
-        var newName by remember { mutableStateOf(content.pairName) }
-        AlertDialog(
-            onDismissRequest = { showRenameDialog = false },
-            title = { Text(stringResource(R.string.rename_pair_title)) },
-            text = {
-                OutlinedTextField(
-                    value = newName,
-                    onValueChange = { newName = it },
-                    label = { Text(stringResource(R.string.host_pair_name_label)) },
-                    singleLine = true
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        viewModel.renamePair(newName)
-                        showRenameDialog = false
-                    }
-                ) { Text(stringResource(R.string.btn_confirm)) }
-            },
-            dismissButton = {
-                TextButton(onClick = { showRenameDialog = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
+        RenamePairDialog(
+            currentName = (uiState as PairActiveUiState.Content).pairName,
+            onDismiss = { showRenameDialog = false },
+            onConfirm = { newName ->
+                viewModel.renamePair(newName)
+                showRenameDialog = false
             }
         )
     }
 
     if (showKickDialog) {
-        AlertDialog(
-            onDismissRequest = { showKickDialog = false },
-            title = { Text(stringResource(R.string.kick_confirm_title)) },
-            text = { Text(stringResource(R.string.kick_confirm_message)) },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        viewModel.kickPartner()
-                        showKickDialog = false
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) { Text(stringResource(R.string.btn_confirm)) }
-            },
-            dismissButton = {
-                TextButton(onClick = { showKickDialog = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
+        KickConfirmDialog(
+            onDismiss = { showKickDialog = false },
+            onConfirm = {
+                viewModel.kickPartner()
+                showKickDialog = false
             }
         )
     }
 
     if (showEndDialog) {
-        AlertDialog(
-            onDismissRequest = { showEndDialog = false },
-            title = { Text(stringResource(R.string.end_session_confirm_title)) },
-            text = { Text(stringResource(R.string.end_session_confirm_message)) },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        viewModel.endSession()
-                        showEndDialog = false
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) { Text(stringResource(R.string.btn_confirm)) }
-            },
-            dismissButton = {
-                TextButton(onClick = { showEndDialog = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
+        EndSessionConfirmDialog(
+            onDismiss = { showEndDialog = false },
+            onConfirm = {
+                viewModel.endSession()
+                showEndDialog = false
             }
         )
     }
+}
+
+@Composable
+private fun RenamePairDialog(
+    currentName: String,
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit
+) {
+    var newName by remember { mutableStateOf(currentName) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.rename_pair_title)) },
+        text = {
+            OutlinedTextField(
+                value = newName,
+                onValueChange = { newName = it },
+                label = { Text(stringResource(R.string.host_pair_name_label)) },
+                singleLine = true
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = { onConfirm(newName) }) {
+                Text(stringResource(R.string.btn_confirm))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel))
+            }
+        }
+    )
+}
+
+@Composable
+private fun KickConfirmDialog(
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.kick_confirm_title)) },
+        text = { Text(stringResource(R.string.kick_confirm_message)) },
+        confirmButton = {
+            Button(
+                onClick = onConfirm,
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+            ) { Text(stringResource(R.string.btn_confirm)) }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel))
+            }
+        }
+    )
+}
+
+@Composable
+private fun EndSessionConfirmDialog(
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.end_session_confirm_title)) },
+        text = { Text(stringResource(R.string.end_session_confirm_message)) },
+        confirmButton = {
+            Button(
+                onClick = onConfirm,
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+            ) { Text(stringResource(R.string.btn_confirm)) }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel))
+            }
+        }
+    )
 }
 
 @Composable

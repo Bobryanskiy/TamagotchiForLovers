@@ -16,6 +16,7 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.UserReposito
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.PairResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.util.Clock
+import com.github.bobryanskiy.tamagotchiforlovers.domain.util.NameLimits
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -349,7 +350,12 @@ class PairRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updatePairName(pairId: String, newName: String): PairResult<Unit> = try {
-        firestore.collection("pairs").document(pairId).update("name", newName).await()
+        val trimmed = newName.trim()
+        if (trimmed.length !in NameLimits.PAIR_NAME_MIN..NameLimits.PAIR_NAME_MAX) {
+            return DomainResult.Failure(PairError.InvalidInput)
+        }
+
+        firestore.collection("pairs").document(pairId).update("name", trimmed).await()
         DomainResult.Success(Unit)
     } catch (e: Throwable) {
         if (e is CancellationException) throw e
@@ -395,8 +401,14 @@ class PairRepositoryImpl @Inject constructor(
 
     private fun mapToPairError(error: Throwable): PairError = when (error) {
         is FirebaseFirestoreException -> when (error.code) {
-            FirebaseFirestoreException.Code.PERMISSION_DENIED,
-            FirebaseFirestoreException.Code.NOT_FOUND -> PairError.InvalidRequest
+            FirebaseFirestoreException.Code.NOT_FOUND -> PairError.PairNotFound
+            FirebaseFirestoreException.Code.PERMISSION_DENIED -> {
+                if (userRepository.getCurrentUserId() == null) {
+                    PairError.NotAuthenticated
+                } else {
+                    PairError.InvalidRequest
+                }
+            }
             FirebaseFirestoreException.Code.UNAVAILABLE,
             FirebaseFirestoreException.Code.DEADLINE_EXCEEDED,
             FirebaseFirestoreException.Code.CANCELLED -> PairError.Network

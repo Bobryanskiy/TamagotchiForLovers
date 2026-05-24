@@ -16,6 +16,7 @@ fun PetError.toUiErrorStringRes(): Int = when (this) {
     PetError.InvalidInput -> R.string.error_pet_invalid_input
     PetError.PairNotActive -> R.string.error_pair_not_active
     PetError.PairNotFound -> R.string.error_pair_not_found
+    PetError.ActionWouldKillPet -> R.string.error_action_would_kill_pet
 }
 
 fun PairError.toUiErrorStringRes(): Int = when (this) {
