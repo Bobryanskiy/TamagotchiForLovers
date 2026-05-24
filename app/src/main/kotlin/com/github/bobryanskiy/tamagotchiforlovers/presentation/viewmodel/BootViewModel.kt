@@ -21,13 +21,9 @@ class BootViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val entryPoint = determineEntryPointUseCase()
-
-            _navigationState.value = when (entryPoint) {
+            _navigationState.value = when (val entryPoint = determineEntryPointUseCase()) {
                 is DetermineEntryPointUseCase.EntryPoint.Main -> AppRoute.Main
-                is DetermineEntryPointUseCase.EntryPoint.Pet -> {
-                    AppRoute.Pet(entryPoint.petId)
-                }
+                is DetermineEntryPointUseCase.EntryPoint.Pet -> AppRoute.Pet(entryPoint.petId)
             }
         }
     }

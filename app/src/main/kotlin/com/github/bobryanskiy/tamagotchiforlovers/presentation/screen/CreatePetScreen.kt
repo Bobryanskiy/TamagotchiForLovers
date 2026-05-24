@@ -20,13 +20,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.bobryanskiy.tamagotchiforlovers.R
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.CreatePetUiState
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.CreatePetViewModel
@@ -38,15 +38,12 @@ fun CreatePetScreen(
     onNavigateBack: () -> Unit,
     onNavigateToPet: (String) -> Unit
 ) {
-    val uiState by viewModel.uiState.collectAsState()
-    val petName by viewModel.petName.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val petName by viewModel.petName.collectAsStateWithLifecycle()
 
     LaunchedEffect(uiState) {
-        when (val state = uiState) {
-            is CreatePetUiState.Success -> {
-                onNavigateToPet(state.petId)
-            }
-            else -> {}
+        if (uiState is CreatePetUiState.Success) {
+            onNavigateToPet((uiState as CreatePetUiState.Success).petId)
         }
     }
 
@@ -56,9 +53,9 @@ fun CreatePetScreen(
                 title = { Text(stringResource(R.string.create_pet)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back))
                     }
-                },
+                }
             )
         }
     ) { padding ->
@@ -91,7 +88,7 @@ private fun CreatePetContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
     ) {
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(Modifier.height(32.dp))
 
         Text(
             text = stringResource(R.string.create_pet_description),
@@ -121,11 +118,8 @@ private fun CreatePetContent(
             enabled = !isLoading && petName.isNotBlank()
         ) {
             Text(
-                text = if (isLoading) {
-                    stringResource(R.string.creating_pet)
-                } else {
-                    stringResource(R.string.create_pet_button)
-                }
+                text = if (isLoading) stringResource(R.string.creating_pet)
+                else stringResource(R.string.create_pet_button)
             )
         }
     }

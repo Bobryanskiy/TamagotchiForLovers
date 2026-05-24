@@ -2,9 +2,18 @@ package com.github.bobryanskiy.tamagotchiforlovers.data.local.entity
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "pets")
+@Entity(
+    tableName = "pets",
+    indices = [
+        Index("owner_user_id"),      // для getPetsByOwner
+        Index("current_pair_id"),    // для поиска по паре
+        Index("sync_status"),        // для getPendingPets
+        Index("updated_at")          // для сортировки
+    ]
+)
 data class PetEntity(
     @PrimaryKey val id: String,
     @ColumnInfo(name = "name") val name: String,
@@ -33,12 +42,22 @@ data class PetEntity(
             ownerUserId: String?,
             syncStatus: String = "PENDING"
         ): PetEntity = PetEntity(
-            id = petId, name = name, ownerUserId = ownerUserId,
-            currentPairId = null, createdAt = System.currentTimeMillis(),
-            lifeStatus = "NORMAL", isActionsBlocked = false, decayMultiplier = 1.0f,
-            recoveryEndTime = null, abandonedAt = null,
-            hunger = 80, energy = 80, cleanliness = 80, happiness = 80,
-            updatedAt = System.currentTimeMillis(), syncStatus = syncStatus
+            id = petId,
+            name = name,
+            ownerUserId = ownerUserId,
+            currentPairId = null,
+            createdAt = System.currentTimeMillis(),
+            lifeStatus = "NORMAL",
+            isActionsBlocked = false,
+            decayMultiplier = 1.0f,
+            recoveryEndTime = null,
+            abandonedAt = null,
+            hunger = 80,
+            energy = 80,
+            cleanliness = 80,
+            happiness = 80,
+            updatedAt = System.currentTimeMillis(),
+            syncStatus = syncStatus
         )
     }
 }

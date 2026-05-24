@@ -40,7 +40,6 @@ class CreatePetViewModel @Inject constructor(
 
     fun createPet() {
         val name = _petName.value.trim()
-
         if (name.isBlank()) {
             _uiState.value = CreatePetUiState.Error(R.string.error_empty_pet_name)
             return
@@ -48,8 +47,7 @@ class CreatePetViewModel @Inject constructor(
 
         viewModelScope.launch {
             _uiState.value = CreatePetUiState.Loading
-            val result = createPetUseCase(name)
-            _uiState.value = when (result) {
+            _uiState.value = when (val result = createPetUseCase(name)) {
                 is DomainResult.Success -> CreatePetUiState.Success(result.data)
                 is DomainResult.Failure -> CreatePetUiState.Error(R.string.error_unknown)
             }

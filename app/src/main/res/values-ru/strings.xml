@@ -244,4 +244,32 @@
     <!-- Notification Messages -->
     <string name="notif_dead_message">Ваш питомец погиб. Создайте нового, чтобы продолжить игру.</string>
     <string name="notif_escaped_message">Ваш питомец сбежал из-за плохого ухода. Найдите и верните его!</string>
+    <string name="btn_confirm">Подтвердить</string>
+    <string name="btn_cancel">Отменить</string>
+
+    <string name="pet_cd_waiting_pair">Ожидание пары</string>
+    <string name="pet_cd_active_pair">Активная пара</string>
+    <string name="rename_pet_title">Переименовать питомца</string>
+    <string name="rename_pet_hint">Введите новое имя</string>
+    <string name="rename_pair_title">Переименовать пару</string>
+    <string name="pair_name_label">Название пары</string>
+    <string name="partner_label">Напарник</string>
+    <string name="leave_pair">Покинуть пару</string>
+    <string name="kick_confirm_title">Выгнать напарника?</string>
+    <string name="kick_confirm_message">Напарник будет исключён из пары</string>
+    <string name="end_session_confirm_title">Завершить сессию?</string>
+    <string name="end_session_confirm_message">Пара будет распущена</string>
+    <string name="profile_active_pet_label">Активный питомец</string>
+    <string name="profile_no_pet">У вас нет активного питомца</string>
+    <string name="unknown_user">Неизвестный пользователь</string>
+    <string name="btn_link_account">Привязать аккаунт</string>
+    <string name="btn_save">Сохранить</string>
+    <string name="error_empty_pair_name">Введите название пары</string>
+
+    <!-- Nickname -->
+    <string name="edit_nickname_title">Изменить никнейм</string>
+    <string name="nickname_label">Никнейм</string>
+    <string name="edit_nickname">Изменить никнейм</string>
+    <string name="nickname_hint">Введите никнейм</string>
+    <string name="nickname_too_long">Никнейм слишком длинный (макс. 20 символов)</string>
 </resources>

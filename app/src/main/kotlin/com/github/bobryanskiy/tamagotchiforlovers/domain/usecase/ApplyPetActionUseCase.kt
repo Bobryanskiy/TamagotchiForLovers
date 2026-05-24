@@ -7,40 +7,56 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.PetResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.util.Clock
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
+/**
+ * Применяет действие к питомцу: обновляет статы и критическое состояние.
+ *
+ * Порядок:
+ * 1. Получаем пета
+ * 2. Проверяем блокировку действий
+ * 3. Применяем действие (PetStats.applyAction)
+ * 4. Оцениваем новое состояние (EvaluatePetCriticalStateUseCase)
+ * 5. Сохраняем изменения
+ */
 class ApplyPetActionUseCase @Inject constructor(
     private val petRepository: PetRepository,
     private val evaluateStateUseCase: EvaluatePetCriticalStateUseCase,
+    private val calculateLiveStatsUseCase: CalculateLiveStatsUseCase,
     private val clock: Clock
 ) {
-
     suspend operator fun invoke(petId: String, action: PetAction): PetResult<Unit> {
-        val petResult = petRepository.getPetById(petId)
-        if (petResult is DomainResult.Failure) return petResult
-        val pet = petResult.getOrNull() ?: return DomainResult.Failure(PetError.PetNotFound)
+        // 1. Получаем пета
+        val pet = when (val result = petRepository.getPetById(petId)) {
+            is DomainResult.Success -> result.data ?: return DomainResult.Failure(PetError.PetNotFound)
+            is DomainResult.Failure -> return result
+        }
 
+        // 2. Проверяем блокировку
         if (pet.lifeState.isActionsBlocked) {
             return DomainResult.Failure(PetError.ActionBlocked)
         }
 
+        // 3. Вычисляем новые статы и состояние
         val currentTime = clock.currentTimeMillis()
-        val newStats = pet.stats.applyAction(action, currentTime)
+
+        val livePet = calculateLiveStatsUseCase(pet, currentTime)
+
+        val newStats = livePet.stats.applyAction(action, currentTime)
         val newState = evaluateStateUseCase(newStats, currentTime)
 
-        val statsResult = petRepository.updateStats(
+        // 4. Обновляем статы
+        when (val statsResult = petRepository.updateStats(
             petId = petId,
             hunger = newStats.hunger,
             energy = newStats.energy,
             cleanliness = newStats.cleanliness,
             happiness = newStats.happiness
-        )
-        if (statsResult is DomainResult.Failure) return statsResult
+        )) {
+            is DomainResult.Failure -> return statsResult
+            is DomainResult.Success -> Unit  // продолжаем
+        }
 
-        val stateResult = petRepository.updateCriticalState(petId, newState)
-        if (stateResult is DomainResult.Failure) return stateResult
-
-        return DomainResult.Success(Unit)
+        // 5. Обновляем критическое состояние
+        return petRepository.updateCriticalState(petId, newState)
     }
 }

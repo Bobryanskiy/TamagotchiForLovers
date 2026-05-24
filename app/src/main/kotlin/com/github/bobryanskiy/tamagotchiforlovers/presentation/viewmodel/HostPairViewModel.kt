@@ -1,10 +1,9 @@
 package com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.bobryanskiy.tamagotchiforlovers.R
-import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pair
+import com.github.bobryanskiy.tamagotchiforlovers.core.util.updateState
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PairStatus
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PendingRequest
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PairRepository
@@ -23,17 +22,18 @@ import com.github.bobryanskiy.tamagotchiforlovers.presentation.mapper.toUiErrorS
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 sealed interface HostPairUiState {
-    object Idle : HostPairUiState
+    data object Idle : HostPairUiState
     data class Waiting(
+        val pairId: String,
         val inviteCode: String,
         val expiresAt: Long,
         val pendingRequests: List<PendingRequest>
@@ -66,78 +66,87 @@ class HostPairViewModel @Inject constructor(
 
     private var currentPairId: String? = null
     private var currentCreatorId: String? = null
+    private var pairJob: Job? = null
     private var requestsJob: Job? = null
 
-    fun initScreen(petId: String? = null) {
+    companion object {
+        private const val TAG = "HostPairVM"
+        private const val INVITE_TTL_MS = 5 * 60 * 1_000L
+    }
+
+    fun initScreen(petId: String?) {
         viewModelScope.launch {
             var savedPairId = sessionRepository.getActivePairId()
-            var savedPetId = petId
 
-            Log.d("HOST_VM", "🔍 initScreen called with petId=$petId")
-            Log.d("HOST_VM", "📦 Session pairId=$savedPairId")
-
-            // Если нет savedPairId, пробуем найти пару через petId
             if (savedPairId == null && petId != null) {
-                // Получаем питомца и проверяем, есть ли у него pairId
                 val pet = petRepository.getPetById(petId)
                 savedPairId = pet.getOrNull()?.profile?.currentPairId
-                Log.d("HOST_VM", "🔍 Found pairId from pet $petId: $savedPairId")
+                if (savedPairId != null) sessionRepository.saveActivePairId(savedPairId)
             }
+
             if (savedPairId != null) {
                 currentPairId = savedPairId
                 currentCreatorId = userRepository.getCurrentUserId()
-
-                Log.d("FIREBASE_DEBUG", "🔄 [VM] Subscribing to pair from session: $savedPairId")
-
-                pairRepository.observePair(savedPairId)
-                    .collect { pair ->
-                        Log.d("FIREBASE_DEBUG", "📲 [VM] Update received: status=${pair?.status}, hasKey=${pair?.inviteKey != null}")
-                        handlePairUpdate(pair)
-                    }
-                return@launch
+                subscribeToPair(savedPairId)
+            } else {
+                _uiState.value = HostPairUiState.Idle
             }
-
-            // Если нет savedPairId, но у пользователя есть активная пара в сессии (через petId)
-            // или мы можем проверить через UserRepository текущий статус
-            // В этом случае остаемся в Idle, пользователь должен создать новую пару
-            _uiState.value = HostPairUiState.Idle
         }
     }
 
-    private fun handlePairUpdate(pair: Pair?) {
-        if (pair == null && currentPairId != null) {
-            android.util.Log.w("HOST_VM", "⚠️ Ignoring null emission (waiting for Firestore data)")
-            return
+    private fun subscribeToPair(pairId: String) {
+        pairJob?.cancel()
+        pairJob = viewModelScope.launch {
+            pairRepository.observePair(pairId)
+                .distinctUntilChanged()
+                .catch { e -> Timber.tag(TAG).e(e, "observePair error") }
+                .collect { pair ->
+                    if (pair == null && currentPairId != null) {
+                        Timber.tag(TAG).w("⚠️ Ignoring null emission")
+                        return@collect
+                    }
+                    handlePairUpdate(pair)
+                }
         }
+    }
 
-        if (pair == null) {
+    private fun handlePairUpdate(
+        petPair: com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetPair?
+    ) {
+        if (petPair == null) {
             _uiState.value = HostPairUiState.Idle
             return
         }
 
-        android.util.Log.d("HOST_VM", "📊 Mapping state: ${pair.status.name}")
+        val isCreator = petPair.userId1 == userRepository.getCurrentUserId()
 
-        when (pair.status.name) {
+        // Гость в активной паре — ему нечего делать на HostPairScreen
+        if (!isCreator && petPair.status.name == PairStatus.ACTIVE.name) {
+            return
+        }
+
+        when (petPair.status.name) {
             PairStatus.PENDING.name -> {
-                val key = pair.inviteKey
-                if (key == null) {
-                    android.util.Log.w("HOST_VM", "⏳ Key not loaded yet, waiting...")
+                val key = petPair.inviteKey ?: run {
+                    Timber.tag(TAG).w("⏳ Key not loaded yet, waiting...")
                     return
                 }
-
                 _uiState.value = HostPairUiState.Waiting(
+                    pairId = petPair.id,
                     inviteCode = key.code,
                     expiresAt = key.expiresAt,
                     pendingRequests = emptyList()
                 )
-                startObservingRequests(pair.id)
+                startObservingRequests(petPair.id)
             }
             PairStatus.ACTIVE.name -> {
                 _uiState.value = HostPairUiState.Connected(
-                    pairId = pair.id,
-                    pairName = pair.name,
-                    partnerId = pair.userId2 ?: "Unknown"
+                    pairId = petPair.id,
+                    pairName = petPair.name,
+                    partnerId = petPair.userId2.orEmpty()
                 )
+                // Останавливаем наблюдение за requests — пара активна
+                requestsJob?.cancel()
             }
             else -> resetToIdle()
         }
@@ -152,21 +161,23 @@ class HostPairViewModel @Inject constructor(
 
             when (val result = createPairUseCase(pairName, petId)) {
                 is DomainResult.Success -> {
-                    currentPairId = result.data.pairId
+                    val pairId = result.data.pairId
+                    currentPairId = pairId
                     currentCreatorId = creatorId
 
-                    viewModelScope.launch {
-                        sessionRepository.savePairStatus(PairStatus.PENDING.name)
-                        sessionRepository.saveActivePairId(result.data.pairId)
-                    }
+                    sessionRepository.savePairStatus(PairStatus.PENDING.name)
+                    sessionRepository.saveActivePairId(pairId)
+                    sessionRepository.saveActivePetId(petId)
+                    userRepository.updateUserSession(creatorId, petId, pairId)
 
                     _uiState.value = HostPairUiState.Waiting(
+                        pairId = pairId,
                         inviteCode = result.data.inviteCode,
                         expiresAt = result.data.expiresAt,
                         pendingRequests = emptyList()
                     )
-
-                    startObservingRequests(result.data.pairId)
+                    startObservingRequests(pairId)
+                    subscribeToPair(pairId)
                 }
                 is DomainResult.Failure -> {
                     _uiState.value = HostPairUiState.Error(result.error.toUiErrorStringRes())
@@ -178,13 +189,15 @@ class HostPairViewModel @Inject constructor(
     private fun startObservingRequests(pairId: String) {
         requestsJob?.cancel()
         requestsJob = viewModelScope.launch {
-            observeRequestsUseCase(pairId).collect { requests ->
-                _uiState.update { state ->
-                    if (state is HostPairUiState.Waiting) {
-                        state.copy(pendingRequests = requests)
-                    } else state
+            observeRequestsUseCase(pairId)
+                .distinctUntilChanged()
+                .catch { e -> Timber.tag(TAG).e(e, "observeRequests error") }
+                .collect { requests ->
+                    _uiState.updateState { state ->
+                        if (state is HostPairUiState.Waiting) state.copy(pendingRequests = requests)
+                        else state
+                    }
                 }
-            }
         }
     }
 
@@ -194,12 +207,8 @@ class HostPairViewModel @Inject constructor(
 
         viewModelScope.launch {
             when (val result = acceptRequestUseCase(pairId, guestId, callerId)) {
-                is DomainResult.Success -> {
-                    // Firestore обновится -> handlePairUpdate покажет Connected
-                }
-                is DomainResult.Failure -> {
-                    _uiState.value = HostPairUiState.Error(result.error.toUiErrorStringRes())
-                }
+                is DomainResult.Success -> { /* Firestore push → handlePairUpdate обновит UI */ }
+                is DomainResult.Failure -> _uiState.value = HostPairUiState.Error(result.error.toUiErrorStringRes())
             }
         }
     }
@@ -210,10 +219,8 @@ class HostPairViewModel @Inject constructor(
 
         viewModelScope.launch {
             when (val result = rejectRequestUseCase(pairId, guestId, callerId)) {
-                is DomainResult.Success -> { /* Firestore обновит список */ }
-                is DomainResult.Failure -> {
-                    _uiState.value = HostPairUiState.Error(result.error.toUiErrorStringRes())
-                }
+                is DomainResult.Success -> { /* Firestore сам обновит requests */ }
+                is DomainResult.Failure -> _uiState.value = HostPairUiState.Error(result.error.toUiErrorStringRes())
             }
         }
     }
@@ -223,18 +230,16 @@ class HostPairViewModel @Inject constructor(
         viewModelScope.launch {
             when (val result = pairRepository.generateInviteKey(pairId)) {
                 is DomainResult.Success -> {
-                    _uiState.update { state ->
+                    _uiState.updateState { state ->
                         if (state is HostPairUiState.Waiting) {
                             state.copy(
                                 inviteCode = result.data,
-                                expiresAt = clock.currentTimeMillis() + (5 * 60 * 1000L)
+                                expiresAt = clock.currentTimeMillis() + INVITE_TTL_MS
                             )
                         } else state
                     }
                 }
-                is DomainResult.Failure -> {
-                    _uiState.value = HostPairUiState.Error(result.error.toUiErrorStringRes())
-                }
+                is DomainResult.Failure -> _uiState.value = HostPairUiState.Error(result.error.toUiErrorStringRes())
             }
         }
     }
@@ -262,9 +267,7 @@ class HostPairViewModel @Inject constructor(
                     sessionRepository.clearPairStatus()
                     resetToIdle()
                 }
-                is DomainResult.Failure -> {
-                    _uiState.value = HostPairUiState.Error(result.error.toUiErrorStringRes())
-                }
+                is DomainResult.Failure -> _uiState.value = HostPairUiState.Error(result.error.toUiErrorStringRes())
             }
         }
     }
@@ -275,7 +278,7 @@ class HostPairViewModel @Inject constructor(
         viewModelScope.launch {
             when (val result = pairRepository.updatePairName(pairId, newName)) {
                 is DomainResult.Success -> {
-                    _uiState.update {
+                    _uiState.updateState {
                         if (it is HostPairUiState.Connected) it.copy(pairName = newName) else it
                     }
                 }
@@ -285,7 +288,8 @@ class HostPairViewModel @Inject constructor(
     }
 
     fun resetToIdle() {
-        requestsJob?.cancel()
+        pairJob?.cancel(); pairJob = null
+        requestsJob?.cancel(); requestsJob = null
         currentPairId = null
         currentCreatorId = null
         _uiState.value = HostPairUiState.Idle
@@ -293,6 +297,7 @@ class HostPairViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
+        pairJob?.cancel()
         requestsJob?.cancel()
     }
 }

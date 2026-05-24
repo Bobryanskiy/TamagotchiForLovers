@@ -1,6 +1,7 @@
 package com.github.bobryanskiy.tamagotchiforlovers.domain.repository
 
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.User
+import com.github.bobryanskiy.tamagotchiforlovers.domain.result.UserResult
 import kotlinx.coroutines.flow.Flow
 
 interface UserRepository {
@@ -9,4 +10,6 @@ interface UserRepository {
     suspend fun createUser(uid: String)
     suspend fun updateUserSession(uid: String, petId: String?, pairId: String?)
     fun observeUser(uid: String): Flow<User?>
+    suspend fun updateNickname(uid: String, nickname: String): UserResult<Unit>
+    suspend fun getUserNickname(uid: String): String?
 }

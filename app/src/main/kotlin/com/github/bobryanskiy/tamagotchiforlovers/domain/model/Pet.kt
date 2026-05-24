@@ -24,30 +24,40 @@ data class PetStats(
     val happiness: Int,
     val updatedAt: Long
 ) {
-    fun applyAction(action: PetAction, currentTime: Long): PetStats {
-        return when (action) {
-            PetAction.Feed -> copy(
-                hunger = (hunger + 30).coerceIn(0, 100),
-                happiness = (happiness + 10).coerceIn(0, 100),
-                updatedAt = currentTime
-            )
-            PetAction.Play -> copy(
-                happiness = (happiness + 30).coerceIn(0, 100),
-                energy = (energy - 15).coerceIn(0, 100),
-                hunger = (hunger + 10).coerceIn(0, 100),
-                updatedAt = currentTime
-            )
-            PetAction.Clean -> copy(
-                cleanliness = 100,
-                happiness = (happiness + 5).coerceIn(0, 100),
-                updatedAt = currentTime
-            )
-            PetAction.Rest -> copy(
-                energy = (energy + 40).coerceIn(0, 100),
-                hunger = (hunger + 5).coerceIn(0, 100),
-                updatedAt = currentTime
-            )
-        }
+    companion object {
+        // Игровые балансные константы
+        const val FEED_HUNGER_BOOST = 30
+        const val FEED_HAPPINESS_BOOST = 10
+        const val PLAY_HAPPINESS_BOOST = 30
+        const val PLAY_ENERGY_COST = 15
+        const val PLAY_HUNGER_COST = 10
+        const val REST_ENERGY_BOOST = 40
+        const val REST_HUNGER_COST = 5
+        const val CLEAN_HAPPINESS_BOOST = 5
+    }
+
+    fun applyAction(action: PetAction, currentTime: Long): PetStats = when (action) {
+        PetAction.Feed -> copy(
+            hunger = (hunger + FEED_HUNGER_BOOST).coerceIn(0, 100),
+            happiness = (happiness + FEED_HAPPINESS_BOOST).coerceIn(0, 100),
+            updatedAt = currentTime
+        )
+        PetAction.Play -> copy(
+            happiness = (happiness + PLAY_HAPPINESS_BOOST).coerceIn(0, 100),
+            energy = (energy - PLAY_ENERGY_COST).coerceIn(0, 100),
+            hunger = (hunger - PLAY_HUNGER_COST).coerceIn(0, 100),
+            updatedAt = currentTime
+        )
+        PetAction.Clean -> copy(
+            cleanliness = 100,
+            happiness = (happiness + CLEAN_HAPPINESS_BOOST).coerceIn(0, 100),
+            updatedAt = currentTime
+        )
+        PetAction.Rest -> copy(
+            energy = (energy + REST_ENERGY_BOOST).coerceIn(0, 100),
+            hunger = (hunger - REST_HUNGER_COST).coerceIn(0, 100),
+            updatedAt = currentTime
+        )
     }
 }
 
@@ -82,5 +92,5 @@ enum class PetLifeStatus {
 }
 
 enum class SyncStatus {
-    SYNCED, PENDING
+    LOCAL_ONLY, SYNCED, PENDING
 }

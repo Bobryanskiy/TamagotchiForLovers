@@ -1,5 +1,6 @@
 package com.github.bobryanskiy.tamagotchiforlovers.data.repository
 
+import com.github.bobryanskiy.tamagotchiforlovers.core.logging.AppLogger
 import com.github.bobryanskiy.tamagotchiforlovers.data.local.datasource.LocalPetDataSource
 import com.github.bobryanskiy.tamagotchiforlovers.data.model.mapper.toDomain
 import com.github.bobryanskiy.tamagotchiforlovers.data.model.mapper.toDto
@@ -15,6 +16,7 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.AuthReposito
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PetRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.PetResult
+import com.github.bobryanskiy.tamagotchiforlovers.domain.result.SyncResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.util.Clock
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
@@ -38,21 +40,23 @@ class PetRepositoryImpl @Inject constructor(
     private val authRepository: AuthRepository,
     private val petSyncManager: PetSyncManager,
     private val clock: Clock,
+    private val logger: AppLogger,
     @param:IoDispatcher private val io: CoroutineDispatcher
 ) : PetRepository {
 
     private val scope = CoroutineScope(SupervisorJob() + io)
     private val syncScope = CoroutineScope(SupervisorJob() + io)
 
+    companion object {
+        private const val TAG = "PetRepo"
+    }
+
     override fun observePet(petId: String): Flow<Pet?> = flow {
         try {
             local.getPet(petId)?.let { emit(it.toDomain()) }
 
             val flows = mutableListOf<Flow<Pet?>>()
-            flows.add(
-                local.observePet(petId)
-                    .mapNotNull { it?.toDomain() }
-            )
+            flows.add(local.observePet(petId).mapNotNull { it?.toDomain() })
 
             if (authRepository.isLoggedIn()) {
                 scope.launch {
@@ -66,30 +70,27 @@ class PetRepositoryImpl @Inject constructor(
                             val entity = dto.toEntity(petId).copy(syncStatus = "SYNCED")
                             val localEntity = local.getPet(petId)
 
-                            // Синхронизируем только если данные из Firestore новее
                             if (localEntity == null || entity.updatedAt > localEntity.updatedAt) {
                                 local.savePet(entity)
-                                android.util.Log.d("PetRepo", "🔄 Synced from Firestore: ${entity.updatedAt} > ${localEntity?.updatedAt}")
+                                logger.d(TAG, "🔄 Synced from Firestore: ${entity.updatedAt} > ${localEntity?.updatedAt}")
                             } else {
-                                android.util.Log.d("PetRepo", "⏭️ Local is newer: ${localEntity.updatedAt} >= ${entity.updatedAt}")
+                                logger.d(TAG, "⏭️ Local is newer: ${localEntity.updatedAt} >= ${entity.updatedAt}")
                             }
                         }
                     } catch (e: Exception) {
-                        android.util.Log.e("PetRepo", "Firestore observe error: ${e.message}")
+                        logger.e(TAG, "Firestore observe error: ${e.message}", e)
                     }
                 }
             } else {
-                android.util.Log.d("PetRepo", "User not authenticated. Skipping Firestore listen for pet $petId")
+                logger.d(TAG, "User not authenticated. Skipping Firestore listen for pet $petId")
             }
 
             merge(*flows.toTypedArray())
                 .distinctUntilChanged()
-                .collect { pet ->
-                    emit(pet)
-                }
+                .collect { pet -> emit(pet) }
 
         } catch (e: Exception) {
-            android.util.Log.e("PetRepo", "Error in observePet (likely auth issue): ${e.message}")
+            logger.e(TAG, "Error in observePet: ${e.message}", e)
         }
     }.flowOn(io)
 
@@ -108,7 +109,7 @@ class PetRepositoryImpl @Inject constructor(
                 remote.upsertPet(pet.id, dto)
                 local.markSynced(pet.id)
             } catch (e: Exception) {
-                android.util.Log.e("PetRepository", "Sync failed for ${pet.id}", e)
+                logger.e(TAG, "Sync failed for ${pet.id}", e)
             }
         }
         pet.id
@@ -122,13 +123,18 @@ class PetRepositoryImpl @Inject constructor(
             try {
                 remote.upsertPet(pet.id, entity.toDto())
                 local.markSynced(pet.id)
-            } catch (_: Exception) {}
+            } catch (e: Exception) {
+                logger.w(TAG, "Sync failed for ${pet.id}", e)
+            }
         }
     }
 
     override suspend fun updateStats(
         petId: String,
-        hunger: Int, energy: Int, cleanliness: Int, happiness: Int
+        hunger: Int,
+        energy: Int,
+        cleanliness: Int,
+        happiness: Int
     ): PetResult<Unit> = execute {
         val now = clock.currentTimeMillis()
         local.updateStats(petId, hunger, energy, cleanliness, happiness, now)
@@ -138,7 +144,9 @@ class PetRepositoryImpl @Inject constructor(
             try {
                 remote.updatePetStats(petId, hunger, energy, cleanliness, happiness, now)
                 local.markSynced(petId)
-            } catch (_: Exception) {}
+            } catch (e: Exception) {
+                logger.w(TAG, "Remote updateStats failed", e)
+            }
         }
     }
 
@@ -165,7 +173,9 @@ class PetRepositoryImpl @Inject constructor(
                     now
                 )
                 local.markSynced(petId)
-            } catch (_: Exception) {}
+            } catch (e: Exception) {
+                logger.w(TAG, "Remote updateLifeState failed", e)
+            }
         }
     }
 
@@ -178,7 +188,9 @@ class PetRepositoryImpl @Inject constructor(
             try {
                 remote.updatePetPairId(petId, pairId, now)
                 local.markSynced(petId)
-            } catch (_: Exception) {}
+            } catch (e: Exception) {
+                logger.w(TAG, "Remote updatePairId failed", e)
+            }
         }
     }
 
@@ -191,7 +203,9 @@ class PetRepositoryImpl @Inject constructor(
             try {
                 remote.updatePetName(petId, name, now)
                 local.markSynced(petId)
-            } catch (_: Exception) {}
+            } catch (e: Exception) {
+                logger.w(TAG, "Remote updatePetName failed", e)
+            }
         }
     }
 
@@ -211,49 +225,79 @@ class PetRepositoryImpl @Inject constructor(
         syncScope.launch {
             try {
                 remote.batchMigrateOwnerUserId(oldOwnerId, newOwnerId)
-            } catch (_: Exception) {}
-        }
-    }
-
-    override suspend fun syncPetsForOwner(ownerId: String): PetResult<List<Pet>> {
-        return execute {
-            val pairs: List<Pair<String, PetDto>> = remote.getPetsByOwner(ownerId)
-
-            val entities: List<com.github.bobryanskiy.tamagotchiforlovers.data.local.entity.PetEntity> =
-                pairs.map { (id, dto) ->
-                    dto.toEntity(id).copy(
-                        syncStatus = "SYNCED"
-                    )
-                }
-
-            for (entity in entities) {
-                local.savePet(entity)
+            } catch (e: Exception) {
+                logger.w(TAG, "Remote batchMigrate failed", e)
             }
-
-            val pets: List<Pet> = entities.map { it.toDomain() }
-
-            pets
         }
     }
 
-    override suspend fun syncPendingChanges(): Boolean {
+    override suspend fun syncPetsForOwner(ownerId: String): PetResult<List<Pet>> = execute {
+        val pairs: List<Pair<String, PetDto>> = remote.getPetsByOwner(ownerId)
+
+        val entities = pairs.map { (id, dto) ->
+            dto.toEntity(id).copy(syncStatus = "SYNCED")
+        }
+
+        for (entity in entities) {
+            local.savePet(entity)
+        }
+
+        entities.map { it.toDomain() }
+    }
+
+    /**
+     * Синхронизирует одного питомца с сервером.
+     * Использует стратегию last-write-wins на основе updatedAt.
+     */
+    override suspend fun syncPetById(petId: String): PetResult<Pet> = execute {
+        val localEntity = local.getPet(petId)
+            ?: throw IllegalStateException("Pet $petId not found in local DB")
+
+        val remoteDto = runCatching { remote.getPet(petId) }.getOrNull()
+
+        val syncedEntity = when {
+            // Питомца нет в облаке — создаём
+            remoteDto == null -> {
+                logger.d(TAG, "🆕 Pet $petId not in cloud, creating")
+                remote.upsertPet(petId, localEntity.toDto())
+                localEntity.copy(syncStatus = "SYNCED")
+            }
+            // Локальная версия новее — пушим в облако
+            localEntity.updatedAt > (remoteDto.stats?.updatedAt ?: 0L) -> {
+                logger.d(TAG, "⬆️ Local newer, pushing to cloud")
+                remote.upsertPet(petId, localEntity.toDto())
+                localEntity.copy(syncStatus = "SYNCED")
+            }
+            // Remote версия новее — пулим в локалку
+            (remoteDto.stats?.updatedAt ?: 0L) > localEntity.updatedAt -> {
+                logger.d(TAG, "⬇️ Remote newer, pulling to local")
+                remoteDto.toEntity(petId).copy(syncStatus = "SYNCED")
+            }
+            // Версии совпадают — просто помечаем как SYNCED
+            else -> {
+                logger.d(TAG, "✅ Versions match, marking SYNCED")
+                localEntity.copy(syncStatus = "SYNCED")
+            }
+        }
+
+        local.savePet(syncedEntity)
+        syncedEntity.toDomain()
+    }
+
+    override suspend fun syncAllPending(): SyncResult<Int> {
         return petSyncManager.syncPending()
     }
 
-
     override suspend fun deletePet(petId: String): PetResult<Unit> = withContext(io) {
         try {
-            runCatching {
-                remote.deletePet(petId)
-            }.onFailure { e ->
-                android.util.Log.w("PetRepository", "Remote delete failed (ignored): $e")
-            }
+            runCatching { remote.deletePet(petId) }
+                .onFailure { e -> logger.w(TAG, "Remote delete failed (ignored)", e) }
             local.deletePet(petId)
-
             DomainResult.Success(Unit)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
+            logger.e(TAG, "Delete pet failed", e)
             DomainResult.Failure(PetError.Database)
         }
     }
@@ -264,8 +308,7 @@ class PetRepositoryImpl @Inject constructor(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            android.util.Log.e("PET_REPO_ERROR", "CRITICAL DB ERROR", e)
-            e.printStackTrace()
+            logger.e(TAG, "CRITICAL DB ERROR", e)
             DomainResult.Failure(PetError.Database)
         }
     }

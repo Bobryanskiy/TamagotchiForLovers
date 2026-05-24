@@ -1,19 +1,50 @@
 package com.github.bobryanskiy.tamagotchiforlovers.presentation.screen
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.bobryanskiy.tamagotchiforlovers.R
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pet
@@ -23,16 +54,20 @@ import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.Profile
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
-    petId: String,
     onNavigateBack: () -> Unit,
     onNavigateToLogin: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var showLogoutDialog by remember { mutableStateOf(false) }
+    val lifecycleOwner = LocalLifecycleOwner.current
 
-    LaunchedEffect(petId) {
-        viewModel.loadProfile(petId)
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.lifecycle.addObserver(object : DefaultLifecycleObserver {
+            override fun onResume(owner: LifecycleOwner) {
+                viewModel.loadProfile()
+            }
+        })
     }
 
     Scaffold(
@@ -41,7 +76,7 @@ fun ProfileScreen(
                 title = { Text(stringResource(R.string.menu_profile)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back))
                     }
                 }
             )
@@ -49,16 +84,19 @@ fun ProfileScreen(
     ) { padding ->
         when (val state = uiState) {
             is ProfileUiState.Loading -> {
-                Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(padding),
+                    contentAlignment = Alignment.Center
+                ) {
                     CircularProgressIndicator()
                 }
             }
             is ProfileUiState.Content -> {
                 ProfileContent(
                     modifier = Modifier.padding(padding),
-                    pet = state.pet,
-                    ownerEmail = state.ownerEmail,
-                    isAuthenticated = state.ownerEmail != null,
+                    email = state.email,
+                    isGuest = state.isGuest,
+                    pet = state.activePet,
                     onRequestLogout = { showLogoutDialog = true },
                     onRequestLogin = onNavigateToLogin
                 )
@@ -67,8 +105,7 @@ fun ProfileScreen(
                 ErrorPlaceholder(
                     modifier = Modifier.padding(padding),
                     messageResId = state.messageResId,
-                    onRetry = { viewModel.loadProfile(petId) },
-                    onCreatePet = { /* Навигация на создание питомца */ }
+                    onRetry = { viewModel.loadProfile() }
                 )
             }
         }
@@ -84,7 +121,7 @@ fun ProfileScreen(
                     onClick = {
                         viewModel.logout()
                         showLogoutDialog = false
-                        onNavigateBack()
+                        onNavigateToLogin()
                     }
                 ) {
                     Text(stringResource(R.string.btn_confirm_logout))
@@ -102,9 +139,9 @@ fun ProfileScreen(
 @Composable
 private fun ProfileContent(
     modifier: Modifier = Modifier,
-    pet: Pet,
-    ownerEmail: String?,
-    isAuthenticated: Boolean,
+    email: String?,
+    isGuest: Boolean,
+    pet: Pet?,
     onRequestLogout: () -> Unit,
     onRequestLogin: () -> Unit
 ) {
@@ -112,6 +149,7 @@ private fun ProfileContent(
         modifier = modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
+        // Карточка пользователя
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
@@ -121,60 +159,101 @@ private fun ProfileContent(
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    text = ownerEmail ?: stringResource(R.string.guest_user),
+                    text = when {
+                        isGuest -> stringResource(R.string.guest_user)
+                        email != null -> email
+                        else -> stringResource(R.string.unknown_user)
+                    },
                     style = MaterialTheme.typography.titleLarge
                 )
             }
         }
 
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = stringResource(R.string.profile_pet_stats_label),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Spacer(Modifier.height(8.dp))
+        // Карточка активного питомца
+        if (pet != null) {
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = stringResource(R.string.profile_active_pet_label),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = pet.profile.name,
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                    Spacer(Modifier.height(12.dp))
 
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    StatItem(stringResource(R.string.stat_hunger), "${pet.stats.hunger}%")
-                    StatItem(stringResource(R.string.stat_energy), "${pet.stats.energy}%")
+                    Text(
+                        text = stringResource(R.string.profile_pet_stats_label),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(Modifier.height(8.dp))
+
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        StatItem(stringResource(R.string.stat_hunger), "${pet.stats.hunger}%")
+                        StatItem(stringResource(R.string.stat_energy), "${pet.stats.energy}%")
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        StatItem(stringResource(R.string.stat_cleanliness), "${pet.stats.cleanliness}%")
+                        StatItem(stringResource(R.string.stat_happiness), "${pet.stats.happiness}%")
+                    }
                 }
-                Spacer(Modifier.height(8.dp))
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    StatItem(stringResource(R.string.stat_cleanliness), "${pet.stats.cleanliness}%")
-                    StatItem(stringResource(R.string.stat_happiness), "${pet.stats.happiness}%")
+            }
+        } else {
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = stringResource(R.string.profile_no_pet),
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = TextAlign.Center
+                    )
                 }
             }
         }
 
         Spacer(Modifier.weight(1f))
 
-        if (isAuthenticated) {
+        // Кнопки входа/выхода
+        if (isGuest) {
+            // Гость — предлагаем привязать аккаунт
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        "Привяжите аккаунт чтобы:",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Text("• Сохранить питомца в облаке", style = MaterialTheme.typography.bodyMedium)
+                    Text("• Играть с друзьями", style = MaterialTheme.typography.bodyMedium)
+                    Text("• Синхронизировать между устройствами", style = MaterialTheme.typography.bodyMedium)
+
+                    Spacer(Modifier.height(16.dp))
+
+                    Button(
+                        onClick = onRequestLogin,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Привязать аккаунт")
+                    }
+                }
+            }
+        } else {
+            // Авторизован — кнопка выхода
             Button(
                 onClick = onRequestLogout,
                 modifier = Modifier.fillMaxWidth(),
-                enabled = true,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.errorContainer,
-                    contentColor = MaterialTheme.colorScheme.onErrorContainer
+                    containerColor = MaterialTheme.colorScheme.error
                 )
             ) {
-                Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null)
-                Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.btn_logout))
-            }
-        } else {
-            Button(
-                onClick = onRequestLogin,
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
-            ) {
-                Icon(Icons.AutoMirrored.Filled.Login, contentDescription = null)
-                Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.login))
+                Text("Выйти")
             }
         }
     }
@@ -183,8 +262,12 @@ private fun ProfileContent(
 @Composable
 private fun StatItem(label: String, value: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(value, style = MaterialTheme.typography.titleMedium, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
-        Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        Text(
+            label,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 
@@ -192,8 +275,7 @@ private fun StatItem(label: String, value: String) {
 private fun ErrorPlaceholder(
     modifier: Modifier = Modifier,
     messageResId: Int,
-    onRetry: () -> Unit,
-    onCreatePet: () -> Unit
+    onRetry: () -> Unit
 ) {
     Column(
         modifier = modifier.fillMaxSize().padding(24.dp),
@@ -206,33 +288,21 @@ private fun ErrorPlaceholder(
             modifier = Modifier.size(64.dp),
             tint = MaterialTheme.colorScheme.error
         )
-
         Spacer(Modifier.height(16.dp))
-
         Text(
             text = stringResource(R.string.profile_error_title),
             style = MaterialTheme.typography.headlineSmall
         )
-
         Spacer(Modifier.height(8.dp))
-
         Text(
             text = stringResource(messageResId),
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-
         Spacer(Modifier.height(24.dp))
-
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            OutlinedButton(onClick = onRetry) {
-                Text(stringResource(R.string.profile_btn_refresh))
-            }
-
-            Button(onClick = onCreatePet) {
-                Text(stringResource(R.string.profile_btn_create_pet))
-            }
+        Button(onClick = onRetry) {
+            Text(stringResource(R.string.profile_btn_refresh))
         }
     }
 }

@@ -18,7 +18,9 @@ class RejectJoinRequestUseCase @Inject constructor(
             return DomainResult.Failure(PairError.InvalidInput)
         }
 
-        val pair = pairRepository.getPair(pairId)
+        val pairResult = pairRepository.getPair(pairId)
+        if (pairResult is DomainResult.Failure) return pairResult
+        val pair = (pairResult as DomainResult.Success).data
             ?: return DomainResult.Failure(PairError.PairNotFound)
 
         if (pair.userId1 != callerId) {

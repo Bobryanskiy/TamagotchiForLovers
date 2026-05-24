@@ -10,6 +10,7 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.github.bobryanskiy.tamagotchiforlovers.R
+import com.github.bobryanskiy.tamagotchiforlovers.core.logging.AppLogger
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetLifeStatus
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.MainActivity
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -18,7 +19,8 @@ import javax.inject.Singleton
 
 @Singleton
 class NotificationHelper @Inject constructor(
-    @param:ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context,
+    private val logger: AppLogger
 ) {
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     private val channelId = "pet_needs_channel"
@@ -56,7 +58,7 @@ class NotificationHelper @Inject constructor(
 
     fun showPetNotification(data: NotificationData) {
         if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) {
-            Log.w(TAG, "Notifications are disabled, skipping")
+            logger.w(TAG, "Notifications are disabled, skipping")
             return
         }
 
@@ -106,20 +108,20 @@ class NotificationHelper @Inject constructor(
 
         try {
             notificationManager.notify("pet_notification_${data.petId}", data.petId.hashCode(), notification)
-            Log.d(TAG, "Notification shown for pet: ${data.petId}")
+            logger.d(TAG, "Notification shown for pet: ${data.petId}")
         } catch (e: SecurityException) {
-            Log.e(TAG, "Failed to show notification: missing POST_NOTIFICATIONS permission", e)
+            logger.e(TAG, "Failed to show notification: missing POST_NOTIFICATIONS permission", e)
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to show notification", e)
+            logger.e(TAG, "Failed to show notification", e)
         }
     }
 
     fun cancelNotification(petId: String) {
         try {
             notificationManager.cancel("pet_notification_$petId", petId.hashCode())
-            Log.d(TAG, "Notification cancelled for pet: $petId")
+            logger.d(TAG, "Notification cancelled for pet: $petId")
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to cancel notification", e)
+            logger.e(TAG, "Failed to cancel notification", e)
         }
     }
 }

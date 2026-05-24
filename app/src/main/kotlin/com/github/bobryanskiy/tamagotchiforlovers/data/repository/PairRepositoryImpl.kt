@@ -1,17 +1,12 @@
 package com.github.bobryanskiy.tamagotchiforlovers.data.repository
 
-import android.util.Log
-import com.github.bobryanskiy.tamagotchiforlovers.data.exception.RepositoryException
-import com.github.bobryanskiy.tamagotchiforlovers.data.local.dao.PairDao
+import com.github.bobryanskiy.tamagotchiforlovers.core.logging.AppLogger
 import com.github.bobryanskiy.tamagotchiforlovers.data.local.datasource.LocalPairDataSource
 import com.github.bobryanskiy.tamagotchiforlovers.data.model.mapper.toDomain
 import com.github.bobryanskiy.tamagotchiforlovers.data.model.mapper.toEntity
-import com.github.bobryanskiy.tamagotchiforlovers.data.remote.datasource.RemoteDataSource
-import com.github.bobryanskiy.tamagotchiforlovers.data.remote.dto.InviteKeyDto
 import com.github.bobryanskiy.tamagotchiforlovers.data.remote.dto.PairDto
-import com.github.bobryanskiy.tamagotchiforlovers.data.remote.dto.PendingRequestDto
 import com.github.bobryanskiy.tamagotchiforlovers.di.IoDispatcher
-import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pair
+import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetPair
 import com.github.bobryanskiy.tamagotchiforlovers.domain.error.PairError
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PairStatus
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PendingRequest
@@ -21,9 +16,11 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.UserReposito
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.PairResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.util.Clock
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.toObject
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
@@ -31,10 +28,13 @@ import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -48,38 +48,48 @@ class PairRepositoryImpl @Inject constructor(
     private val petRepository: PetRepository,
     private val userRepository: UserRepository,
     private val clock: Clock,
+    private val logger: AppLogger,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : PairRepository {
 
-    private val requestsFlowCache = mutableMapOf<String, Flow<List<PendingRequest>>>()
+    private val requestsFlowCache = mutableMapOf<String, SharedFlow<List<PendingRequest>>>()
     private val cacheLock = Any()
 
     private val scope = CoroutineScope(
         ioDispatcher + SupervisorJob() + CoroutineName("PairRepository")
     )
 
-    override fun observePair(pairId: String): Flow<Pair?> = callbackFlow {
-        Log.d("FIREBASE_DEBUG", "🔗 [REPO] Attaching listener: $pairId")
+    companion object {
+        private const val TAG = "PairRepository"
+        private const val INITIAL_RETRY_DELAY_MS = 1_000L
+        private const val MAX_RETRY_DELAY_MS = 30_000L
+        private const val MAX_RETRY_ATTEMPTS = 10L
+        private const val INVITE_KEY_TTL_MS = 5 * 60 * 1_000L
+    }
+
+    override fun observePair(pairId: String): Flow<PetPair?> = callbackFlow {
+        logger.d(TAG, "🔗 Attaching listener: $pairId")
 
         local.getPair(pairId)?.let { entity ->
             trySend(entity.toDomain())
         }
 
-        val registration = firestore.collection("pairs").document(pairId)
+        var registration: ListenerRegistration? = null
+
+        registration = firestore.collection("pairs").document(pairId)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
+                    logger.w(TAG, "⚠️ Snapshot error for $pairId, will retry", error)
                     close(error)
                     return@addSnapshotListener
                 }
 
                 if (snapshot?.exists() == true) {
                     val dto = snapshot.toObject<PairDto>()
-                    Log.d("FIREBASE_DEBUG", "📦 [REPO] Received: invite_key=${dto?.inviteKey?.code}")
                     dto?.let {
                         val pair = it.toDomain(snapshot.id)
-                        // Сохраняем в локальную БД для кэширования
                         scope.launch {
-                            local.savePair(it.toEntity(snapshot.id))
+                            runCatching { local.savePair(it.toEntity(snapshot.id)) }
                         }
                         trySend(pair)
                     }
@@ -90,45 +100,63 @@ class PairRepositoryImpl @Inject constructor(
 
         awaitClose {
             registration.remove()
-            Log.d("FIREBASE_DEBUG", "🔌 [REPO] Removed listener: $pairId")
+            logger.d(TAG, "🔌 Removed listener: $pairId")
         }
+    }.retryWhen { cause, attempt ->
+        if (attempt >= MAX_RETRY_ATTEMPTS) {
+            logger.e(TAG, "❌ Max retries reached for $pairId", cause)
+            return@retryWhen false
+        }
+        val delayMs = (INITIAL_RETRY_DELAY_MS * (attempt + 1)).coerceAtMost(MAX_RETRY_DELAY_MS)
+        logger.w(TAG, "🔄 Retrying (attempt ${attempt + 1}) in ${delayMs}ms")
+        delay(delayMs)
+        true
     }
 
     override fun observePendingRequests(pairId: String): Flow<List<PendingRequest>> = synchronized(cacheLock) {
         requestsFlowCache.getOrPut(pairId) {
             callbackFlow {
                 val registration = firestore.collection("pairs").document(pairId)
-                    .addSnapshotListener { snapshot, _ ->
+                    .addSnapshotListener { snapshot, error ->
+                        if (error != null) {
+                            logger.w(TAG, "⚠️ observePendingRequests error", error)
+                            trySend(emptyList())
+                            return@addSnapshotListener
+                        }
                         if (snapshot == null || !snapshot.exists()) {
                             trySend(emptyList())
                             return@addSnapshotListener
                         }
                         val requestData = snapshot.get("pending_request") as? Map<*, *>
-                        val list = if (requestData != null && requestData["guest_id"] != null) {
+                        val list = if (requestData?.get("guest_id") is String) {
                             listOf(
                                 PendingRequest(
                                     guestId = requestData["guest_id"] as String,
-                                    requestedAt = (requestData["requested_at"] as? Long)
-                                        ?: System.currentTimeMillis()
+                                    requestedAt = (requestData["requested_at"] as? Timestamp)
+                                        ?.toDate()?.time ?: System.currentTimeMillis()
                                 )
                             )
-                        } else {
-                            emptyList()
-                        }
+                        } else emptyList()
                         trySend(list)
                     }
-                awaitClose { registration.remove() }
+                awaitClose {
+                    registration.remove()
+                }
             }
                 .catch { e ->
-                    Log.e("TAMAGOTCHI", "Error observing requests for $pairId", e)
+                    logger.e(TAG, "Error observing requests for $pairId", e)
                     emit(emptyList())
                 }
                 .stateIn(
                     scope = scope,
-                    started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000),
+                    started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5_000L),
                     initialValue = emptyList()
                 )
         }
+    }
+
+    fun clearCacheForPair(pairId: String) = synchronized(cacheLock) {
+        requestsFlowCache.remove(pairId)
     }
 
     override suspend fun createPair(
@@ -155,33 +183,27 @@ class PairRepositoryImpl @Inject constructor(
         firestore.collection("pairs").document(pairId).set(data).await()
         petRepository.updatePairId(petId, pairId)
         userRepository.updateUserSession(creatorId, petId, pairId)
-
         DomainResult.Success(pairId)
     } catch (e: Throwable) {
         if (e is CancellationException) throw e
-        DomainResult.Failure(mapToPairError(e))
+        DomainResult.Failure(mapToPairError(e)).let {
+            DomainResult.Failure(mapToPairError(e))
+        }
     }
 
     override suspend fun generateInviteKey(pairId: String): PairResult<String> = try {
         val code = generateRandomCode()
-        val expiresAt = clock.currentTimeMillis() + (5 * 60 * 1000L) // 5 минут
-
+        val expiresAt = clock.currentTimeMillis() + INVITE_KEY_TTL_MS
         firestore.collection("pairs").document(pairId)
-            .update(
-                "invite_key", mapOf(
-                    "code" to code,
-                    "expires_at" to expiresAt
-                )
-            )
+            .update("invite_key", mapOf("code" to code, "expires_at" to expiresAt))
             .await()
-
         DomainResult.Success(code)
     } catch (e: Throwable) {
         if (e is CancellationException) throw e
         DomainResult.Failure(mapToPairError(e))
     }
 
-    override suspend fun findPairByInviteKey(inviteKey: String): PairResult<Pair> = try {
+    override suspend fun findPairByInviteKey(inviteKey: String): PairResult<PetPair> = try {
         val snapshot = firestore.collection("pairs")
             .whereEqualTo("invite_key.code", inviteKey.uppercase())
             .limit(1)
@@ -194,21 +216,12 @@ class PairRepositoryImpl @Inject constructor(
         val dto = doc.toObject<PairDto>() ?: return DomainResult.Failure(PairError.PairNotFound)
         val pair = dto.toDomain(doc.id)
 
-        // Проверка срока действия ключа
-        val inviteKeyMap = doc.get("invite_key") as? Map<*, *>
-        val expiresAt = inviteKeyMap?.get("expires_at") as? Long
+        val expiresAt = (doc.get("invite_key") as? Map<*, *>)?.get("expires_at") as? Long
         if (expiresAt != null && clock.currentTimeMillis() > expiresAt) {
             return DomainResult.Failure(PairError.InvalidRequest)
         }
-
-        // Проверка, что пара ещё может принимать участников
-        if (pair.userId2 != null) {
-            return DomainResult.Failure(PairError.AlreadyJoined)
-        }
-
-        if (pair.status != PairStatus.PENDING) {
-            return DomainResult.Failure(PairError.InvalidRequest)
-        }
+        if (pair.userId2 != null) return DomainResult.Failure(PairError.AlreadyJoined)
+        if (pair.status != PairStatus.PENDING) return DomainResult.Failure(PairError.InvalidRequest)
 
         DomainResult.Success(pair)
     } catch (e: Throwable) {
@@ -217,55 +230,33 @@ class PairRepositoryImpl @Inject constructor(
     }
 
     override suspend fun requestJoin(pairId: String, guestId: String): PairResult<Unit> = try {
-        firestore.runTransaction { transaction ->
-            val ref = firestore.collection("pairs").document(pairId)
-            val snapshot = transaction.get(ref)
+        val pairDoc = firestore.collection("pairs").document(pairId).get().await()
 
-            Log.d("FIREBASE_DEBUG", "📄 [REPO] Transaction snapshot exists: ${snapshot.exists()}")
+        if (!pairDoc.exists()) return DomainResult.Failure(PairError.PairNotFound)
 
-            if (!snapshot.exists()) {
-                Log.e("FIREBASE_DEBUG", "❌ [REPO] Pair not found: $pairId")
-                throw IllegalArgumentException("Пара не найдена")
-            }
+        val userId1 = pairDoc.getString("user_id_1")
+        val userId2 = pairDoc.getString("user_id_2")
+        val status = pairDoc.getString("status")
 
-            val userId1 = snapshot.getString("user_id_1")
-            val userId2 = snapshot.getString("user_id_2")
-            val status = snapshot.getString("status")
+        if (userId2 != null) return DomainResult.Failure(PairError.AlreadyJoined)
+        if (status != PairStatus.PENDING.name) return DomainResult.Failure(PairError.InvalidRequest)
+        if (guestId == userId1) return DomainResult.Failure(PairError.InvalidRequest)
 
-            Log.d("FIREBASE_DEBUG", "📋 [REPO] Pair info: userId1=$userId1, userId2=$userId2, status=$status")
-
-            if (userId2 != null) {
-                Log.e("FIREBASE_DEBUG", "❌ [REPO] Pair already filled: $pairId")
-                throw IllegalStateException("Пара уже заполнена")
-            }
-            if (status != PairStatus.PENDING.name) {
-                Log.e("FIREBASE_DEBUG", "❌ [REPO] Pair not active: $status")
-                throw IllegalStateException("Пара не активна")
-            }
-            if (guestId == userId1) {
-                Log.e("FIREBASE_DEBUG", "❌ [REPO] Guest is creator: $guestId")
-                throw IllegalStateException("Вы уже являетесь создателем пары")
-            }
-
-            transaction.update(
-                ref,
+        firestore.collection("pairs").document(pairId)
+            .update(
                 "pending_request", mapOf(
                     "guest_id" to guestId,
                     "requested_at" to FieldValue.serverTimestamp()
                 )
             )
-        }.await()
+            .await()
 
         userRepository.updateUserSession(guestId, null, pairId)
         DomainResult.Success(Unit)
     } catch (e: Throwable) {
         if (e is CancellationException) throw e
-        val error = when (e) {
-            is IllegalStateException -> PairError.AlreadyJoined
-            is IllegalArgumentException -> PairError.PairNotFound
-            else -> mapToPairError(e)
-        }
-        DomainResult.Failure(error)
+        logger.e(TAG, "Request join failed", e)
+        DomainResult.Failure(mapToPairError(e))
     }
 
     override suspend fun acceptJoinRequest(
@@ -273,31 +264,19 @@ class PairRepositoryImpl @Inject constructor(
         guestId: String,
         callerId: String
     ): PairResult<Unit> = try {
-        // Проверка прав: только хост может принимать
         val pairDoc = firestore.collection("pairs").document(pairId).get().await()
         val hostId = pairDoc.getString("user_id_1")
+        if (callerId != hostId) return DomainResult.Failure(PairError.CreatorOnly)
 
-        if (callerId != hostId) {
-            return DomainResult.Failure(PairError.CreatorOnly)
-        }
-
-        val petId = pairDoc.getString("current_pet_id")
-            ?: return DomainResult.Failure(PairError.PairNotFound)
-
-        // Обновляем пару
         firestore.collection("pairs").document(pairId).update(
             mapOf(
                 "user_id_2" to guestId,
                 "status" to PairStatus.ACTIVE.name,
                 "invite_key" to null,
                 "pending_request" to FieldValue.delete(),
-                "updated_at" to FieldValue.serverTimestamp()
+                "updated_at" to System.currentTimeMillis()
             )
         ).await()
-
-        // Обновляем сессии пользователей
-        userRepository.updateUserSession(guestId, petId, pairId)
-        userRepository.updateUserSession(hostId, petId, pairId)
 
         DomainResult.Success(Unit)
     } catch (e: Throwable) {
@@ -312,16 +291,11 @@ class PairRepositoryImpl @Inject constructor(
     ): PairResult<Unit> = try {
         val pairDoc = firestore.collection("pairs").document(pairId).get().await()
         val hostId = pairDoc.getString("user_id_1")
+        if (callerId != hostId) return DomainResult.Failure(PairError.CreatorOnly)
 
-        if (callerId != hostId) {
-            return DomainResult.Failure(PairError.CreatorOnly)
-        }
-
-        // Просто удаляем запрос
         firestore.collection("pairs").document(pairId)
             .update("pending_request", FieldValue.delete())
             .await()
-
         DomainResult.Success(Unit)
     } catch (e: Throwable) {
         if (e is CancellationException) throw e
@@ -334,11 +308,13 @@ class PairRepositoryImpl @Inject constructor(
                 "user_id_2" to FieldValue.delete(),
                 "status" to PairStatus.PENDING.name,
                 "invite_key" to null,
-                "updated_at" to FieldValue.serverTimestamp()
+                "pending_request" to FieldValue.delete(),
+                "updated_at" to System.currentTimeMillis()
             )
         ).await()
 
         userRepository.updateUserSession(userId, null, null)
+        clearCacheForPair(pairId)
         DomainResult.Success(Unit)
     } catch (e: Throwable) {
         if (e is CancellationException) throw e
@@ -349,22 +325,22 @@ class PairRepositoryImpl @Inject constructor(
         val pairDoc = firestore.collection("pairs").document(pairId).get().await()
         val hostId = pairDoc.getString("user_id_1")
         val userId2 = pairDoc.getString("user_id_2")
-
-        if (callerId != hostId) {
-            return DomainResult.Failure(PairError.CreatorOnly)
-        }
+        if (callerId != hostId) return DomainResult.Failure(PairError.CreatorOnly)
 
         firestore.collection("pairs").document(pairId).update(
             mapOf(
                 "status" to PairStatus.ENDED.name,
-                "ended_at" to FieldValue.serverTimestamp(),
+                "ended_at" to System.currentTimeMillis(),
                 "user_id_2" to FieldValue.delete(),
-                "updated_at" to FieldValue.serverTimestamp()
+                "pending_request" to FieldValue.delete(),
+                "invite_key" to null,
+                "updated_at" to System.currentTimeMillis()
             )
         ).await()
 
         hostId.let { userRepository.updateUserSession(it, null, null) }
         userId2?.let { userRepository.updateUserSession(it, null, null) }
+        clearCacheForPair(pairId)
 
         DomainResult.Success(Unit)
     } catch (e: Throwable) {
@@ -373,9 +349,7 @@ class PairRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updatePairName(pairId: String, newName: String): PairResult<Unit> = try {
-        firestore.collection("pairs").document(pairId)
-            .update("name", newName)
-            .await()
+        firestore.collection("pairs").document(pairId).update("name", newName).await()
         DomainResult.Success(Unit)
     } catch (e: Throwable) {
         if (e is CancellationException) throw e
@@ -385,10 +359,7 @@ class PairRepositoryImpl @Inject constructor(
     override suspend fun kickPartner(pairId: String, callerId: String): PairResult<Unit> = try {
         val doc = firestore.collection("pairs").document(pairId).get().await()
         val hostId = doc.getString("user_id_1")
-
-        if (callerId != hostId) {
-            return DomainResult.Failure(PairError.CreatorOnly)
-        }
+        if (callerId != hostId) return DomainResult.Failure(PairError.CreatorOnly)
 
         firestore.collection("pairs").document(pairId).update(
             mapOf(
@@ -396,27 +367,25 @@ class PairRepositoryImpl @Inject constructor(
                 "status" to PairStatus.PENDING.name,
                 "invite_key" to null,
                 "pending_request" to FieldValue.delete(),
-                "updated_at" to FieldValue.serverTimestamp()
+                "updated_at" to System.currentTimeMillis()
             )
         ).await()
 
-        // Сбросим сессию у выгнанного игрока
-        val guestId = doc.getString("user_id_2")
-        guestId?.let {
-            userRepository.updateUserSession(it, null, null)
-        }
-
+        doc.getString("user_id_2")?.let { userRepository.updateUserSession(it, null, null) }
+        clearCacheForPair(pairId)
         DomainResult.Success(Unit)
     } catch (e: Throwable) {
         if (e is CancellationException) throw e
         DomainResult.Failure(mapToPairError(e))
     }
 
-    override suspend fun getPair(pairId: String): Pair? {
+    override suspend fun getPair(pairId: String): PairResult<PetPair?> = try {
         val snapshot = firestore.collection("pairs").document(pairId).get().await()
-        return if (snapshot.exists()) {
-            snapshot.toObject<PairDto>()?.toDomain(pairId)
-        } else null
+        val pair = if (snapshot.exists()) snapshot.toObject<PairDto>()?.toDomain(pairId) else null
+        DomainResult.Success(pair)
+    } catch (e: Throwable) {
+        if (e is CancellationException) throw e
+        DomainResult.Failure(mapToPairError(e))
     }
 
     private fun generateRandomCode(length: Int = 6): String {
@@ -429,7 +398,8 @@ class PairRepositoryImpl @Inject constructor(
             FirebaseFirestoreException.Code.PERMISSION_DENIED,
             FirebaseFirestoreException.Code.NOT_FOUND -> PairError.InvalidRequest
             FirebaseFirestoreException.Code.UNAVAILABLE,
-            FirebaseFirestoreException.Code.DEADLINE_EXCEEDED -> PairError.Network
+            FirebaseFirestoreException.Code.DEADLINE_EXCEEDED,
+            FirebaseFirestoreException.Code.CANCELLED -> PairError.Network
             else -> PairError.Unknown
         }
         is CancellationException -> throw error

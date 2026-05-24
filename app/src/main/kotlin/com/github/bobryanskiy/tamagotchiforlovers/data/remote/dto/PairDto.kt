@@ -12,11 +12,11 @@ data class PairDto(
     @get:PropertyName("status") @set:PropertyName("status") var status: String = "PENDING",
     @get:PropertyName("invite_key") @set:PropertyName("invite_key") var inviteKey: InviteKeyDto? = null,
     @get:PropertyName("pending_request") @set:PropertyName("pending_request") var pendingRequest: PendingRequestDto? = null,
-    @get:PropertyName("created_at") @set:PropertyName("created_at") var createdAt: Long = 0L,
-    @get:PropertyName("updated_at") @set:PropertyName("updated_at") var updatedAt: Long = 0L,
+    @get:PropertyName("created_at") @set:PropertyName("created_at") var createdAt: Long? = null,
+    @get:PropertyName("updated_at") @set:PropertyName("updated_at") var updatedAt: Long? = null,
     @get:PropertyName("ended_at") @set:PropertyName("ended_at") @ServerTimestamp var endedAt: Timestamp? = null
 ) {
-    constructor() : this("", "", null, "", "PENDING", null, null, 0L, 0L, null)
+    constructor() : this("", "", null, "", "PENDING", null, null, null, null, null)
 }
 
 data class InviteKeyDto(

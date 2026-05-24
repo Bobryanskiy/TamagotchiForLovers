@@ -1,14 +1,20 @@
 package com.github.bobryanskiy.tamagotchiforlovers.presentation.screen
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.ui.res.stringResource
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -19,20 +25,16 @@ import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.BootVie
 @Composable
 fun BootScreen(
     viewModel: BootViewModel = hiltViewModel(),
-    onNavigateToAuth: () -> Unit,
     onNavigateToMain: () -> Unit,
     onNavigateToPet: (String) -> Unit
 ) {
     val navigationState by viewModel.navigationState.collectAsStateWithLifecycle()
 
     LaunchedEffect(navigationState) {
-        navigationState?.let { route ->
-            when (route) {
-                is AppRoute.Auth -> onNavigateToAuth()
-                is AppRoute.Main -> onNavigateToMain()
-                is AppRoute.Pet -> onNavigateToPet(route.petId)
-                else -> {}
-            }
+        when (val route = navigationState) {
+            is AppRoute.Main -> onNavigateToMain()
+            is AppRoute.Pet -> onNavigateToPet(route.petId)
+            else -> Unit
         }
     }
 

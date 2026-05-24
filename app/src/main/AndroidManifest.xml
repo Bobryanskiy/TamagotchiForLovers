@@ -21,9 +21,22 @@
             android:supportsRtl="true"
             android:theme="@style/Theme.TamagotchiForLovers"
             tools:targetApi="34">
+
+        <provider
+                android:name="androidx.startup.InitializationProvider"
+                android:authorities="${applicationId}.androidx-startup"
+                android:exported="false"
+                tools:node="merge">
+            <meta-data
+                    android:name="androidx.work.WorkManagerInitializer"
+                    android:value="androidx.startup"
+                    tools:node="remove" />
+        </provider>
+
         <meta-data
                 android:name="AccessoryServicesLocation"
                 android:value="@raw/accessory_config" />
+
         <activity
                 android:name=".presentation.MainActivity"
                 android:exported="true">
@@ -33,9 +46,11 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name=".presentation.receiver.CriticalStateReceiver"
+        <receiver
+                android:name=".presentation.receiver.CriticalStateReceiver"
                 android:enabled="true"
                 android:exported="false" />
+
         <receiver
                 android:name=".presentation.receiver.BootReceiver"
                 android:enabled="true"
@@ -46,5 +61,4 @@
             </intent-filter>
         </receiver>
     </application>
-
 </manifest>

@@ -1,38 +1,32 @@
 package com.github.bobryanskiy.tamagotchiforlovers.core.work
 
 import android.content.Context
-import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.github.bobryanskiy.tamagotchiforlovers.core.string.ResourceStringProvider
-import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.CheckAndNotifyPetsUseCase
+import com.github.bobryanskiy.tamagotchiforlovers.core.logging.AppLogger
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
 @HiltWorker
 class CriticalStateWorker @AssistedInject constructor(
-    @Assisted private val context: Context,
-    @Assisted private val params: WorkerParameters,
-    private val checkAndNotifyPetsUseCase: CheckAndNotifyPetsUseCase,
-    private val stringProvider: ResourceStringProvider
+    @Assisted context: Context,
+    @Assisted params: WorkerParameters,
+    private val checkAndNotifyPetsUseCase: CheckAndNotifyPetsWorkerUseCase,
+    private val logger: AppLogger
 ) : CoroutineWorker(context, params) {
 
-    private val tag = "CriticalStateWorker"
+    companion object {
+        private const val TAG = "CriticalStateWorker"
+    }
 
     override suspend fun doWork(): Result {
-        Log.d(tag, "Starting critical state check for all pets")
-
+        logger.d(TAG, "Starting critical state check for all pets")
         return try {
-            val success = checkAndNotifyPetsUseCase.invoke(stringProvider)
-            if (success) {
-                Result.success()
-            } else {
-                // Если что-то пошло не так — пробуем снова позже
-                Result.retry()
-            }
+            val success = checkAndNotifyPetsUseCase()
+            if (success) Result.success() else Result.retry()
         } catch (e: Exception) {
-            Log.e(tag, "Critical error during check", e)
+            logger.e(TAG, "Critical error during check", e)
             Result.retry()
         }
     }

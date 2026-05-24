@@ -11,16 +11,14 @@ class RequestJoinUseCase @Inject constructor(
     private val pairRepository: PairRepository,
     private val userRepository: UserRepository
 ) {
-    suspend operator fun invoke(inviteCode: String): PairResult<Unit> {
-        if (inviteCode.isBlank()) return DomainResult.Failure(PairError.InvalidInput)
+    suspend operator fun invoke(pairId: String, guestId: String): PairResult<Unit> {
+        if (pairId.isBlank() || guestId.isBlank()) {
+            return DomainResult.Failure(PairError.InvalidInput)
+        }
 
-        val pairResult = pairRepository.findPairByInviteKey(inviteCode)
-        if (pairResult is DomainResult.Failure) return pairResult
+        // Сохраняем pairId в сессию гостя (для ожидания одобрения)
+        userRepository.updateUserSession(guestId, null, pairId)
 
-        val pair = (pairResult as DomainResult.Success).data
-        val guestId =userRepository.getCurrentUserId()
-            ?: return DomainResult.Failure(PairError.Unknown)
-
-        return pairRepository.requestJoin(pair.id, guestId)
+        return pairRepository.requestJoin(pairId, guestId)
     }
 }

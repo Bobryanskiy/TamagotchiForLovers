@@ -4,7 +4,6 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Update
 import com.github.bobryanskiy.tamagotchiforlovers.data.local.entity.PetEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -75,25 +74,23 @@ interface PetDao {
     """)
     suspend fun updateName(petId: String, name: String, timestamp: Long)
 
-
     @Query("UPDATE pets SET sync_status = 'SYNCED' WHERE id = :petId")
     suspend fun markSynced(petId: String)
 
     @Query("UPDATE pets SET sync_status = 'PENDING' WHERE sync_status = 'SYNCED'")
     suspend fun markAllPending()
+
     @Query("UPDATE pets SET sync_status = 'PENDING' WHERE id = :petId")
     suspend fun markPending(petId: String)
 
     @Query("SELECT * FROM pets WHERE sync_status = 'PENDING'")
     suspend fun getPendingPets(): List<PetEntity>
 
-
     @Query("SELECT * FROM pets WHERE owner_user_id = :ownerId")
     suspend fun getPetsByOwner(ownerId: String): List<PetEntity>
 
     @Query("SELECT * FROM pets WHERE life_status != 'DEAD' AND life_status != 'ESCAPED'")
     suspend fun getAllActivePets(): List<PetEntity>
-
 
     @Query("""
         UPDATE pets SET 
@@ -103,7 +100,6 @@ interface PetDao {
         WHERE owner_user_id = :oldOwnerId OR owner_user_id IS NULL
     """)
     suspend fun migrateOwnerUserId(oldOwnerId: String?, newOwnerId: String, timestamp: Long)
-
 
     @Query("DELETE FROM pets WHERE id = :petId")
     suspend fun deletePet(petId: String)

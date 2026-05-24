@@ -16,11 +16,13 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,6 +42,8 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.github.bobryanskiy.tamagotchiforlovers.R
+import com.github.bobryanskiy.tamagotchiforlovers.presentation.navigation.AppRoute
+import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.AuthEvent
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.AuthUiState
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.AuthViewModel
 import com.github.bobryanskiy.tamagotchiforlovers.util.ValidationUtils
@@ -58,11 +62,10 @@ fun AuthScreen(
     var isSignUpMode by remember { mutableStateOf(false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
 
     val emailError = if (email.isNotEmpty()) ValidationUtils.getEmailError(email) else null
     val passwordError = if (password.isNotEmpty()) ValidationUtils.getPasswordError(password) else null
-
-    val context = LocalContext.current
 
     LaunchedEffect(uiState) {
         when (val state = uiState) {
@@ -71,29 +74,42 @@ fun AuthScreen(
                 snackbarHostState.showSnackbar(message)
             }
             is AuthUiState.Success -> {
-                navController.popBackStack()
             }
             else -> {}
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.event.collect { event ->
+            when (event) {
+                is AuthEvent.NavigateToMain -> {
+                    navController.popBackStack()
+                }
+                is AuthEvent.NavigateToPet -> {
+                    navController.navigate(AppRoute.Pet(event.petId)) {
+                        popUpTo<AppRoute.Auth> { inclusive = true }
+                    }
+                }
+                is AuthEvent.ShowError -> {
+                }
+            }
         }
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { 
+                title = {
                     Text(
                         stringResource(
-                            if (isSignUpMode) R.string.auth_title_register 
+                            if (isSignUpMode) R.string.auth_title_register
                             else R.string.auth_title_login
                         )
-                    ) 
+                    )
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.back)
-                        )
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back))
                     }
                 }
             )
@@ -113,11 +129,8 @@ fun AuthScreen(
             onPasswordChange = { password = it },
             onToggleMode = { isSignUpMode = !isSignUpMode },
             onSubmit = {
-                if (isSignUpMode) {
-                    viewModel.register(email, password)
-                } else {
-                    viewModel.login(email, password)
-                }
+                if (isSignUpMode) viewModel.register(email, password)
+                else viewModel.login(email, password)
             }
         )
     }
@@ -147,11 +160,11 @@ private fun AuthContent(
     ) {
         Text(
             text = if (isSignUpMode) stringResource(R.string.auth_title_register)
-                else stringResource(R.string.auth_title_login),
+            else stringResource(R.string.auth_title_login),
             style = MaterialTheme.typography.headlineMedium
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(Modifier.height(32.dp))
 
         OutlinedTextField(
             value = email,
@@ -161,10 +174,12 @@ private fun AuthContent(
             enabled = !isLoading,
             singleLine = true,
             isError = emailError != null,
-            supportingText = if (emailError != null) {{ Text(emailError) }} else null
+            supportingText = if (emailError != null) {
+                { Text(emailError) }
+            } else null
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(Modifier.height(16.dp))
 
         OutlinedTextField(
             value = password,
@@ -176,10 +191,12 @@ private fun AuthContent(
             enabled = !isLoading,
             singleLine = true,
             isError = passwordError != null,
-            supportingText = if (passwordError != null) {{ Text(passwordError) }} else null
+            supportingText = if (passwordError != null) {
+                { Text(passwordError) }
+            } else null
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(Modifier.height(24.dp))
 
         Button(
             onClick = onSubmit,
@@ -196,15 +213,19 @@ private fun AuthContent(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(Modifier.height(12.dp))
 
-        Button(
+        TextButton(
             onClick = onToggleMode,
             modifier = Modifier.fillMaxWidth(),
             enabled = !isLoading
         ) {
-            Text(if (isSignUpMode) stringResource(R.string.have_account) + " " + stringResource(R.string.login)
-            else stringResource(R.string.no_account) + " " + stringResource(R.string.auth_title_register))
+            Text(
+                if (isSignUpMode) stringResource(R.string.have_account) + " " + stringResource(R.string.login)
+                else stringResource(R.string.no_account) + " " + stringResource(R.string.auth_title_register)
+            )
         }
+
+        Spacer(Modifier.height(16.dp))
     }
 }

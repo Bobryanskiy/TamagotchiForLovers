@@ -2,7 +2,7 @@ package com.github.bobryanskiy.tamagotchiforlovers.domain.model
 
 import com.github.bobryanskiy.tamagotchiforlovers.domain.util.Clock
 
-data class Pair(
+data class PetPair(
     val id: String,
     val name: String,
     val userId1: String,
@@ -11,8 +11,8 @@ data class Pair(
     val status: PairStatus,
     val inviteKey: InviteKey?,
     val pendingRequest: PendingRequest?,
-    val createdAt: Long,
-    val updatedAt: Long,
+    val createdAt: Long?,
+    val updatedAt: Long?,
     val endedAt: Long?
 ) {
     val isActive: Boolean

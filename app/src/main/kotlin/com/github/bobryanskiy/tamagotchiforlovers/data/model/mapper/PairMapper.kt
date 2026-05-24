@@ -7,7 +7,7 @@ import com.github.bobryanskiy.tamagotchiforlovers.data.remote.dto.PendingRequest
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.InviteKey
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PairStatus
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PendingRequest
-import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pair
+import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetPair
 import com.google.firebase.Timestamp
 import java.util.Date
 
@@ -44,14 +44,15 @@ fun PairEntity.toDto(): PairDto {
         ) else null,
         pendingRequest = if (requestGuestId != null) PendingRequestDto(
             guestId = requestGuestId,
-            requestedAt = Timestamp(Date(requestRequestedAt?: 0L))
+            requestedAt = requestRequestedAt?.let { Timestamp(Date(it)) }
         ) else null,
         createdAt = createdAt,
-        endedAt = Timestamp(Date(endedAt ?: 0L))
+        updatedAt = updatedAt,
+        endedAt = endedAt?.let { Timestamp(Date(it)) }
     )
 }
 
-fun PairDto.toDomain(pairId: String): Pair {
+fun PairDto.toDomain(pairId: String): PetPair {
     val statusEnum = try {
         PairStatus.valueOf(status)
     } catch (e: IllegalArgumentException) {
@@ -66,7 +67,7 @@ fun PairDto.toDomain(pairId: String): Pair {
         PendingRequest(guestId = it.guestId, requestedAt = it.requestedAt?.toDate()?.time ?: 0L)
     }
 
-    return Pair(
+    return PetPair(
         name = name,
         id = pairId,
         userId1 = userId1,
@@ -81,7 +82,7 @@ fun PairDto.toDomain(pairId: String): Pair {
     )
 }
 
-fun PairEntity.toDomain(): Pair {
+fun PairEntity.toDomain(): PetPair {
     val statusEnum = try {
         PairStatus.valueOf(status)
     } catch (e: IllegalArgumentException) {
@@ -99,7 +100,7 @@ fun PairEntity.toDomain(): Pair {
         )
     } else null
 
-    return Pair(
+    return PetPair(
         name = name,
         id = id,
         userId1 = userId1,

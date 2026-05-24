@@ -1,39 +1,55 @@
-package com.github.bobryanskiy.tamagotchiforlovers.domain.usecase
+package com.github.bobryanskiy.tamagotchiforlovers.core.work
 
+import com.github.bobryanskiy.tamagotchiforlovers.core.logging.AppLogger
+import com.github.bobryanskiy.tamagotchiforlovers.core.notification.NotificationHelper
+import com.github.bobryanskiy.tamagotchiforlovers.core.notification.NotificationStringResolver
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PetRepository
-import com.github.bobryanskiy.tamagotchiforlovers.domain.provider.StringResourceProvider
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
+import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.PreparePetNotificationUseCase
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class CheckAndNotifyPetsUseCase @Inject constructor(
+/**
+ * Составной use case: проверка всех петов + показ уведомлений.
+ * Живёт в core.work потому что зависит от Android (NotificationHelper).
+ */
+class CheckAndNotifyPetsWorkerUseCase @Inject constructor(
     private val petRepository: PetRepository,
-    private val prepareNotificationUseCase: PreparePetNotificationUseCase
+    private val prepareNotification: PreparePetNotificationUseCase,
+    private val stringResolver: NotificationStringResolver,
+    private val notificationHelper: NotificationHelper,
+    private val logger: AppLogger
 ) {
+    companion object {
+        private const val TAG = "CheckAndNotifyPets"
+    }
 
-    suspend operator fun invoke(stringProvider: StringResourceProvider): Boolean {
-        val petsResult = petRepository.getAllActivePets()
-
-        if (petsResult is DomainResult.Failure) {
+    suspend operator fun invoke(): Boolean {
+        val result = petRepository.getAllActivePets()
+        if (result !is DomainResult.Success) {
+            logger.e(TAG, "Failed to get active pets")
             return false
         }
 
-        val pets = petsResult.getOrNull() ?: return false
-        if (pets.isEmpty()) {
-            return true
-        }
-
-        var hasErrors = false
-
-        pets.forEach { pet ->
+        result.data.forEach { pet ->
             try {
-                prepareNotificationUseCase.invoke(pet, stringProvider)
+                val notification = prepareNotification(pet)
+                val title = stringResolver.resolveTitle(notification)
+                val message = stringResolver.resolveMessage(notification)
+
+                notificationHelper.showPetNotification(
+                    NotificationHelper.NotificationData(
+                        petId = notification.petId,
+                        petName = notification.petName,
+                        title = title,
+                        message = message,
+                        isUrgent = notification.isUrgent,
+                        status = notification.status
+                    )
+                )
             } catch (e: Exception) {
-                hasErrors = true
+                logger.e(TAG, "Failed to notify for pet ${pet.id}", e)
             }
         }
-
-        return !hasErrors
+        return true
     }
 }

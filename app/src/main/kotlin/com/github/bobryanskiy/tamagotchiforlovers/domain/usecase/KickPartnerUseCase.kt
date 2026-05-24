@@ -18,7 +18,9 @@ class KickPartnerUseCase @Inject constructor(
             return DomainResult.Failure(PairError.InvalidInput)
         }
 
-        val currentPair = pairRepository.getPair(pairId)
+        val pairResult = pairRepository.getPair(pairId)
+        if (pairResult is DomainResult.Failure) return pairResult
+        val currentPair = (pairResult as DomainResult.Success).data
             ?: return DomainResult.Failure(PairError.PairNotFound)
 
         if (currentPair.status != PairStatus.ACTIVE) {

@@ -241,4 +241,32 @@
 
     <!-- Common retry -->
     <string name="btn_retry">Try Again</string>
+    <string name="btn_confirm">Confirm</string>
+    <string name="btn_cancel">Cancel</string>
+
+    <string name="pet_cd_waiting_pair">Waiting for a partner</string>
+    <string name="pet_cd_active_pair">Active Pair</string>
+    <string name="rename_pet_title">Rename Pet</string>
+    <string name="rename_pet_hint">Enter new name</string>
+    <string name="rename_pair_title">Rename Pair</string>
+    <string name="pair_name_label">Pair Name</string>
+    <string name="partner_label">Partner</string>
+    <string name="leave_pair">Leave Pair</string>
+    <string name="kick_confirm_title">Kick Partner?</string>
+    <string name="kick_confirm_message">The partner will be removed from the pair</string>
+    <string name="end_session_confirm_title">End Session?</string>
+    <string name="end_session_confirm_message">The pair will be disbanded</string>
+    <string name="profile_active_pet_label">Active Pet</string>
+    <string name="profile_no_pet">You have no active pet</string>
+    <string name="unknown_user">Unknown User</string>
+    <string name="btn_link_account">Link Account</string>
+    <string name="btn_save">Save</string>
+    <string name="error_empty_pair_name">Enter pair name</string>
+
+    <!-- Nickname -->
+    <string name="edit_nickname_title">Edit nickname</string>
+    <string name="nickname_label">Nickname</string>
+    <string name="edit_nickname">Edit nickname</string>
+    <string name="nickname_hint">Enter your nickname</string>
+    <string name="nickname_too_long">Nickname is too long (max 20 characters)</string>
 </resources>

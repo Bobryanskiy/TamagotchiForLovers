@@ -7,7 +7,6 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Singleton
 class EvaluatePetCriticalStateUseCase @Inject constructor() {
     operator fun invoke(stats: PetStats, currentTime: Long): PetLifeState {
         return when {

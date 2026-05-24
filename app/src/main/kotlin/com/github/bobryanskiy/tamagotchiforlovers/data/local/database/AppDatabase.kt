@@ -9,7 +9,7 @@ import com.github.bobryanskiy.tamagotchiforlovers.data.local.entity.PetEntity
 
 @Database(
     entities = [PetEntity::class, PairEntity::class],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

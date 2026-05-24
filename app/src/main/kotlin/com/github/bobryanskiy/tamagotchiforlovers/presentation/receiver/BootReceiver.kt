@@ -3,10 +3,14 @@ package com.github.bobryanskiy.tamagotchiforlovers.presentation.receiver
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.util.Log
-import androidx.work.*
+import androidx.work.Constraints
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import com.github.bobryanskiy.tamagotchiforlovers.core.logging.AppLogger
 import com.github.bobryanskiy.tamagotchiforlovers.core.work.RescheduleAlarmsWorker
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 /**
  * Receiver для восстановления алармов после перезагрузки устройства.
@@ -14,15 +18,20 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class BootReceiver : BroadcastReceiver() {
 
-    private val tag = "BootReceiver"
+    @Inject
+    lateinit var logger: AppLogger
+
+    companion object {
+        private const val TAG = "BootReceiver"
+    }
 
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != Intent.ACTION_BOOT_COMPLETED) {
-            Log.d(tag, "Ignoring action: ${intent.action}")
+            logger.d(TAG, "Ignoring action: ${intent.action}")
             return
         }
 
-        Log.d(tag, "Boot completed. Scheduling alarm reschedule work...")
+        logger.d(TAG, "Boot completed. Scheduling alarm reschedule work...")
 
         val workRequest = OneTimeWorkRequestBuilder<RescheduleAlarmsWorker>()
             .setConstraints(
@@ -39,6 +48,6 @@ class BootReceiver : BroadcastReceiver() {
             workRequest
         )
 
-        Log.d(tag, "Work scheduled successfully")
+        logger.d(TAG, "Work scheduled successfully")
     }
 }

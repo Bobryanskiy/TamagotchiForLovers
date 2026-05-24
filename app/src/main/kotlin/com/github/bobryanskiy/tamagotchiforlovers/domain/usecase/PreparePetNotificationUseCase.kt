@@ -1,77 +1,69 @@
 package com.github.bobryanskiy.tamagotchiforlovers.domain.usecase
 
-import com.github.bobryanskiy.tamagotchiforlovers.R
-import com.github.bobryanskiy.tamagotchiforlovers.domain.provider.StringResourceProvider
-import com.github.bobryanskiy.tamagotchiforlovers.core.notification.NotificationHelper
+import com.github.bobryanskiy.tamagotchiforlovers.domain.model.NotificationKey
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pet
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetLifeStatus
+import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetNotification
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class PreparePetNotificationUseCase @Inject constructor(
-    private val notificationHelper: NotificationHelper
-) {
-    suspend operator fun invoke(pet: Pet, stringProvider: StringResourceProvider) {
-        try {
-            val data = prepareNotificationData(pet, stringProvider)
-            notificationHelper.showPetNotification(data)
-        } catch (e: Exception) {
-            // Логирование должно быть через интерфейс или удалено из domain
-        }
-    }
+/**
+ * Готовит данные для уведомления.
+ *
+ * ❗ ЧИСТЫЙ Domain: никакого R.string, никакого Context.
+ * Возвращает NotificationKey — ключ, который Android-слой превратит в строку.
+ */
+class PreparePetNotificationUseCase @Inject constructor() {
 
-    private fun prepareNotificationData(pet: Pet, stringProvider: StringResourceProvider): NotificationHelper.NotificationData {        if (pet.lifeState.status == PetLifeStatus.DEAD) {
-            return NotificationHelper.NotificationData(
+    operator fun invoke(pet: Pet): PetNotification {
+        val stats = pet.stats
+        val minStat = minOf(stats.hunger, stats.energy, stats.cleanliness, stats.happiness)
+        val isCritical = minStat <= 15
+
+        // Terminal states
+        if (pet.lifeState.status == PetLifeStatus.DEAD) {
+            return PetNotification(
                 petId = pet.id,
                 petName = pet.profile.name,
-                title = stringProvider.getString(R.string.notif_dead, pet.profile.name),
-                message = stringProvider.getString(R.string.notif_dead_message),
+                titleKey = NotificationKey.Dead,
+                messageKey = NotificationKey.Dead,  // одно и то же сообщение
                 isUrgent = true,
                 status = PetLifeStatus.DEAD
             )
         }
-
         if (pet.lifeState.status == PetLifeStatus.ESCAPED) {
-            return NotificationHelper.NotificationData(
+            return PetNotification(
                 petId = pet.id,
                 petName = pet.profile.name,
-                title = stringProvider.getString(R.string.notif_escaped, pet.profile.name),
-                message = stringProvider.getString(R.string.notif_escaped_message),
+                titleKey = NotificationKey.Escaped,
+                messageKey = NotificationKey.Escaped,
                 isUrgent = true,
                 status = PetLifeStatus.ESCAPED
             )
         }
 
-        val stats = pet.stats
-        val minStat = minOf(stats.hunger, stats.energy, stats.cleanliness, stats.happiness)
-
-        val titleResId = if (minStat <= 15) {
-            R.string.notif_title_crit
-        } else {
-            R.string.notif_title_warn
+        // Live pet — определяем критичность по минимальной статистике
+        val (titleKey, messageKey) = when (minStat) {
+            stats.hunger -> if (isCritical)
+                NotificationKey.CriticalHunger to NotificationKey.CriticalHunger
+            else NotificationKey.WarningHunger to NotificationKey.WarningHunger
+            stats.energy -> if (isCritical)
+                NotificationKey.CriticalEnergy to NotificationKey.CriticalEnergy
+            else NotificationKey.WarningEnergy to NotificationKey.WarningEnergy
+            stats.cleanliness -> if (isCritical)
+                NotificationKey.CriticalCleanliness to NotificationKey.CriticalCleanliness
+            else NotificationKey.WarningCleanliness to NotificationKey.WarningCleanliness
+            else -> if (isCritical)
+                NotificationKey.CriticalHappiness to NotificationKey.CriticalHappiness
+            else NotificationKey.WarningHappiness to NotificationKey.WarningHappiness
         }
 
-        val textResId = when (minStat) {
-            stats.hunger -> if (minStat <= 15) R.string.notif_crit_hunger else R.string.notif_warn_hunger
-            stats.energy -> if (minStat <= 15) R.string.notif_crit_energy else R.string.notif_warn_energy
-            stats.cleanliness -> if (minStat <= 15) R.string.notif_crit_clean else R.string.notif_warn_clean
-            stats.happiness -> if (minStat <= 15) R.string.notif_crit_happy else R.string.notif_warn_happy
-            else -> R.string.notif_warn_happy
-        }
-
-        val title = stringProvider.getString(titleResId, pet.profile.name)
-        val message = stringProvider.getString(textResId, pet.profile.name)
-        val isUrgent = minStat <= 15
-
-        return NotificationHelper.NotificationData(
+        return PetNotification(
             petId = pet.id,
             petName = pet.profile.name,
-            title = title,
-            message = message,
-            isUrgent = isUrgent,
+            titleKey = titleKey,
+            messageKey = messageKey,
+            isUrgent = isCritical,
             status = pet.lifeState.status
         )
     }
 }
-

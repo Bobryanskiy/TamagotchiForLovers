@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Person
@@ -39,7 +38,7 @@ import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.MainVie
 fun MainScreen(
     viewModel: MainViewModel = hiltViewModel(),
     onNavigateToAuth: () -> Unit,
-    onNavigateToProfile: (userId: String) -> Unit,
+    onNavigateToProfile: () -> Unit,
     onNavigateToGame: () -> Unit,
     onNavigateToPairConnect: () -> Unit
 ) {
@@ -51,24 +50,17 @@ fun MainScreen(
                 title = { Text(stringResource(R.string.app_name)) },
                 actions = {
                     when (val state = authState) {
-                        is AuthButtonState.Loading -> {
-                        }
                         is AuthButtonState.Login -> {
                             IconButton(onClick = onNavigateToAuth) {
-                                Icon(
-                                    imageVector = Icons.Default.Person,
-                                    contentDescription = stringResource(R.string.login)
-                                )
+                                Icon(Icons.Default.Person, stringResource(R.string.login))
                             }
                         }
                         is AuthButtonState.Profile -> {
-                            IconButton(onClick = { onNavigateToProfile(state.userId) }) {
-                                Icon(
-                                    imageVector = Icons.Default.AccountCircle,
-                                    contentDescription = "Profile"
-                                )
+                            IconButton(onClick = onNavigateToProfile) {
+                                Icon(Icons.Default.AccountCircle, "Profile")
                             }
                         }
+                        is AuthButtonState.Loading -> {}
                     }
                 }
             )
@@ -105,7 +97,7 @@ private fun MainContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
     ) {
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(Modifier.height(32.dp))
 
         Text(
             text = stringResource(R.string.welcome_message),

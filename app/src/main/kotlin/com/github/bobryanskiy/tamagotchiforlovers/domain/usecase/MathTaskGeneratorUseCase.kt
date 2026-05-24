@@ -9,7 +9,6 @@ data class MathTask(
     val correctAnswer: Int
 )
 
-@Singleton
 class MathTaskGeneratorUseCase @Inject constructor() {
 
     operator fun invoke(): MathTask {
