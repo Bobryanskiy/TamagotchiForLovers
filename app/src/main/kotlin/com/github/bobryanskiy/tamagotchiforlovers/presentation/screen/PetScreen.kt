@@ -93,6 +93,7 @@ import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.PetUiSt
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.PetViewModel
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.UiEvent
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -255,7 +256,7 @@ fun PetScreen(
                         modifier = Modifier.padding(24.dp)
                     ) {
                         Text(
-                            text = stringResource(R.string.game_over_title),
+                            text = gameOverTitle,
                             style = MaterialTheme.typography.headlineMedium,
                             modifier = Modifier.semantics { heading() }
                         )
@@ -270,7 +271,7 @@ fun PetScreen(
                             onClick = onNavigateToMain,
                             modifier = Modifier.semantics { role = Role.Button }
                         ) {
-                            Text(stringResource(R.string.game_over_button))
+                            Text(gameOverButtonText)
                         }
                     }
                 }
@@ -386,7 +387,7 @@ private fun PetContent(
 
         if (statsImproved) {
             isAnimating = true
-            delay(1500)
+            delay(1500.milliseconds)
             isAnimating = false
         }
 
@@ -501,7 +502,7 @@ private fun MathTaskDialog(
     }
 
     LaunchedEffect(Unit) {
-        delay(200)
+        delay(200.milliseconds)
         focusRequester.requestFocus()
         keyboardController?.show()
     }

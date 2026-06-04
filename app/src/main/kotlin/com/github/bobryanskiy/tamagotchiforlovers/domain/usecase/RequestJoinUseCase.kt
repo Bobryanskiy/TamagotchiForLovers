@@ -17,7 +17,7 @@ class RequestJoinUseCase @Inject constructor(
         }
 
         // Сохраняем pairId в сессию гостя (для ожидания одобрения)
-        userRepository.updateUserSession(guestId, null, pairId)
+        //userRepository.updateUserSession(guestId, null, pairId)
 
         return pairRepository.requestJoin(pairId, guestId)
     }

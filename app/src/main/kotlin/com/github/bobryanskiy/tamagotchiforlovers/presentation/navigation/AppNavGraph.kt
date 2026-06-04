@@ -154,6 +154,12 @@ fun AppNavGraph(
                     navController.navigate(AppRoute.PairWaiting(pairId)) {
                         popUpTo<AppRoute.CreatePair> { inclusive = true }
                     }
+                },
+                onNavigateToAuth = {
+                    navController.navigate(AppRoute.Auth) {
+                        popUpTo<AppRoute.CreatePair> { inclusive = true }
+                        launchSingleTop = true
+                    }
                 }
             )
         }

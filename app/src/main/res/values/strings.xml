@@ -360,4 +360,7 @@
     <string name="conflict_keep_local">Keep local</string>
     <string name="conflict_use_cloud">Use cloud</string>
     <string name="last_update">Last updated</string>
+
+    <string name="auth_required_title">Authentication required</string>
+    <string name="btn_go_to_login">Go to login</string>
 </resources>

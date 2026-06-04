@@ -362,4 +362,7 @@
     <string name="conflict_keep_local">Оставить локальную</string>
     <string name="conflict_use_cloud">Использовать облачную</string>
     <string name="last_update">Обновлено</string>
+
+    <string name="auth_required_title">Требуется авторизация</string>
+    <string name="btn_go_to_login">Перейти ко входу</string>
 </resources>

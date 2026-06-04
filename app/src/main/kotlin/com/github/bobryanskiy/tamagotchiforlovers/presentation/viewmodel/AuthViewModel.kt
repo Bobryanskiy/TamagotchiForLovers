@@ -35,11 +35,6 @@ sealed class AuthUiState {
     ) : AuthUiState()
 }
 
-sealed interface AuthEvent {
-    data object NavigateToBoot : AuthEvent
-    data class ShowError(val messageResId: Int) : AuthEvent
-}
-
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val authRepository: AuthRepository,
@@ -51,9 +46,6 @@ class AuthViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow<AuthUiState>(AuthUiState.Idle)
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
-
-    private val _event = MutableSharedFlow<AuthEvent>(extraBufferCapacity = 1)
-    val event: SharedFlow<AuthEvent> = _event.asSharedFlow()
 
     private val _linkConflict = MutableStateFlow<Pair<Pet, Pet>?>(null)
     val linkConflict: StateFlow<Pair<Pet, Pet>?> = _linkConflict.asStateFlow()
@@ -72,6 +64,7 @@ class AuthViewModel @Inject constructor(
                             when (val data = linkResult.data) {
                                 is LinkAccountResult.Success -> {
                                     logger.d(TAG, "Account linked successfully")
+                                    _uiState.value = AuthUiState.Success
                                 }
                                 is LinkAccountResult.Conflict -> {
                                     logger.w(TAG, "Link conflict detected")
@@ -86,13 +79,11 @@ class AuthViewModel @Inject constructor(
                         is DomainResult.Failure -> {
                             logger.w(TAG, "Link failed: ${linkResult.error}")
                             _uiState.value = AuthUiState.Success
-                            _event.emit(AuthEvent.NavigateToBoot)
                         }
                     }
                 }
                 is DomainResult.Failure -> {
                     _uiState.value = AuthUiState.Error(result.error.toUiErrorStringRes())
-                    _event.emit(AuthEvent.ShowError(result.error.toUiErrorStringRes()))
                 }
             }
         }
@@ -107,7 +98,6 @@ class AuthViewModel @Inject constructor(
             _linkConflict.value = null
 
             _uiState.value = AuthUiState.Success
-            _event.emit(AuthEvent.NavigateToBoot)
         }
     }
 

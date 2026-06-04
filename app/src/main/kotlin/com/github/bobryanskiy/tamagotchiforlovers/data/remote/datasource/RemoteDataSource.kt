@@ -24,13 +24,15 @@ interface RemoteDataSource {
     suspend fun updatePairStatus(pairId: String, status: String, updatedAt: Long)
     suspend fun updatePairUserId2(pairId: String, userId2: String?, updatedAt: Long)
     suspend fun deletePair(pairId: String)
-    suspend fun findPairByInviteKey(inviteKey: String): PairDto?
+    suspend fun findPairByInviteKey(inviteKey: String): Pair<String, PairDto>?
     suspend fun requestJoin(pairId: String, guestId: String)
     suspend fun acceptJoinRequest(pairId: String, guestId: String)
     suspend fun rejectJoinRequest(pairId: String, guestId: String)
     suspend fun leaveSession(pairId: String, userId: String)
     suspend fun endSession(pairId: String, callerId: String)
-    suspend fun kickPartner(pairId: String, callerId: String)
+    suspend fun kickPartner(pairId: String, callerId: String, code: String, expiresAt: Long)
     suspend fun generateInviteKey(pairId: String, code: String, expiresAt: Long)
     fun observePendingRequests(pairId: String): Flow<List<Map<String, Any?>>>
+    fun generateDocumentId(collection: String): String
+    suspend fun updatePairName(pairId: String, newName: String)
 }

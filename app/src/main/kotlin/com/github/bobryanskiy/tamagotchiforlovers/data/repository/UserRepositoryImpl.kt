@@ -92,7 +92,6 @@ class UserRepositoryImpl @Inject constructor(
 
         updates["active_pet_id"] = petId ?: FieldValue.delete()
         updates["active_pair_id"] = pairId ?: FieldValue.delete()
-        updates["updated_at"] = clock.currentTimeMillis()
 
         firestore.collection(USERS_COLLECTION).document(uid)
             .set(updates, SetOptions.merge())

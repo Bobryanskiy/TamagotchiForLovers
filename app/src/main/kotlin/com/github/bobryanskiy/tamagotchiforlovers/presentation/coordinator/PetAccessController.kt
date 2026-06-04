@@ -4,6 +4,7 @@ import com.github.bobryanskiy.tamagotchiforlovers.core.logging.AppLogger
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pet
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PetRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.SessionRepository
+import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.UserRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.AccessResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.VerifyPetAccessUseCase
 import javax.inject.Inject
@@ -16,6 +17,7 @@ class PetAccessController @Inject constructor(
     private val verifyPetAccessUseCase: VerifyPetAccessUseCase,
     private val petRepository: PetRepository,
     private val sessionRepository: SessionRepository,
+    private val userRepository: UserRepository,
     private val logger: AppLogger
 ) {
     companion object {
@@ -46,6 +48,19 @@ class PetAccessController @Inject constructor(
 
     private suspend fun cleanup(petId: String) {
         runCatching { petRepository.deletePet(petId) }
+        val currentUserId = userRepository.getCurrentUserId()
+        if (currentUserId != null) {
+            runCatching {
+                userRepository.updateUserSession(
+                    uid = currentUserId,
+                    petId = null,
+                    pairId = null
+                )
+                logger.d(TAG, "✅ User session cleaned in Firestore: uid=$currentUserId")
+            }.onFailure { e ->
+                logger.e(TAG, "❌ Failed to clean user session", e)
+            }
+        }
         sessionRepository.clearActivePetId()
         sessionRepository.clearActivePairId()
         sessionRepository.clearPairStatus()

@@ -11,6 +11,8 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pet
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetAction
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PairRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PetRepository
+import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.SessionRepository
+import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.UserRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.ApplyPetActionUseCase
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.CalculateLiveStatsUseCase
@@ -41,8 +43,10 @@ import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.time.Duration.Companion.milliseconds
 
 sealed class PetUiState {
     data object Loading : PetUiState()
@@ -71,6 +75,8 @@ class PetViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val petRepository: PetRepository,
     private val pairRepository: PairRepository,
+    private val sessionRepository: SessionRepository,
+    private val userRepository: UserRepository,
     private val applyActionUseCase: ApplyPetActionUseCase,
     private val checkPetLifeDecayUseCase: CheckPetLifeDecayUseCase,
     private val accessController: PetAccessController,
@@ -98,7 +104,6 @@ class PetViewModel @Inject constructor(
 
     private var notificationsEnabled: Boolean = true
     private var activePetJob: Job? = null
-    private var uiUpdateJob: Job? = null
 
     companion object {
         private const val TAG = "PetVM"
@@ -143,28 +148,6 @@ class PetViewModel @Inject constructor(
                 }
             }
         }
-        uiUpdateJob = viewModelScope.launch(ioDispatcher) {
-            try {
-                startUiStatsUpdater()
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                logger.e(TAG, "startUiStatsUpdater failed", e)
-            }
-        }
-    }
-
-    private suspend fun startUiStatsUpdater() {
-        while (currentCoroutineContext().isActive) {
-            delay(UI_UPDATE_INTERVAL)
-
-            val currentPet = (_uiState.value as? PetUiState.Content)?.pet
-            if (currentPet != null && !currentPet.lifeState.isTerminal()) {
-                val currentTime = clock.currentTimeMillis()
-                val livePet = calculateLiveStatsUseCase(currentPet, currentTime)
-                _uiState.value = PetUiState.Content(livePet)
-            }
-        }
     }
 
     private suspend fun verifyPetOwnership() {
@@ -205,10 +188,19 @@ class PetViewModel @Inject constructor(
                 if (decayResult.hasChanged) {
                     logger.d(TAG, "🔄 State changed on load: ${pet.lifeState.status} → ${decayResult.newState.status}")
                     petRepository.updateCriticalState(petId, decayResult.newState)
+
+                    if (decayResult.newState.isTerminal() && !pet.lifeState.isTerminal()) {
+                        handlePetDeath(actualPet)
+                    }
                 }
 
                 _uiState.value = when {
-                    actualPet.lifeState.isTerminal() -> PetUiState.GameOver(actualPet)
+                    actualPet.lifeState.isTerminal() -> {
+                        if (actualPet.profile.currentPairId != null) {
+                            handlePetDeath(actualPet)
+                        }
+                        PetUiState.GameOver(actualPet)
+                    }
                     else -> PetUiState.Content(actualPet)
                 }
 
@@ -260,8 +252,7 @@ class PetViewModel @Inject constructor(
                 is DomainResult.Success -> {
                     _dialogState.value = null
                     logger.d(TAG, "✅ Action completed, rescheduling alarm")
-                    // Детерминированная задержка вместо магического delay
-                    delay(POST_ACTION_DELAY)
+                    delay(POST_ACTION_DELAY.milliseconds)
                     (_uiState.value as? PetUiState.Content)?.pet?.let {
                         notificationsCoordinator.scheduleAlarm(it, notificationsEnabled)
                     }
@@ -276,8 +267,11 @@ class PetViewModel @Inject constructor(
     }
 
     fun abandonPet(onDeleted: () -> Unit) {
-        viewModelScope.launch(ioDispatcher) {
-            when (petRepository.deletePet(petId)) {
+        viewModelScope.launch {
+            val result = withContext(ioDispatcher) {
+                petRepository.deletePet(petId)
+            }
+            when (result) {
                 is DomainResult.Success -> onDeleted()
                 is DomainResult.Failure -> _uiEvent.emit(UiEvent.ShowError(R.string.error_unknown))
             }
@@ -295,7 +289,6 @@ class PetViewModel @Inject constructor(
                 logger.w(TAG, "⚠️ Cannot trigger: pet not loaded")
                 return@launch
             }
-            // Одна последовательная корутина вместо двух параллельных
             notificationsCoordinator.showTestNotification(pet)
             notificationsCoordinator.triggerManualCheck()
         }
@@ -310,20 +303,47 @@ class PetViewModel @Inject constructor(
                     if (result.hasChanged) {
                         logger.d(TAG, "🔄 LifeState changed: ${pet.lifeState.status} → ${result.newState.status}")
                         petRepository.updateCriticalState(petId, result.newState)
-                        notificationsCoordinator.scheduleAlarm(result.pet, notificationsEnabled)
+                        if (result.newState.isTerminal()) {
+                            handlePetDeath(result.pet)
+                        } else {
+                            notificationsCoordinator.scheduleAlarm(result.pet, notificationsEnabled)
+                        }
                     }
                 } catch (e: Exception) {
                     logger.e(TAG, "❌ Decay check failed", e)
                 }
             }
 
-            delay(LIFE_STATE_CHECK_INTERVAL)
+            delay(LIFE_STATE_CHECK_INTERVAL.milliseconds)
         }
+    }
+
+    private suspend fun handlePetDeath(pet: Pet) {
+        logger.d(TAG, "🪦 Pet ${pet.id} died (${pet.lifeState.deathCause}), cleaning up pair")
+
+        val pairId = pet.profile.currentPairId
+        val userId = pet.profile.ownerUserId
+
+        if (pairId != null && userId != null) {
+            try {
+                pairRepository.endSession(pairId, userId)
+                logger.d(TAG, "✅ Pair $pairId marked as ENDED")
+
+                petRepository.updatePairId(pet.id, null)
+
+                userRepository.updateUserSession(userId, pet.id, null)
+
+                sessionRepository.clearActivePairId()
+            } catch (e: Exception) {
+                logger.e(TAG, "⚠️ Failed to cleanup pair after pet death", e)
+            }
+        }
+
+        notificationsCoordinator.cancelAlarm(pet.id)
     }
 
     override fun onCleared() {
         super.onCleared()
         activePetJob?.cancel()
-        uiUpdateJob?.cancel()
     }
 }

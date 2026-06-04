@@ -45,7 +45,6 @@ class AcceptJoinRequestUseCase @Inject constructor(
 
         if (result is DomainResult.Success) {
             userRepository.updateUserSession(callerId, hostPetId, pairId)
-            userRepository.updateUserSession(guestId, hostPetId, pairId)
         }
 
         return result

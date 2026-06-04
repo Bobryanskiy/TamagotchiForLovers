@@ -1,12 +1,17 @@
 package com.github.bobryanskiy.tamagotchiforlovers.presentation.screen
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -35,7 +40,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
@@ -48,6 +55,7 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -58,10 +66,12 @@ import androidx.navigation.NavHostController
 import com.github.bobryanskiy.tamagotchiforlovers.R
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pet
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.navigation.AppRoute
-import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.AuthEvent
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.AuthUiState
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.AuthViewModel
 import com.github.bobryanskiy.tamagotchiforlovers.util.ValidationUtils
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -94,80 +104,71 @@ fun AuthScreen(
                 val message = resources.getString(state.messageResId)
                 snackbarHostState.showSnackbar(message)
             }
-            is AuthUiState.Success -> {}
+            is AuthUiState.Success -> {
+                navController.navigate(AppRoute.Boot) {
+                    popUpTo<AppRoute.Auth> { inclusive = true }
+                    launchSingleTop = true
+                }
+            }
             else -> {}
         }
     }
-
-    LaunchedEffect(Unit) {
-        viewModel.event.collect { event ->
-            when (event) {
-                is AuthEvent.NavigateToBoot -> {
-                    navController.navigate(AppRoute.Boot) {
-                        popUpTo<AppRoute.Auth> { inclusive = true }
-                        launchSingleTop = true
-                    }
-                }
-                is AuthEvent.ShowError -> {}
-            }
-        }
-    }
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(
-                            if (isSignUpMode) R.string.auth_title_register
-                            else R.string.auth_title_login
-                        ),
-                        modifier = Modifier.semantics { heading() }
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.back)
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = stringResource(
+                                if (isSignUpMode) R.string.auth_title_register
+                                else R.string.auth_title_login
+                            ),
+                            modifier = Modifier.semantics { heading() }
                         )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(R.string.back)
+                            )
+                        }
                     }
+                )
+            },
+            snackbarHost = { SnackbarHost(snackbarHostState) }
+        ) { padding ->
+            AuthContent(
+                modifier = Modifier
+                    .padding(padding)
+                    .padding(24.dp),
+                email = email,
+                password = password,
+                passwordVisible = passwordVisible,
+                isSignUpMode = isSignUpMode,
+                isLoading = uiState is AuthUiState.Loading,
+                emailErrorResId = emailErrorResId,
+                passwordErrorResId = passwordErrorResId,
+                onEmailChange = { email = it },
+                onPasswordChange = { password = it },
+                onTogglePasswordVisibility = { passwordVisible = !passwordVisible },
+                onToggleMode = { isSignUpMode = !isSignUpMode },
+                onSubmit = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    if (isSignUpMode) viewModel.register(email, password)
+                    else viewModel.login(email, password)
                 }
             )
-        },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
-    ) { padding ->
-        AuthContent(
-            modifier = Modifier
-                .padding(padding)
-                .padding(24.dp),
-            email = email,
-            password = password,
-            passwordVisible = passwordVisible,
-            isSignUpMode = isSignUpMode,
-            isLoading = uiState is AuthUiState.Loading,
-            emailErrorResId = emailErrorResId,
-            passwordErrorResId = passwordErrorResId,
-            onEmailChange = { email = it },
-            onPasswordChange = { password = it },
-            onTogglePasswordVisibility = { passwordVisible = !passwordVisible },
-            onToggleMode = { isSignUpMode = !isSignUpMode },
-            onSubmit = {
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                if (isSignUpMode) viewModel.register(email, password)
-                else viewModel.login(email, password)
-            }
-        )
-    }
-
-    if (uiState is AuthUiState.Conflict) {
-        val conflict = uiState as AuthUiState.Conflict
-        ConflictResolutionDialog(
-            localPet = conflict.localPet,
-            remotePet = conflict.remotePet,
-            onChooseLocal = { viewModel.resolveConflict(chooseLocal = true) },
-            onChooseRemote = { viewModel.resolveConflict(chooseLocal = false) }
-        )
+        }
+        if (uiState is AuthUiState.Conflict) {
+            val conflict = uiState as AuthUiState.Conflict
+            ConflictResolutionDialog(
+                localPet = conflict.localPet,
+                remotePet = conflict.remotePet,
+                onChooseLocal = { viewModel.resolveConflict(chooseLocal = true) },
+                onChooseRemote = { viewModel.resolveConflict(chooseLocal = false) }
+            )
+        }
     }
 }
 
@@ -211,6 +212,10 @@ private fun AuthContent(
         stringResource(R.string.no_account) + " " + stringResource(R.string.auth_title_register)
     }
 
+    val focusManager = LocalFocusManager.current
+    val emailFocusRequester = remember { FocusRequester() }
+    val passwordFocusRequester = remember { FocusRequester() }
+
     Column(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -235,7 +240,13 @@ private fun AuthContent(
                 },
             enabled = !isLoading,
             singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Email,
+                imeAction = ImeAction.Next
+            ),
+            keyboardActions = KeyboardActions(
+                onNext = { passwordFocusRequester.requestFocus() }
+            ),
             isError = emailErrorResId != null,
             supportingText = if (emailErrorResId != null) {
                 {
@@ -255,7 +266,18 @@ private fun AuthContent(
             onValueChange = onPasswordChange,
             label = { Text(passwordLabel) },
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    focusManager.clearFocus()
+                    if (!isLoading && isFormValid) {
+                        onSubmit()
+                    }
+                }
+            ),
             modifier = Modifier
                 .fillMaxWidth()
                 .semantics {
@@ -295,12 +317,14 @@ private fun AuthContent(
             enabled = !isLoading && isFormValid
         ) {
             if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.height(20.dp),
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-                Spacer(Modifier.height(8.dp))
-                Text(loadingText)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.height(20.dp),
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Text(loadingText)
+                }
             } else {
                 Text(submitText)
             }
@@ -330,7 +354,7 @@ private fun ConflictResolutionDialog(
     onChooseRemote: () -> Unit
 ) {
     val dateFormat = remember {
-        java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", java.util.Locale.getDefault())
+        SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
     }
 
     AlertDialog(
@@ -347,7 +371,7 @@ private fun ConflictResolutionDialog(
                     fontWeight = FontWeight.Bold
                 )
                 Text("• ${stringResource(R.string.pet_name)}: ${localPet.profile.name}")
-                Text("• ${stringResource(R.string.last_update)}: ${dateFormat.format(java.util.Date(localPet.stats.updatedAt))}")
+                Text("• ${stringResource(R.string.last_update)}: ${dateFormat.format(Date(localPet.stats.updatedAt))}")
                 Text("• ${stringResource(R.string.stat_hunger)}: ${localPet.stats.hunger}%")
 
                 Spacer(Modifier.height(12.dp))
@@ -358,7 +382,7 @@ private fun ConflictResolutionDialog(
                     fontWeight = FontWeight.Bold
                 )
                 Text("• ${stringResource(R.string.pet_name)}: ${remotePet.profile.name}")
-                Text("• ${stringResource(R.string.last_update)}: ${dateFormat.format(java.util.Date(remotePet.stats.updatedAt))}")
+                Text("• ${stringResource(R.string.last_update)}: ${dateFormat.format(Date(remotePet.stats.updatedAt))}")
                 Text("• ${stringResource(R.string.stat_hunger)}: ${remotePet.stats.hunger}%")
             }
         },

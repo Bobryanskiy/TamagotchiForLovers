@@ -4,6 +4,7 @@ import androidx.annotation.StringRes
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.github.bobryanskiy.tamagotchiforlovers.core.logging.AppLogger
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.CreatePairWithInviteUseCase
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.mapper.toUiErrorStringRes
@@ -25,8 +26,13 @@ sealed interface CreatePairUiState {
 @HiltViewModel
 class CreatePairViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
+    private val logger: AppLogger,
     private val createPairUseCase: CreatePairWithInviteUseCase
 ) : ViewModel() {
+
+    companion object {
+        private const val TAG = "CreatePairVM"
+    }
 
     private val petId: String = checkNotNull(savedStateHandle["petId"])
 
@@ -46,17 +52,28 @@ class CreatePairViewModel @Inject constructor(
     fun createPair() {
         val name = _pairName.value.trim()
 
+        logger.d(TAG, "createPair called: name='$name', petId='$petId'")
+
         val errorResId = ValidationUtils.getPairNameErrorResId(name)
         if (errorResId != null) {
+            logger.w(TAG, "Validation failed: errorResId=$errorResId")
             _uiState.value = CreatePairUiState.Error(errorResId)
             return
         }
 
         viewModelScope.launch {
             _uiState.value = CreatePairUiState.Loading
+            logger.d(TAG, "Calling createPairUseCase...")
+
             _uiState.value = when (val result = createPairUseCase(name, petId)) {
-                is DomainResult.Success -> CreatePairUiState.Success(result.data.pairId)
-                is DomainResult.Failure -> CreatePairUiState.Error(result.error.toUiErrorStringRes())
+                is DomainResult.Success -> {
+                    logger.d(TAG, "✅ Pair created: pairId=${result.data.pairId}")
+                    CreatePairUiState.Success(result.data.pairId)
+                }
+                is DomainResult.Failure -> {
+                    logger.e(TAG, "❌ Pair creation failed: error=${result.error}")
+                    CreatePairUiState.Error(result.error.toUiErrorStringRes())
+                }
             }
         }
     }

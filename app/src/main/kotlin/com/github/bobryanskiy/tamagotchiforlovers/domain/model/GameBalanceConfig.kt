@@ -2,7 +2,7 @@ package com.github.bobryanskiy.tamagotchiforlovers.domain.model
 
 data class GameBalanceConfig(
     // Decay rates (скорость падения статов)
-    val secondsPerHungerPoint: Long = 60L,
+    val secondsPerHungerPoint: Long = 1L,
     val secondsPerEnergyPoint: Long = 120L,
     val secondsPerCleanlinessPoint: Long = 60L,
     val secondsPerHappinessPoint: Long = 60L,
@@ -40,6 +40,8 @@ data class GameBalanceConfig(
 
     // Death prevention
     val deathPreventionThreshold: Int = 5,
+
+    val inviteValidityMs: Long = 5 * 60 * 1000L
 ) {
     companion object {
         val DEFAULT = GameBalanceConfig()

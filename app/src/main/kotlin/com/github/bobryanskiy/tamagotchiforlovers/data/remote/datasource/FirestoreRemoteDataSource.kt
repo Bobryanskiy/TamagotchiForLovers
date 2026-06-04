@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.coroutines.cancellation.CancellationException
+import kotlin.time.Duration.Companion.milliseconds
 
 @Singleton
 class FirestoreRemoteDataSource @Inject constructor(
@@ -66,24 +66,6 @@ class FirestoreRemoteDataSource @Inject constructor(
             registration.remove()
             logger.d(TAG, "🔌 Removed Firestore listener for pet: $petId")
         }
-    }.retryWhen { cause, attempt ->
-        if (cause is CancellationException) {
-            // При отмене Flow — НЕ ретраим
-            return@retryWhen false
-        }
-
-        if (attempt >= MAX_RETRY_ATTEMPTS) {
-            logger.e(TAG, "❌ Max retries ($MAX_RETRY_ATTEMPTS) reached for pet $petId", cause)
-            return@retryWhen false
-        }
-
-        // Exponential backoff: 1s, 2s, 4s, 8s, ... до MAX
-        val delayMs = (BASE_DELAY_MS * (1L shl attempt.toInt()))
-            .coerceAtMost(MAX_DELAY_MS)
-
-        logger.w(TAG, "🔄 Retrying pet $petId (attempt ${attempt + 1}/$MAX_RETRY_ATTEMPTS) in ${delayMs}ms")
-        delay(delayMs)
-        true
     }
 
     override suspend fun getPet(petId: String): PetDto? =
@@ -214,10 +196,9 @@ class FirestoreRemoteDataSource @Inject constructor(
         }
         val delayMs = (BASE_DELAY_MS * (attempt + 1)).coerceAtMost(MAX_DELAY_MS)
         logger.w(TAG, "🔄 Retrying pair $pairId (attempt ${attempt + 1})")
-        delay(delayMs)
+        delay(delayMs.milliseconds)
         true
     }
-
 
     override suspend fun getPair(pairId: String): PairDto? =
         db.collection("pairs").document(pairId).get().await().toObject(PairDto::class.java)
@@ -242,15 +223,21 @@ class FirestoreRemoteDataSource @Inject constructor(
         db.collection("pairs").document(pairId).delete().await()
     }
 
-    override suspend fun findPairByInviteKey(inviteKey: String): PairDto? {
+    override suspend fun findPairByInviteKey(inviteKey: String): Pair<String, PairDto>? {
         val snapshot = db.collection("pairs")
             .whereEqualTo("invite_key.code", inviteKey.uppercase())
+            .whereEqualTo("status", "PENDING")
+            .whereGreaterThan("invite_key.expires_at", System.currentTimeMillis())
             .limit(1)
             .get()
             .await()
 
         if (snapshot.isEmpty) return null
-        return snapshot.documents.first().toObject(PairDto::class.java)
+
+        val doc = snapshot.documents.first()
+        val dto = doc.toObject(PairDto::class.java) ?: return null
+
+        return doc.id to dto
     }
 
     override suspend fun requestJoin(pairId: String, guestId: String) {
@@ -267,7 +254,7 @@ class FirestoreRemoteDataSource @Inject constructor(
     override suspend fun acceptJoinRequest(pairId: String, guestId: String) {
         db.runTransaction { transaction ->
             val ref = db.collection("pairs").document(pairId)
-            transaction.get(ref) // проверка существования
+            transaction.get(ref)
 
             transaction.update(ref, "user_id_2", guestId)
             transaction.update(ref, "status", "ACTIVE")
@@ -300,7 +287,6 @@ class FirestoreRemoteDataSource @Inject constructor(
             .update(
                 "status", "ENDED",
                 "ended_at", FieldValue.serverTimestamp(),
-                "user_id_2", FieldValue.delete(),
                 "invite_key", FieldValue.delete(),
                 "pending_request", FieldValue.delete(),
                 "updated_at", System.currentTimeMillis()
@@ -308,12 +294,15 @@ class FirestoreRemoteDataSource @Inject constructor(
             .await()
     }
 
-    override suspend fun kickPartner(pairId: String, callerId: String) {
+    override suspend fun kickPartner(pairId: String, callerId: String, code: String, expiresAt: Long) {
         db.collection("pairs").document(pairId)
             .update(
-                "user_id_2", FieldValue.delete(),
+                "user_id_2", null,
                 "status", "PENDING",
-                "invite_key", FieldValue.delete(),
+                "invite_key", mapOf(
+                    "code" to code,
+                    "expires_at" to expiresAt
+                ),
                 "pending_request", FieldValue.delete(),
                 "updated_at", System.currentTimeMillis()
             )
@@ -359,11 +348,20 @@ class FirestoreRemoteDataSource @Inject constructor(
             registration.remove()
             logger.d(TAG, "🔌 Removed pending requests listener: $pairId")
         }
-    }.retryWhen { cause, attempt ->
+    }.retryWhen { _, attempt ->
         if (attempt >= MAX_RETRY_ATTEMPTS) return@retryWhen false
         val delayMs = (BASE_DELAY_MS * (attempt + 1)).coerceAtMost(MAX_DELAY_MS)
         logger.w(TAG, "🔄 Retrying pending requests for $pairId")
-        delay(delayMs)
+        delay(delayMs.milliseconds)
         true
+    }
+
+    override fun generateDocumentId(collection: String): String =
+        db.collection(collection).document().id
+
+    override suspend fun updatePairName(pairId: String, newName: String) {
+        db.collection("pairs").document(pairId)
+            .update("name", newName, PairKeys.UPDATED_AT, System.currentTimeMillis())
+            .await()
     }
 }
