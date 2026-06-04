@@ -351,4 +351,13 @@
     <string name="death_cause_escaped">%1$s ran away from sadness 💔</string>
     <string name="death_cause_neglect">%1$s couldn\'t handle the neglect 😢</string>
     <string name="death_cause_unknown">%1$s passed away 💀</string>
+
+    <!-- Conflict Resolution -->
+    <string name="conflict_title">Two pet versions found</string>
+    <string name="conflict_message">You have a local version and a cloud version with different data. Which one to keep?</string>
+    <string name="conflict_local_version">Local version:</string>
+    <string name="conflict_remote_version">Cloud version:</string>
+    <string name="conflict_keep_local">Keep local</string>
+    <string name="conflict_use_cloud">Use cloud</string>
+    <string name="last_update">Last updated</string>
 </resources>

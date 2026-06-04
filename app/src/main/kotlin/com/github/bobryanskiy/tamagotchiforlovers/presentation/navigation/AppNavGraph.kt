@@ -147,7 +147,7 @@ fun AppNavGraph(
         }
 
         composable<AppRoute.CreatePair> { backStackEntry ->
-            val route = backStackEntry.toRoute<AppRoute.CreatePair>()
+            backStackEntry.toRoute<AppRoute.CreatePair>()
             CreatePairScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onPairCreated = { pairId ->
@@ -159,7 +159,7 @@ fun AppNavGraph(
         }
 
         composable<AppRoute.PairWaiting> { backStackEntry ->
-            val route = backStackEntry.toRoute<AppRoute.PairWaiting>()
+            backStackEntry.toRoute<AppRoute.PairWaiting>()
             PairWaitingScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onPairActivated = {
@@ -169,7 +169,7 @@ fun AppNavGraph(
         }
 
         composable<AppRoute.PairActive> { backStackEntry ->
-            val route = backStackEntry.toRoute<AppRoute.PairActive>()
+            backStackEntry.toRoute<AppRoute.PairActive>()
             PairActiveScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onSessionEnded = {
@@ -188,7 +188,7 @@ fun AppNavGraph(
         }
 
         composable<AppRoute.RenamePet> { backStackEntry ->
-            val route = backStackEntry.toRoute<AppRoute.RenamePet>()
+            backStackEntry.toRoute<AppRoute.RenamePet>()
             RenamePetScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onRenamed = { navController.popBackStack() }

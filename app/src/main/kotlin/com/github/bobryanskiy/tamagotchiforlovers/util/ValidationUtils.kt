@@ -1,6 +1,5 @@
 package com.github.bobryanskiy.tamagotchiforlovers.util
 
-import android.util.Patterns
 import com.github.bobryanskiy.tamagotchiforlovers.R
 import com.github.bobryanskiy.tamagotchiforlovers.domain.util.NameLimits
 
@@ -11,17 +10,6 @@ object ValidationUtils {
     )
 
     private const val MAX_EMAIL_LENGTH = 254
-    private const val MAX_LOCAL_PART_LENGTH = 64
-
-    fun isValidEmail(email: String): Boolean {
-        val trimmed = email.trim()
-        if (trimmed.length > MAX_EMAIL_LENGTH) return false
-
-        val atIndex = trimmed.indexOf('@')
-        if (atIndex !in 1..MAX_LOCAL_PART_LENGTH) return false
-
-        return FIREBASE_EMAIL_REGEX.matches(trimmed)
-    }
 
     fun getEmailErrorResId(email: String): Int? {
         val trimmed = email.trim()
@@ -32,8 +20,6 @@ object ValidationUtils {
             else -> null
         }
     }
-
-    fun isValidPassword(password: String): Boolean = password.length >= 6
 
     fun getPasswordErrorResId(password: String): Int? = when {
         password.isBlank() -> R.string.error_empty_password
@@ -70,10 +56,6 @@ object ValidationUtils {
         tooLongResId = R.string.error_nickname_too_long,
         invalidCharsResId = R.string.error_nickname_invalid_chars
     )
-
-    fun isValidPetName(name: String): Boolean = getPetNameErrorResId(name) == null
-    fun isValidPairName(name: String): Boolean = getPairNameErrorResId(name) == null
-    fun isValidNickname(name: String): Boolean = getNicknameErrorResId(name) == null
 
     private fun validateNameResId(
         value: String,

@@ -22,7 +22,7 @@ local.properties
 captures/
 
 # IntelliJ IDEA
-.idea/
+.idea
 *.iml
 *.iws
 *.ipr

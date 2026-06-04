@@ -10,6 +10,7 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PetRepositor
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.SessionRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.UserResult
+import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.LinkAccountResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.LinkAccountUseCase
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.mapper.toUiErrorStringRes
 import com.github.bobryanskiy.tamagotchiforlovers.util.ValidationUtils
@@ -28,6 +29,10 @@ sealed class AuthUiState {
     data object Loading : AuthUiState()
     data object Success : AuthUiState()
     data class Error(val messageResId: Int) : AuthUiState()
+    data class Conflict(
+        val localPet: Pet,
+        val remotePet: Pet
+    ) : AuthUiState()
 }
 
 sealed interface AuthEvent {
@@ -65,21 +70,25 @@ class AuthViewModel @Inject constructor(
                     when (val linkResult = linkAccountUseCase()) {
                         is DomainResult.Success -> {
                             when (val data = linkResult.data) {
-                                is LinkAccountUseCase.LinkResult.Success -> {
+                                is LinkAccountResult.Success -> {
                                     logger.d(TAG, "Account linked successfully")
                                 }
-                                is LinkAccountUseCase.LinkResult.Conflict -> {
-                                    _linkConflict.value = Pair(data.localPet, data.remotePet)
+                                is LinkAccountResult.Conflict -> {
                                     logger.w(TAG, "Link conflict detected")
+                                    _linkConflict.value = Pair(data.localPet, data.remotePet)
+                                    _uiState.value = AuthUiState.Conflict(
+                                        localPet = data.localPet,
+                                        remotePet = data.remotePet
+                                    )
                                 }
                             }
                         }
                         is DomainResult.Failure -> {
                             logger.w(TAG, "Link failed: ${linkResult.error}")
+                            _uiState.value = AuthUiState.Success
+                            _event.emit(AuthEvent.NavigateToBoot)
                         }
                     }
-                    _uiState.value = AuthUiState.Success
-                    _event.emit(AuthEvent.NavigateToBoot)
                 }
                 is DomainResult.Failure -> {
                     _uiState.value = AuthUiState.Error(result.error.toUiErrorStringRes())
@@ -96,6 +105,9 @@ class AuthViewModel @Inject constructor(
             petRepository.savePet(winner)
             sessionRepository.saveActivePetId(winner.id)
             _linkConflict.value = null
+
+            _uiState.value = AuthUiState.Success
+            _event.emit(AuthEvent.NavigateToBoot)
         }
     }
 

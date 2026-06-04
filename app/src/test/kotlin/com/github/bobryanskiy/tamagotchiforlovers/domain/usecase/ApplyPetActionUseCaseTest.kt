@@ -51,7 +51,7 @@ class ApplyPetActionUseCaseTest {
             abandonedAt = null
         ),
         stats = stats,
-        lifeState = PetLifeState(status = status, recoveryEndTime = null, decayMultiplier = 1f)
+        lifeState = PetLifeState(status = status, deathCause = null)
     )
 
     private fun setupDefaultConfig() {
@@ -85,7 +85,7 @@ class ApplyPetActionUseCaseTest {
     fun `should save new stats and state on success`() = runTest {
         setupDefaultConfig()
         val pet = buildPet()
-        val newState = PetLifeState(PetLifeStatus.NORMAL, null, 1f)
+        val newState = PetLifeState(PetLifeStatus.NORMAL, null)
 
         whenever(petRepository.getPetById("pet-1")).thenReturn(DomainResult.Success(pet))
         whenever(clock.currentTimeMillis()).thenReturn(1000L)

@@ -10,10 +10,9 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.result.PetResult
 import javax.inject.Inject
 import kotlin.math.abs
 
-sealed class LinkResult {
-    data object Success : LinkResult()
-    data class Conflict(val localPet: Pet, val remotePet: Pet) : LinkResult()
-    data object Error : LinkResult()
+sealed class LinkAccountResult {
+    data object Success : LinkAccountResult()
+    data class Conflict(val localPet: Pet, val remotePet: Pet) : LinkAccountResult()
 }
 
 /**
@@ -30,12 +29,7 @@ class LinkAccountUseCase @Inject constructor(
     private val petRepository: PetRepository,
     private val sessionRepository: SessionRepository
 ) {
-    sealed class LinkResult {
-        data object Success : LinkResult()
-        data class Conflict(val localPet: Pet, val remotePet: Pet) : LinkResult()
-    }
-
-    suspend operator fun invoke(): PetResult<LinkResult> {
+    suspend operator fun invoke(): PetResult<LinkAccountResult> {
         val currentUserId = authRepository.getCurrentUserId()
             ?: return DomainResult.Failure(PetError.NotAuthenticated)
 
@@ -55,31 +49,31 @@ class LinkAccountUseCase @Inject constructor(
                     profile = localPet.profile.copy(ownerUserId = currentUserId)
                 )
                 petRepository.savePet(updatedPet)
-                DomainResult.Success(LinkResult.Success)
+                DomainResult.Success(LinkAccountResult.Success)
             }
 
             // Сценарий Б: Только remote → используем его
             localPet == null && remotePet != null -> {
                 sessionRepository.saveActivePetId(remotePet.id)
-                DomainResult.Success(LinkResult.Success)
+                DomainResult.Success(LinkAccountResult.Success)
             }
 
             // Сценарий В: КОНФЛИКТ — оба есть
             localPet != null && remotePet != null -> {
                 val timeDiff = abs(localPet.stats.updatedAt - remotePet.stats.updatedAt)
-                if (timeDiff < 5000L) {
+                if (timeDiff < 60_000L) {
                     // Разница < 5 сек — берём свежее
                     val winner = if (remotePet.stats.updatedAt > localPet.stats.updatedAt)
                         remotePet else localPet
                     petRepository.savePet(winner)
-                    DomainResult.Success(LinkResult.Success)
+                    DomainResult.Success(LinkAccountResult.Success)
                 } else {
                     // Большая разница — пусть пользователь выбирает
-                    DomainResult.Success(LinkResult.Conflict(localPet, remotePet))
+                    DomainResult.Success(LinkAccountResult.Conflict(localPet, remotePet))
                 }
             }
 
-            else -> DomainResult.Success(LinkResult.Success)
+            else -> DomainResult.Success(LinkAccountResult.Success)
         }
     }
 }

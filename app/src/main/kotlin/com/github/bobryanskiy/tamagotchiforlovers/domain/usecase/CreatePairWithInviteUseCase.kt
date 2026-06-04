@@ -6,7 +6,6 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.UserReposito
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.PairResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.util.Clock
-import com.github.bobryanskiy.tamagotchiforlovers.domain.util.NameLimits
 import com.github.bobryanskiy.tamagotchiforlovers.util.ValidationUtils.getPairNameErrorResId
 import javax.inject.Inject
 
