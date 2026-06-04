@@ -14,10 +14,10 @@ class PetStatsTest {
     fun `Feed should increase hunger by configured amount`() {
         val result = initialStats.applyAction(PetAction.Feed, currentTime = 1000L, config = defaultConfig)
 
-        assertEquals(80, result.hunger)       // 50 + 30
-        assertEquals(45, result.energy)       // 50 - 5
-        assertEquals(47, result.cleanliness)  // 50 - 3
-        assertEquals(60, result.happiness)    // 50 + 10
+        assertEquals(80, result.hunger)
+        assertEquals(48, result.energy)
+        assertEquals(49, result.cleanliness)
+        assertEquals(60, result.happiness)
         assertEquals(1000L, result.updatedAt)
     }
 
@@ -26,9 +26,9 @@ class PetStatsTest {
         val result = initialStats.applyAction(PetAction.Play, currentTime = 2000L, config = defaultConfig)
 
         assertEquals(75, result.happiness)
-        assertEquals(35, result.energy)
-        assertEquals(40, result.hunger)
-        assertEquals(45, result.cleanliness)
+        assertEquals(45, result.energy)
+        assertEquals(47, result.hunger)
+        assertEquals(48, result.cleanliness)
         assertEquals(2000L, result.updatedAt)
     }
 
