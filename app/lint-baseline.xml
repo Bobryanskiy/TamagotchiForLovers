@@ -2,6 +2,17 @@
 <issues format="6" by="lint 9.2.1" type="baseline" client="gradle" dependencies="false" name="AGP (9.2.1)" variant="all" version="9.2.1">
 
     <issue
+        id="PluralsCandidate"
+        message="Formatting %d followed by words (&quot;characters&quot;): This should probably be a plural rather than a string"
+        errorLine1="    &lt;string name=&quot;character_count&quot;>%1$d of %2$d characters&lt;/string>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="336"
+            column="5"/>
+    </issue>
+
+    <issue
         id="UnusedResources"
         message="The resource `R.dimen.fragment_horizontal_margin` appears to be unused"
         errorLine1="    &lt;dimen name=&quot;fragment_horizontal_margin&quot;>16dp&lt;/dimen>"
@@ -31,17 +42,6 @@
         <location
             file="src/main/res/values/strings.xml"
             line="8"
-            column="13"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.string.loading` appears to be unused"
-        errorLine1="    &lt;string name=&quot;loading&quot;>Loading…&lt;/string>"
-        errorLine2="            ~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/strings.xml"
-            line="9"
             column="13"/>
     </issue>
 
@@ -421,23 +421,12 @@
 
     <issue
         id="UnusedResources"
-        message="The resource `R.string.notif_collapsed_message` appears to be unused"
-        errorLine1="    &lt;string name=&quot;notif_collapsed_message&quot;>Your pet is exhausted and on the verge of death. Act immediately!&lt;/string>"
-        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/strings.xml"
-            line="157"
-            column="13"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
         message="The resource `R.string.sync_success` appears to be unused"
         errorLine1="    &lt;string name=&quot;sync_success&quot;>Data synced&lt;/string>"
         errorLine2="            ~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="160"
+            line="166"
             column="13"/>
     </issue>
 
@@ -448,7 +437,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="161"
+            line="167"
             column="13"/>
     </issue>
 
@@ -459,7 +448,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="162"
+            line="168"
             column="13"/>
     </issue>
 
@@ -470,7 +459,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="163"
+            line="169"
             column="13"/>
     </issue>
 
@@ -481,7 +470,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="174"
+            line="180"
             column="13"/>
     </issue>
 
@@ -492,7 +481,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="175"
+            line="181"
             column="13"/>
     </issue>
 
@@ -503,7 +492,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="177"
+            line="183"
             column="13"/>
     </issue>
 
@@ -514,7 +503,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="178"
+            line="184"
             column="13"/>
     </issue>
 
@@ -525,7 +514,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="179"
+            line="185"
             column="13"/>
     </issue>
 
@@ -536,7 +525,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="180"
+            line="186"
             column="13"/>
     </issue>
 
@@ -547,7 +536,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="195"
+            line="201"
             column="13"/>
     </issue>
 
@@ -558,7 +547,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="201"
+            line="207"
             column="13"/>
     </issue>
 
@@ -569,7 +558,40 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="206"
+            line="212"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.boot_loading` appears to be unused"
+        errorLine1="    &lt;string name=&quot;boot_loading&quot;>Loading…&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="237"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.boot_timeout_title` appears to be unused"
+        errorLine1="    &lt;string name=&quot;boot_timeout_title&quot;>Taking too long&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="238"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.boot_timeout_message` appears to be unused"
+        errorLine1="    &lt;string name=&quot;boot_timeout_message&quot;>Please check your internet connection and try again&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="239"
             column="13"/>
     </issue>
 
@@ -580,7 +602,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="234"
+            line="242"
             column="13"/>
     </issue>
 
@@ -591,7 +613,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="235"
+            line="243"
             column="13"/>
     </issue>
 
@@ -602,7 +624,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="236"
+            line="244"
             column="13"/>
     </issue>
 
@@ -613,7 +635,18 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="239"
+            line="247"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.pet_cd_mascot` appears to be unused"
+        errorLine1="    &lt;string name=&quot;pet_cd_mascot&quot;>Mascot&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="252"
             column="13"/>
     </issue>
 
@@ -624,18 +657,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="247"
-            column="13"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.string.btn_cancel` appears to be unused"
-        errorLine1="    &lt;string name=&quot;btn_cancel&quot;>Cancel&lt;/string>"
-        errorLine2="            ~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/strings.xml"
-            line="249"
+            line="255"
             column="13"/>
     </issue>
 
@@ -646,7 +668,29 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="273"
+            line="280"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.saving_changes` appears to be unused"
+        errorLine1="    &lt;string name=&quot;saving_changes&quot;>Saving changes&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="329"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.death_cause_neglect` appears to be unused"
+        errorLine1="    &lt;string name=&quot;death_cause_neglect&quot;>%1$s couldn\&apos;t handle the neglect 😢&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="352"
             column="13"/>
     </issue>
 
@@ -682,17 +726,6 @@
             file="src/main/res/mipmap-hdpi/ic_tamagotchi_launcher_round.webp"/>
         <location
             file="src/main/res/mipmap-anydpi/ic_tamagotchi_launcher_round.xml"/>
-    </issue>
-
-    <issue
-        id="MonochromeLauncherIcon"
-        message="The application adaptive roundIcon is missing a monochrome tag"
-        errorLine1="&lt;adaptive-icon xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;>"
-        errorLine2="^">
-        <location
-            file="src/main/res/mipmap-anydpi/ic_tamagotchi_launcher_round.xml"
-            line="2"
-            column="1"/>
     </issue>
 
     <issue

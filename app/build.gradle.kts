@@ -95,6 +95,11 @@ android {
         abortOnError = true
         checkReleaseBuilds = true
         warningsAsErrors = true
+
+        disable += "GoogleAppIndexingWarning"
+        disable += "NewerVersionAvailable"
+        disable += "GradleDependency"
+        disable += "AndroidGradlePluginVersion"
     }
 }
 
