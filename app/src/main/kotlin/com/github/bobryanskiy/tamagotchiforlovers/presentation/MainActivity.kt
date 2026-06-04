@@ -38,6 +38,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -63,7 +64,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        enableEdgeToEdge()
         setContent {
             TamagotchiTheme {
                 val navController = rememberNavController()

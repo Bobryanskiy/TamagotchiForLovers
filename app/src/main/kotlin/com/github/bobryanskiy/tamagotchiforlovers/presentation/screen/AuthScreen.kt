@@ -12,12 +12,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -45,6 +47,7 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -53,6 +56,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.github.bobryanskiy.tamagotchiforlovers.R
+import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pet
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.navigation.AppRoute
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.AuthEvent
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.AuthUiState
@@ -134,7 +138,9 @@ fun AuthScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         AuthContent(
-            modifier = Modifier.padding(padding).padding(24.dp),
+            modifier = Modifier
+                .padding(padding)
+                .padding(24.dp),
             email = email,
             password = password,
             passwordVisible = passwordVisible,
@@ -151,6 +157,16 @@ fun AuthScreen(
                 if (isSignUpMode) viewModel.register(email, password)
                 else viewModel.login(email, password)
             }
+        )
+    }
+
+    if (uiState is AuthUiState.Conflict) {
+        val conflict = uiState as AuthUiState.Conflict
+        ConflictResolutionDialog(
+            localPet = conflict.localPet,
+            remotePet = conflict.remotePet,
+            onChooseLocal = { viewModel.resolveConflict(chooseLocal = true) },
+            onChooseRemote = { viewModel.resolveConflict(chooseLocal = false) }
         )
     }
 }
@@ -304,4 +320,57 @@ private fun AuthContent(
 
         Spacer(Modifier.height(16.dp))
     }
+}
+
+@Composable
+private fun ConflictResolutionDialog(
+    localPet: Pet,
+    remotePet: Pet,
+    onChooseLocal: () -> Unit,
+    onChooseRemote: () -> Unit
+) {
+    val dateFormat = remember {
+        java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", java.util.Locale.getDefault())
+    }
+
+    AlertDialog(
+        onDismissRequest = { /* нельзя закрыть без выбора */ },
+        title = { Text(stringResource(R.string.conflict_title)) },
+        text = {
+            Column {
+                Text(stringResource(R.string.conflict_message))
+                Spacer(Modifier.height(16.dp))
+
+                Text(
+                    stringResource(R.string.conflict_local_version),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Text("• ${stringResource(R.string.pet_name)}: ${localPet.profile.name}")
+                Text("• ${stringResource(R.string.last_update)}: ${dateFormat.format(java.util.Date(localPet.stats.updatedAt))}")
+                Text("• ${stringResource(R.string.stat_hunger)}: ${localPet.stats.hunger}%")
+
+                Spacer(Modifier.height(12.dp))
+
+                Text(
+                    stringResource(R.string.conflict_remote_version),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Text("• ${stringResource(R.string.pet_name)}: ${remotePet.profile.name}")
+                Text("• ${stringResource(R.string.last_update)}: ${dateFormat.format(java.util.Date(remotePet.stats.updatedAt))}")
+                Text("• ${stringResource(R.string.stat_hunger)}: ${remotePet.stats.hunger}%")
+            }
+        },
+        confirmButton = {
+            Button(onClick = onChooseLocal) {
+                Text(stringResource(R.string.conflict_keep_local))
+            }
+        },
+        dismissButton = {
+            OutlinedButton(onClick = onChooseRemote) {
+                Text(stringResource(R.string.conflict_use_cloud))
+            }
+        }
+    )
 }

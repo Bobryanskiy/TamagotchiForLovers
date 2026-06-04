@@ -5,11 +5,4 @@ enum class StatType {
     ENERGY,
     CLEANLINESS,
     HAPPINESS;
-
-    fun displayName(): String = when (this) {
-        HUNGER -> "Hunger"
-        ENERGY -> "Energy"
-        CLEANLINESS -> "Cleanliness"
-        HAPPINESS -> "Happiness"
-    }
 }

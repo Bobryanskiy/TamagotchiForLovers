@@ -37,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
@@ -92,14 +93,8 @@ fun JoinPairScreen(
         Box(modifier = Modifier.padding(padding).fillMaxSize()) {
             when (val state = uiState) {
                 is JoinPairUiState.Idle -> InviteCodeInputScreen(onSubmit = viewModel::submitInviteCode)
-                is JoinPairUiState.Searching -> LoadingContent(
-                    message = searchingText,
-                    isLoading = true
-                )
-                is JoinPairUiState.SendingRequest -> LoadingContent(
-                    message = sendingText,
-                    isLoading = true
-                )
+                is JoinPairUiState.Searching -> LoadingContent(message = searchingText)
+                is JoinPairUiState.SendingRequest -> LoadingContent(message = sendingText)
                 is JoinPairUiState.WaitingForApproval -> WaitingForApprovalContent(
                     pairName = state.pairName,
                     onDismiss = { viewModel.resetState(); onNavigateBack() }
@@ -251,22 +246,20 @@ private fun WaitingForApprovalContent(pairName: String, onDismiss: () -> Unit) {
 }
 
 @Composable
-private fun LoadingContent(message: String, isLoading: Boolean = true) {
+private fun LoadingContent(message: String) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(16.dp)
+            .semantics { liveRegion = LiveRegionMode.Polite },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         CircularProgressIndicator(
-            modifier = Modifier.semantics { contentDescription = message }
+            modifier = Modifier.clearAndSetSemantics { }
         )
         Spacer(Modifier.height(16.dp))
-        Text(
-            message,
-            modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }
-        )
+        Text(message)
     }
 }
 

@@ -20,8 +20,22 @@ android {
         applicationId = "com.github.bobryanskiy.tamagotchiforlovers"
         minSdk = 26
         targetSdk = 37
-        versionCode = getVersionCode()
-        versionName = getVersionName()
+
+        versionCode = providers.exec {
+            commandLine("git", "describe", "--tags", "--abbrev=0")
+        }.standardOutput.asText.map { tag ->
+            tag.trim().removePrefix("v").split(".").let { parts ->
+                val major = parts.getOrNull(0)?.toIntOrNull() ?: 0
+                val minor = parts.getOrNull(1)?.toIntOrNull() ?: 0
+                val patch = parts.getOrNull(2)?.toIntOrNull() ?: 0
+                major * 10000 + minor * 100 + patch
+            }
+        }.getOrElse(1)
+
+        versionName = providers.exec {
+            commandLine("git", "describe", "--tags", "--abbrev=0")
+        }.standardOutput.asText.map { it.trim().removePrefix("v") }
+            .getOrElse("1.0.0-dev")
 
         vectorDrawables.useSupportLibrary = true
 
@@ -152,36 +166,3 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 }
-
-fun getVersionCode(): Int {
-    return try {
-        val tag = "git describe --tags --abbrev=0".runCommand()
-        tag.removePrefix("v").split(".").let { parts ->
-            val major = parts.getOrNull(0)?.toIntOrNull() ?: 0
-            val minor = parts.getOrNull(1)?.toIntOrNull() ?: 0
-            val patch = parts.getOrNull(2)?.toIntOrNull() ?: 0
-            major * 10000 + minor * 100 + patch  // 1.2.3 → 10203
-        }
-    } catch (e: Exception) {
-        1  // Fallback для локальной разработки
-    }
-}
-
-fun getVersionName(): String {
-    return try {
-        "git describe --tags --abbrev=0".runCommand().removePrefix("v")
-    } catch (e: Exception) {
-        "1.0.0-dev"  // Fallback для локальной разработки
-    }
-}
-
-fun String.runCommand(): String {
-    return ProcessBuilder("/bin/sh", "-c", this)
-        .redirectErrorStream(true)
-        .start()
-        .inputStream
-        .bufferedReader()
-        .readText()
-        .trim()
-}
-

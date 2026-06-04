@@ -8,7 +8,6 @@ import android.os.Build
 import com.github.bobryanskiy.tamagotchiforlovers.BuildConfig
 import com.github.bobryanskiy.tamagotchiforlovers.core.logging.AppLogger
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pet
-import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetLifeStatus
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.BalanceConfigRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.util.Clock
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.MainActivity

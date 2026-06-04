@@ -149,7 +149,7 @@
     <string name="notif_crit_clean">❗ %1$s в грязи!</string>
     <string name="notif_crit_happy">❗ %1$s в стрессе!</string>
     <string name="notif_dead">%1$s погиб…</string>
-    <string name="notif_dead_message">Ваш питомец погиб. Создайте нового, чтобы продолжить игру.</string>
+    <string name="notif_dead_message">%1$s Ваш питомец погиб. Создайте нового, чтобы продолжить игру.</string>
 
     <string name="notif_dead_from_hunger">💀 %1$s умер от голода</string>
     <string name="notif_dead_from_hunger_message">%1$s умер от голода. В следующий раз ухаживайте лучше.</string>
@@ -353,4 +353,13 @@
     <string name="death_cause_escaped">%1$s сбежал от тоски 💔</string>
     <string name="death_cause_neglect">%1$s не выдержал neglect 😢</string>
     <string name="death_cause_unknown">%1$s умер 💀</string>
+
+    <!-- Conflict Resolution -->
+    <string name="conflict_title">Найдены две версии питомца</string>
+    <string name="conflict_message">У вас есть локальная версия и версия в облаке с разными данными. Какую сохранить?</string>
+    <string name="conflict_local_version">Локальная версия:</string>
+    <string name="conflict_remote_version">Облачная версия:</string>
+    <string name="conflict_keep_local">Оставить локальную</string>
+    <string name="conflict_use_cloud">Использовать облачную</string>
+    <string name="last_update">Обновлено</string>
 </resources>

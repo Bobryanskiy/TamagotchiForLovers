@@ -27,6 +27,7 @@ class PetViewModelTest {
             taskGenerator = mock(),
             logger = mock(),
             calculateLiveStatsUseCase = mock(),
+            clock = mock(),
             ioDispatcher = testDispatcher
         )
     }
