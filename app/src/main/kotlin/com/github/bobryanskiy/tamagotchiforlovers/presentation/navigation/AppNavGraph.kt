@@ -9,9 +9,20 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
-import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.SessionRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.util.Loadable
-import com.github.bobryanskiy.tamagotchiforlovers.presentation.screen.*
+import com.github.bobryanskiy.tamagotchiforlovers.presentation.screen.AuthScreen
+import com.github.bobryanskiy.tamagotchiforlovers.presentation.screen.BootScreen
+import com.github.bobryanskiy.tamagotchiforlovers.presentation.screen.CreatePairScreen
+import com.github.bobryanskiy.tamagotchiforlovers.presentation.screen.CreatePetScreen
+import com.github.bobryanskiy.tamagotchiforlovers.presentation.screen.EditNicknameScreen
+import com.github.bobryanskiy.tamagotchiforlovers.presentation.screen.JoinPairScreen
+import com.github.bobryanskiy.tamagotchiforlovers.presentation.screen.MainScreen
+import com.github.bobryanskiy.tamagotchiforlovers.presentation.screen.PairActiveScreen
+import com.github.bobryanskiy.tamagotchiforlovers.presentation.screen.PairWaitingScreen
+import com.github.bobryanskiy.tamagotchiforlovers.presentation.screen.PetScreen
+import com.github.bobryanskiy.tamagotchiforlovers.presentation.screen.ProfileScreen
+import com.github.bobryanskiy.tamagotchiforlovers.presentation.screen.RenamePetScreen
+import com.github.bobryanskiy.tamagotchiforlovers.presentation.screen.SettingsScreen
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.AppViewModel
 
 @Composable
@@ -115,7 +126,8 @@ fun AppNavGraph(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToLogin = {
                     navController.navigate(AppRoute.Auth) {
-                        popUpTo<AppRoute.Boot> { inclusive = true }
+                        popUpTo<AppRoute.Profile> { inclusive = true }
+                        launchSingleTop = true
                     }
                 },
                 onNavigateToSettings = {navController.navigate(AppRoute.Settings)},

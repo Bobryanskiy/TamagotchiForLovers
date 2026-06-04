@@ -1,39 +1,39 @@
 package com.github.bobryanskiy.tamagotchiforlovers.presentation
 
-import android.R.attr.data
 import android.app.AlarmManager
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toUri
 import androidx.navigation.compose.rememberNavController
-import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.AppViewModel
+import com.github.bobryanskiy.tamagotchiforlovers.core.logging.AppLogger
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.navigation.AppNavGraph
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.theme.TamagotchiTheme
+import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.AppViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import androidx.core.net.toUri
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
+
     private val appViewModel: AppViewModel by viewModels()
+
+    @Inject lateinit var logger: AppLogger
 
     private val notificationPermissionLauncher = registerForActivityResult(
         RequestPermission()
     ) { isGranted ->
         if (isGranted) {
-            Log.d("MainActivity", "✅ POST_NOTIFICATIONS granted")
+            logger.d(TAG, "✅ POST_NOTIFICATIONS granted")
         } else {
-            Log.w("MainActivity", "❌ POST_NOTIFICATIONS denied")
+            logger.w(TAG, "❌ POST_NOTIFICATIONS denied")
         }
     }
 
@@ -43,21 +43,23 @@ class MainActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)
                 != PackageManager.PERMISSION_GRANTED) {
+                logger.d(TAG, "Requesting POST_NOTIFICATIONS permission")
                 notificationPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+            } else {
+                logger.d(TAG, "✅ POST_NOTIFICATIONS already granted")
             }
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
             if (!alarmManager.canScheduleExactAlarms()) {
-                Log.w("MainActivity", "⚠️ SCHEDULE_EXACT_ALARM not granted")
-                // Открываем настройки для запроса
+                logger.w(TAG, "⚠️ SCHEDULE_EXACT_ALARM not granted, opening settings")
                 val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
                     data = "package:$packageName".toUri()
                 }
                 startActivity(intent)
             } else {
-                Log.d("MainActivity", "✅ SCHEDULE_EXACT_ALARM granted")
+                logger.d(TAG, "✅ SCHEDULE_EXACT_ALARM granted")
             }
         }
 
@@ -71,5 +73,9 @@ class MainActivity : AppCompatActivity() {
                 )
             }
         }
+    }
+
+    companion object {
+        private const val TAG = "MainActivity"
     }
 }

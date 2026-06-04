@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!-- App -->
-<!--    <string name="app_name">Тамагочи для Влюбленных</string>-->
+    <!--    <string name="app_name">Тамагочи для Влюбленных</string>-->
 
     <!-- Common -->
     <string name="back">Назад</string>
@@ -149,9 +149,19 @@
     <string name="notif_crit_clean">❗ %1$s в грязи!</string>
     <string name="notif_crit_happy">❗ %1$s в стрессе!</string>
     <string name="notif_dead">%1$s погиб…</string>
-    <string name="notif_escaped">%1$s убежал.</string>
-    <string name="notif_sick">%1$s заболел!</string>
-    <string name="notif_collapsed">%1$s без сил!</string>
+    <string name="notif_dead_message">Ваш питомец погиб. Создайте нового, чтобы продолжить игру.</string>
+
+    <string name="notif_dead_from_hunger">💀 %1$s умер от голода</string>
+    <string name="notif_dead_from_hunger_message">%1$s умер от голода. В следующий раз ухаживайте лучше.</string>
+
+    <string name="notif_dead_from_exhaustion">💤 %1$s умер от истощения</string>
+    <string name="notif_dead_from_exhaustion_message">%1$s был слишком измотан.</string>
+
+    <string name="notif_dead_from_disease">🤒 %1$s умер от болезни</string>
+    <string name="notif_dead_from_disease_message">%1$s заболел из-за плохой гигиены.</string>
+
+    <string name="notif_dead_from_depression">💔 %1$s сбежал от тоски</string>
+    <string name="notif_dead_from_depression_message">%1$s был слишком несчастлив и сбежал.</string>
 
     <!-- System -->
     <string name="sync_success">Данные синхронизированы</string>
@@ -220,6 +230,8 @@
 
     <!-- Boot Screen -->
     <string name="boot_loading">Загрузка…</string>
+    <string name="boot_timeout_title">Загружается слишком долго</string>
+    <string name="boot_timeout_message">Проверьте подключение к интернету и попробуйте снова</string>
 
     <!-- Profile Screen Errors -->
     <string name="profile_error_pet_not_selected">Питомец не выбран</string>
@@ -243,14 +255,7 @@
     <string name="pet_cd_mascot">Питомец</string>
     <string name="pet_cd_settings">Настройки</string>
 
-    <!-- Notification Messages -->
-    <string name="notif_dead_message">Ваш питомец погиб. Создайте нового, чтобы продолжить игру.</string>
-    <string name="notif_escaped_message">Ваш питомец сбежал из-за плохого ухода. Найдите и верните его!</string>
-    <string name="notif_sick_message">Питомец заболел и нуждается в срочной заботе. Позаботьтесь обо всех его нуждах, чтобы помочь выздороветь.</string>
-    <string name="notif_collapsed_message">Питомец обессилен и на грани смерти. Действуйте немедленно!</string>
-
     <string name="btn_confirm">Подтвердить</string>
-    <string name="btn_cancel">Отменить</string>
 
     <string name="pet_cd_waiting_pair">Ожидание пары</string>
     <string name="pet_cd_active_pair">Активная пара</string>
@@ -270,26 +275,25 @@
     <string name="btn_link_account">Привязать аккаунт</string>
     <string name="btn_save">Сохранить</string>
 
-    <!-- Nickname -->
+    <!-- Nickname & Names -->
     <string name="edit_nickname_title">Изменить никнейм</string>
     <string name="nickname_label">Никнейм</string>
     <string name="edit_nickname">Изменить никнейм</string>
     <string name="nickname_hint">Введите никнейм</string>
-    <string name="nickname_too_long">Никнейм слишком длинный (макс. 20 символов)</string>
 
     <string name="error_empty_pet_name">Имя питомца не может быть пустым</string>
-    <string name="error_pet_name_too_short">Имя слишком короткое</string>
-    <string name="error_pet_name_too_long">Имя слишком длинное</string>
+    <string name="error_pet_name_too_short" tools:ignore="PluralsCandidate">Имя слишком короткое (мин. %1$d символов)</string>
+    <string name="error_pet_name_too_long" tools:ignore="PluralsCandidate">Имя слишком длинное (макс. %1$d символов)</string>
     <string name="error_pet_name_invalid_chars">Имя содержит недопустимые символы</string>
 
     <string name="error_empty_pair_name">Название пары не может быть пустым</string>
-    <string name="error_pair_name_too_short">Название слишком короткое</string>
-    <string name="error_pair_name_too_long">Название слишком длинное</string>
+    <string name="error_pair_name_too_short" tools:ignore="PluralsCandidate">Название слишком короткое (мин. %1$d символов)</string>
+    <string name="error_pair_name_too_long" tools:ignore="PluralsCandidate">Название слишком длинное (макс. %1$d символов)</string>
     <string name="error_pair_name_invalid_chars">Название содержит недопустимые символы</string>
 
     <string name="error_empty_nickname">Никнейм не может быть пустым</string>
-    <string name="error_nickname_too_short">Никнейм слишком короткий</string>
-    <string name="error_nickname_too_long">Никнейм слишком длинный</string>
+    <string name="error_nickname_too_short" tools:ignore="PluralsCandidate">Никнейм слишком короткий (мин. %1$d символов)</string>
+    <string name="error_nickname_too_long" tools:ignore="PluralsCandidate">Никнейм слишком длинный (макс. %1$d символов)</string>
     <string name="error_nickname_invalid_chars">Никнейм содержит недопустимые символы</string>
 
     <!-- Настройки -->
@@ -318,4 +322,35 @@
     <string name="notif_channel_normal_desc">Критические уведомления без звука</string>
     <string name="notif_channel_silent">Обычные обновления</string>
     <string name="notif_channel_silent_desc">Некритические уведомления</string>
+
+    <string name="show_password">Показать пароль</string>
+    <string name="hide_password">Скрыть пароль</string>
+
+    <!-- Accessibility & Loading States -->
+    <string name="saving">Сохранение</string>
+    <string name="saving_changes">Сохранение изменений</string>
+    <string name="checking_answer">Проверка ответа</string>
+    <string name="loading_pet_data">Загрузка данных питомца</string>
+    <string name="loading_profile">Загрузка профиля</string>
+    <string name="ending_session">Завершение сессии</string>
+    <string name="connecting_to_pair">Подключение к паре</string>
+    <string name="error_occurred">Произошла ошибка</string>
+    <string name="character_count">Символов: %1$d из %2$d</string>
+    <string name="invite_code_with_value">Код приглашения: %1$s</string>
+    <string name="new_requests_available">Есть новые запросы</string>
+    <string name="has_pending_requests">Есть ожидающие запросы</string>
+    <string name="stats_section_title">Характеристики</string>
+    <string name="switch_state_on">Включено</string>
+    <string name="switch_state_off">Выключено</string>
+    <string name="item_selected">Выбрано</string>
+    <string name="cd_trophy">Трофей, символизирует пару</string>
+    <string name="app_launching">Запуск приложения</string>
+
+    <!-- Death Causes -->
+    <string name="death_cause_hunger">%1$s умер от голода 💀</string>
+    <string name="death_cause_exhaustion">%1$s умер от истощения 💤</string>
+    <string name="death_cause_disease">%1$s умер от болезни 🤒</string>
+    <string name="death_cause_escaped">%1$s сбежал от тоски 💔</string>
+    <string name="death_cause_neglect">%1$s не выдержал neglect 😢</string>
+    <string name="death_cause_unknown">%1$s умер 💀</string>
 </resources>

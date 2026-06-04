@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!-- App -->
     <string name="app_name" translatable="false">Tamagotchi for Lovers</string>
 
@@ -148,13 +148,19 @@
     <string name="notif_crit_clean">❗ %1$s is filthy!</string>
     <string name="notif_crit_happy">❗ %1$s is stressed!</string>
     <string name="notif_dead">%1$s passed away…</string>
-    <string name="notif_escaped">%1$s ran away.</string>
-    <string name="notif_sick">%1$s is sick!</string>
-    <string name="notif_collapsed">%1$s collapsed!</string>
-    <string name="notif_dead_message">Your pet has passed away. Create a new one to continue playing.</string>
-    <string name="notif_escaped_message">Your pet ran away due to neglect. Find and bring it back!</string>
-    <string name="notif_sick_message">Your pet is sick and needs urgent care. Take care of all their needs to help them recover.</string>
-    <string name="notif_collapsed_message">Your pet is exhausted and on the verge of death. Act immediately!</string>
+    <string name="notif_dead_message">%1$s has passed away. Create a new one to continue playing.</string>
+
+    <string name="notif_dead_from_hunger">💀 %1$s starved to death</string>
+    <string name="notif_dead_from_hunger_message">%1$s starved to death. Take better care next time.</string>
+
+    <string name="notif_dead_from_exhaustion">💤 %1$s died from exhaustion</string>
+    <string name="notif_dead_from_exhaustion_message">%1$s was too tired to go on.</string>
+
+    <string name="notif_dead_from_disease">🤒 %1$s died from illness</string>
+    <string name="notif_dead_from_disease_message">%1$s got too dirty and fell ill.</string>
+
+    <string name="notif_dead_from_depression">💔 %1$s ran away from sadness</string>
+    <string name="notif_dead_from_depression_message">%1$s was too unhappy and ran away.</string>
 
     <!-- System -->
     <string name="sync_success">Data synced</string>
@@ -229,6 +235,8 @@
 
     <!-- Boot Screen -->
     <string name="boot_loading">Loading…</string>
+    <string name="boot_timeout_title">Taking too long</string>
+    <string name="boot_timeout_message">Please check your internet connection and try again</string>
 
     <!-- Profile Screen Errors -->
     <string name="profile_error_pet_not_selected">Pet not selected</string>
@@ -246,7 +254,6 @@
     <!-- Common retry -->
     <string name="btn_retry">Try Again</string>
     <string name="btn_confirm">Confirm</string>
-    <string name="btn_cancel">Cancel</string>
 
     <string name="pet_cd_waiting_pair">Waiting for a partner</string>
     <string name="pet_cd_active_pair">Active Pair</string>
@@ -271,22 +278,21 @@
     <string name="nickname_label">Nickname</string>
     <string name="edit_nickname">Edit nickname</string>
     <string name="nickname_hint">Enter your nickname</string>
-    <string name="nickname_too_long">Nickname is too long (max 20 characters)</string>
 
     <string name="error_empty_pet_name">Pet name cannot be empty</string>
-    <string name="error_pet_name_too_short">Name is too short (min %1$d characters)</string>
-    <string name="error_pet_name_too_long">Name is too long (max %1$d characters)</string>
-    <string name="error_pet_name_invalid_chars">Name contains invalid characters</string>
+    <string name="error_pet_name_too_short" tools:ignore="PluralsCandidate">Name is too short (min %1$d characters)</string>
+    <string name="error_pet_name_too_long" tools:ignore="PluralsCandidate">Name is too long (max %1$d characters)</string>
+    <string name="error_pet_name_invalid_chars" tools:ignore="PluralsCandidate">Name contains invalid characters</string>
 
     <string name="error_empty_pair_name">Pair name cannot be empty</string>
-    <string name="error_pair_name_too_short">Name is too short (min %1$d characters)</string>
-    <string name="error_pair_name_too_long">Name is too long (max %1$d characters)</string>
-    <string name="error_pair_name_invalid_chars">Name contains invalid characters</string>
+    <string name="error_pair_name_too_short" tools:ignore="PluralsCandidate">Name is too short (min %1$d characters)</string>
+    <string name="error_pair_name_too_long" tools:ignore="PluralsCandidate">Name is too long (max %1$d characters)</string>
+    <string name="error_pair_name_invalid_chars" tools:ignore="PluralsCandidate">Name contains invalid characters</string>
 
     <string name="error_empty_nickname">Nickname cannot be empty</string>
-    <string name="error_nickname_too_short">Nickname is too short (min %1$d characters)</string>
-    <string name="error_nickname_too_long">Nickname is too long (max %1$d characters)</string>
-    <string name="error_nickname_invalid_chars">Nickname contains invalid characters</string>
+    <string name="error_nickname_too_short" tools:ignore="PluralsCandidate">Nickname is too short (min %1$d characters)</string>
+    <string name="error_nickname_too_long" tools:ignore="PluralsCandidate">Nickname is too long (max %1$d characters)</string>
+    <string name="error_nickname_invalid_chars" tools:ignore="PluralsCandidate">Nickname contains invalid characters</string>
 
     <!-- Settings -->
     <string name="settings_title">Settings</string>
@@ -314,4 +320,35 @@
     <string name="notif_channel_normal_desc">Critical notifications without sound</string>
     <string name="notif_channel_silent">Regular pet updates</string>
     <string name="notif_channel_silent_desc">Non-critical notifications</string>
+
+    <string name="show_password">Show password</string>
+    <string name="hide_password">Hide password</string>
+
+    <!-- Accessibility & Loading States -->
+    <string name="saving">Saving</string>
+    <string name="saving_changes">Saving changes</string>
+    <string name="checking_answer">Checking answer</string>
+    <string name="loading_pet_data">Loading pet data</string>
+    <string name="loading_profile">Loading profile</string>
+    <string name="ending_session">Ending session</string>
+    <string name="connecting_to_pair">Connecting to pair</string>
+    <string name="error_occurred">An error occurred</string>
+    <string name="character_count">%1$d of %2$d characters</string>
+    <string name="invite_code_with_value">Invite code: %1$s</string>
+    <string name="new_requests_available">New requests available</string>
+    <string name="has_pending_requests">Has pending requests</string>
+    <string name="stats_section_title">Statistics</string>
+    <string name="switch_state_on">On</string>
+    <string name="switch_state_off">Off</string>
+    <string name="item_selected">Selected</string>
+    <string name="cd_trophy">Trophy icon, represents pair</string>
+    <string name="app_launching">App launching</string>
+
+    <!-- Death Causes -->
+    <string name="death_cause_hunger">%1$s starved to death 💀</string>
+    <string name="death_cause_exhaustion">%1$s died from exhaustion 💤</string>
+    <string name="death_cause_disease">%1$s died from disease 🤒</string>
+    <string name="death_cause_escaped">%1$s ran away from sadness 💔</string>
+    <string name="death_cause_neglect">%1$s couldn\'t handle the neglect 😢</string>
+    <string name="death_cause_unknown">%1$s passed away 💀</string>
 </resources>

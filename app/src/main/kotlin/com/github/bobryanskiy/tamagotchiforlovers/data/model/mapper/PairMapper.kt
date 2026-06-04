@@ -38,14 +38,15 @@ fun PairEntity.toDto(): PairDto {
         userId2 = userId2,
         currentPetId = currentPetId,
         status = status,
-        inviteKey = if (inviteCode != null) InviteKeyDto(
-            code = inviteCode,
-            expiresAt = inviteExpiresAt ?: 0L
-        ) else null,
-        pendingRequest = if (requestGuestId != null) PendingRequestDto(
-            guestId = requestGuestId,
-            requestedAt = requestRequestedAt?.let { Timestamp(Date(it)) }
-        ) else null,
+        inviteKey = if (inviteCode != null && inviteExpiresAt != null) {
+            InviteKeyDto(code = inviteCode, expiresAt = inviteExpiresAt)
+        } else null,
+        pendingRequest = if (requestGuestId != null) {
+            PendingRequestDto(
+                guestId = requestGuestId,
+                requestedAt = requestRequestedAt?.let { Timestamp(Date(it)) }
+            )
+        } else null,
         createdAt = createdAt,
         updatedAt = updatedAt,
         endedAt = endedAt?.let { Timestamp(Date(it)) }

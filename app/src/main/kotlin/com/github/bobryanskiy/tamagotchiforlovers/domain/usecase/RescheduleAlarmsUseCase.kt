@@ -1,7 +1,7 @@
 package com.github.bobryanskiy.tamagotchiforlovers.domain.usecase
 
-import com.github.bobryanskiy.tamagotchiforlovers.core.alarm.PetAlarmManager
 import com.github.bobryanskiy.tamagotchiforlovers.core.logging.AppLogger
+import com.github.bobryanskiy.tamagotchiforlovers.core.notification.PetAlarmManager
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PetRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.SettingsRepository
 import kotlinx.coroutines.flow.first

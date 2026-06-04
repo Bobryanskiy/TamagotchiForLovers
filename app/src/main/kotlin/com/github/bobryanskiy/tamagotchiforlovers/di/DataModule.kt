@@ -12,6 +12,7 @@ import com.github.bobryanskiy.tamagotchiforlovers.data.local.datasource.RoomLoca
 import com.github.bobryanskiy.tamagotchiforlovers.data.remote.datasource.FirestoreRemoteDataSource
 import com.github.bobryanskiy.tamagotchiforlovers.data.remote.datasource.RemoteDataSource
 import com.github.bobryanskiy.tamagotchiforlovers.data.repository.AuthRepositoryImpl
+import com.github.bobryanskiy.tamagotchiforlovers.data.repository.BalanceConfigRepositoryImpl
 import com.github.bobryanskiy.tamagotchiforlovers.data.repository.DataStoreSessionRepository
 import com.github.bobryanskiy.tamagotchiforlovers.data.repository.DataStoreSettingsRepository
 import com.github.bobryanskiy.tamagotchiforlovers.data.repository.PairRepositoryImpl
@@ -22,6 +23,7 @@ import com.github.bobryanskiy.tamagotchiforlovers.data.util.SystemClock
 import com.github.bobryanskiy.tamagotchiforlovers.data.util.UuidIdGenerator
 import com.github.bobryanskiy.tamagotchiforlovers.domain.provider.StringResourceProvider
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.AuthRepository
+import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.BalanceConfigRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PairRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PetRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.SessionRepository
@@ -53,6 +55,8 @@ abstract class DataModule {
 
     @Binds @Singleton
     abstract fun bindUserRepository(impl: UserRepositoryImpl): UserRepository
+    @Binds @Singleton
+    abstract fun bindBalanceConfigRepository(impl: BalanceConfigRepositoryImpl): BalanceConfigRepository
 
     @Binds @Singleton
     abstract fun provideSessionRepository(impl: DataStoreSessionRepository): SessionRepository

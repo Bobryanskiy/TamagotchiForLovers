@@ -17,36 +17,62 @@ class NotificationStringResolver @Inject constructor(
     fun resolveTitle(notification: PetNotification): String {
         val petName = notification.petName
         return when (notification.key) {
-            NotificationKey.Dead -> context.getString(R.string.notif_dead, petName)
-            NotificationKey.Escaped -> context.getString(R.string.notif_escaped, petName)
-            NotificationKey.Sick -> context.getString(R.string.notif_sick, petName)
-            NotificationKey.Collapsed -> context.getString(R.string.notif_collapsed, petName)
-            NotificationKey.CriticalHunger -> context.getString(R.string.notif_title_crit, petName)
-            NotificationKey.CriticalEnergy -> context.getString(R.string.notif_title_crit, petName)
-            NotificationKey.CriticalCleanliness -> context.getString(R.string.notif_title_crit, petName)
-            NotificationKey.CriticalHappiness -> context.getString(R.string.notif_title_crit, petName)
-            NotificationKey.WarningHunger -> context.getString(R.string.notif_title_warn, petName)
-            NotificationKey.WarningEnergy -> context.getString(R.string.notif_title_warn, petName)
-            NotificationKey.WarningCleanliness -> context.getString(R.string.notif_title_warn, petName)
-            NotificationKey.WarningHappiness -> context.getString(R.string.notif_title_warn, petName)
+            NotificationKey.WarningHunger,
+            NotificationKey.WarningEnergy,
+            NotificationKey.WarningCleanliness,
+            NotificationKey.WarningHappiness ->
+                context.getString(R.string.notif_title_warn, petName)
+
+            NotificationKey.CriticalHunger,
+            NotificationKey.CriticalEnergy,
+            NotificationKey.CriticalCleanliness,
+            NotificationKey.CriticalHappiness ->
+                context.getString(R.string.notif_title_crit, petName)
+
+            NotificationKey.Dead ->
+                context.getString(R.string.notif_dead, petName)
+            NotificationKey.DeadFromHunger ->
+                context.getString(R.string.notif_dead_from_hunger, petName)
+            NotificationKey.DeadFromExhaustion ->
+                context.getString(R.string.notif_dead_from_exhaustion, petName)
+            NotificationKey.DeadFromDisease ->
+                context.getString(R.string.notif_dead_from_disease, petName)
+            NotificationKey.DeadEscaped ->
+                context.getString(R.string.notif_dead_from_depression, petName)
         }
     }
 
     fun resolveMessage(notification: PetNotification): String {
         val petName = notification.petName
         return when (notification.key) {
-            NotificationKey.Dead -> context.getString(R.string.notif_dead_message)
-            NotificationKey.Escaped -> context.getString(R.string.notif_escaped_message)
-            NotificationKey.Sick -> context.getString(R.string.notif_sick_message)
-            NotificationKey.Collapsed -> context.getString(R.string.notif_sick_message)
-            NotificationKey.CriticalHunger -> context.getString(R.string.notif_crit_hunger, petName)
-            NotificationKey.CriticalEnergy -> context.getString(R.string.notif_crit_energy, petName)
-            NotificationKey.CriticalCleanliness -> context.getString(R.string.notif_crit_clean, petName)
-            NotificationKey.CriticalHappiness -> context.getString(R.string.notif_crit_happy, petName)
-            NotificationKey.WarningHunger -> context.getString(R.string.notif_warn_hunger, petName)
-            NotificationKey.WarningEnergy -> context.getString(R.string.notif_warn_energy, petName)
-            NotificationKey.WarningCleanliness -> context.getString(R.string.notif_warn_clean, petName)
-            NotificationKey.WarningHappiness -> context.getString(R.string.notif_warn_happy, petName)
+            NotificationKey.WarningHunger ->
+                context.getString(R.string.notif_warn_hunger, petName)
+            NotificationKey.WarningEnergy ->
+                context.getString(R.string.notif_warn_energy, petName)
+            NotificationKey.WarningCleanliness ->
+                context.getString(R.string.notif_warn_clean, petName)
+            NotificationKey.WarningHappiness ->
+                context.getString(R.string.notif_warn_happy, petName)
+
+            NotificationKey.CriticalHunger ->
+                context.getString(R.string.notif_crit_hunger, petName)
+            NotificationKey.CriticalEnergy ->
+                context.getString(R.string.notif_crit_energy, petName)
+            NotificationKey.CriticalCleanliness ->
+                context.getString(R.string.notif_crit_clean, petName)
+            NotificationKey.CriticalHappiness ->
+                context.getString(R.string.notif_crit_happy, petName)
+
+            NotificationKey.Dead ->
+                context.getString(R.string.notif_dead_message, petName)
+            NotificationKey.DeadFromHunger ->
+                context.getString(R.string.notif_dead_from_hunger_message, petName)
+            NotificationKey.DeadFromExhaustion ->
+                context.getString(R.string.notif_dead_from_exhaustion_message, petName)
+            NotificationKey.DeadFromDisease ->
+                context.getString(R.string.notif_dead_from_disease_message, petName)
+            NotificationKey.DeadEscaped ->
+                context.getString(R.string.notif_dead_from_depression_message, petName)
         }
     }
 }

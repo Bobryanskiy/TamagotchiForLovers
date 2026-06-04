@@ -35,7 +35,8 @@ class AuthRepositoryImpl @Inject constructor(
     override fun isLoggedIn(): Boolean = auth.currentUser != null
 
     override suspend fun signIn(email: String, password: String): UserResult<Unit> = try {
-        auth.signInWithEmailAndPassword(email, password).await()
+        val cleanEmail = email.trim().lowercase()
+        auth.signInWithEmailAndPassword(cleanEmail, password).await()
         logger.d(TAG, "✅ User signed in: $email")
         DomainResult.Success(Unit)
     } catch (e: CancellationException) {
@@ -46,10 +47,11 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override suspend fun signUp(email: String, password: String): UserResult<Unit> = try {
-        val result = auth.createUserWithEmailAndPassword(email, password).await()
+        val cleanEmail = email.trim().lowercase()
+        val result = auth.createUserWithEmailAndPassword(cleanEmail, password).await()
         val uid = result.user?.uid ?: throw IllegalStateException("User created but uid is null")
 
-        createUserDocument(uid, email)
+        createUserDocument(uid, cleanEmail)
 
         logger.d(TAG, "✅ User signed up and document created: $uid")
         DomainResult.Success(Unit)

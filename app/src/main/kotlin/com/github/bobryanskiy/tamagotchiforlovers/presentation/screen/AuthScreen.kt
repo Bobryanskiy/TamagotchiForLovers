@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,8 +33,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -61,7 +73,8 @@ fun AuthScreen(
     var isSignUpMode by remember { mutableStateOf(false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
-    val context = LocalContext.current
+    val resources = LocalResources.current
+    val haptic = LocalHapticFeedback.current
 
     val emailErrorResId = remember(email) {
         if (email.isNotEmpty()) ValidationUtils.getEmailErrorResId(email) else null
@@ -73,12 +86,11 @@ fun AuthScreen(
     LaunchedEffect(uiState) {
         when (val state = uiState) {
             is AuthUiState.Error -> {
-                val message = context.applicationContext.getString(state.messageResId)
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                val message = resources.getString(state.messageResId)
                 snackbarHostState.showSnackbar(message)
             }
-            is AuthUiState.Success -> {
-                // Навигация обрабатывается через event
-            }
+            is AuthUiState.Success -> {}
             else -> {}
         }
     }
@@ -86,16 +98,13 @@ fun AuthScreen(
     LaunchedEffect(Unit) {
         viewModel.event.collect { event ->
             when (event) {
-                is AuthEvent.NavigateToMain -> {
-                    navController.popBackStack()
-                }
-                is AuthEvent.NavigateToPet -> {
-                    navController.navigate(AppRoute.Pet(event.petId)) {
+                is AuthEvent.NavigateToBoot -> {
+                    navController.navigate(AppRoute.Boot) {
                         popUpTo<AppRoute.Auth> { inclusive = true }
+                        launchSingleTop = true
                     }
                 }
-                is AuthEvent.ShowError -> {
-                }
+                is AuthEvent.ShowError -> {}
             }
         }
     }
@@ -105,15 +114,19 @@ fun AuthScreen(
             TopAppBar(
                 title = {
                     Text(
-                        stringResource(
+                        text = stringResource(
                             if (isSignUpMode) R.string.auth_title_register
                             else R.string.auth_title_login
-                        )
+                        ),
+                        modifier = Modifier.semantics { heading() }
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back))
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.back)
+                        )
                     }
                 }
             )
@@ -131,8 +144,10 @@ fun AuthScreen(
             passwordErrorResId = passwordErrorResId,
             onEmailChange = { email = it },
             onPasswordChange = { password = it },
+            onTogglePasswordVisibility = { passwordVisible = !passwordVisible },
             onToggleMode = { isSignUpMode = !isSignUpMode },
             onSubmit = {
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 if (isSignUpMode) viewModel.register(email, password)
                 else viewModel.login(email, password)
             }
@@ -153,6 +168,7 @@ private fun AuthContent(
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     onToggleMode: () -> Unit,
+    onTogglePasswordVisibility: () -> Unit,
     onSubmit: () -> Unit
 ) {
     val isFormValid = emailErrorResId == null
@@ -160,15 +176,34 @@ private fun AuthContent(
             && email.isNotBlank()
             && password.isNotBlank()
 
+    val emailError = emailErrorResId?.let { stringResource(it) }
+    val passwordError = passwordErrorResId?.let { stringResource(it) }
+    val loadingDescription = if (isLoading) stringResource(R.string.loading) else null
+    val titleText = stringResource(
+        if (isSignUpMode) R.string.auth_title_register
+        else R.string.auth_title_login
+    )
+    val emailLabel = stringResource(R.string.email)
+    val passwordLabel = stringResource(R.string.password)
+    val hidePasswordDesc = stringResource(R.string.hide_password)
+    val showPasswordDesc = stringResource(R.string.show_password)
+    val loadingText = stringResource(R.string.loading)
+    val submitText = stringResource(if (isSignUpMode) R.string.register else R.string.login)
+    val toggleText = if (isSignUpMode) {
+        stringResource(R.string.have_account) + " " + stringResource(R.string.login)
+    } else {
+        stringResource(R.string.no_account) + " " + stringResource(R.string.auth_title_register)
+    }
+
     Column(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = if (isSignUpMode) stringResource(R.string.auth_title_register)
-            else stringResource(R.string.auth_title_login),
-            style = MaterialTheme.typography.headlineMedium
+            text = titleText,
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.semantics { heading() }
         )
 
         Spacer(Modifier.height(32.dp))
@@ -176,13 +211,24 @@ private fun AuthContent(
         OutlinedTextField(
             value = email,
             onValueChange = onEmailChange,
-            label = { Text(stringResource(R.string.email)) },
-            modifier = Modifier.fillMaxWidth(),
+            label = { Text(emailLabel) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics {
+                    emailError?.let { error(it) }
+                },
             enabled = !isLoading,
             singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             isError = emailErrorResId != null,
             supportingText = if (emailErrorResId != null) {
-                { Text(stringResource(emailErrorResId), color = MaterialTheme.colorScheme.error) }
+                {
+                    Text(
+                        stringResource(emailErrorResId),
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }
+                    )
+                }
             } else null
         )
 
@@ -191,15 +237,32 @@ private fun AuthContent(
         OutlinedTextField(
             value = password,
             onValueChange = onPasswordChange,
-            label = { Text(stringResource(R.string.password)) },
+            label = { Text(passwordLabel) },
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics {
+                    passwordError?.let { error(it) }
+                },
             enabled = !isLoading,
             singleLine = true,
             isError = passwordErrorResId != null,
+            trailingIcon = {
+                val image = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
+                val description = if (passwordVisible) hidePasswordDesc else showPasswordDesc
+                IconButton(onClick = onTogglePasswordVisibility) {
+                    Icon(imageVector = image, contentDescription = description)
+                }
+            },
             supportingText = if (passwordErrorResId != null) {
-                { Text(stringResource(passwordErrorResId), color = MaterialTheme.colorScheme.error) }
+                {
+                    Text(
+                        stringResource(passwordErrorResId),
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }
+                    )
+                }
             } else null
         )
 
@@ -207,7 +270,12 @@ private fun AuthContent(
 
         Button(
             onClick = onSubmit,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics {
+                    role = Role.Button
+                    loadingDescription?.let { stateDescription = it }
+                },
             enabled = !isLoading && isFormValid
         ) {
             if (isLoading) {
@@ -215,8 +283,10 @@ private fun AuthContent(
                     modifier = Modifier.height(20.dp),
                     color = MaterialTheme.colorScheme.onPrimary
                 )
+                Spacer(Modifier.height(8.dp))
+                Text(loadingText)
             } else {
-                Text(stringResource(if (isSignUpMode) R.string.register else R.string.login))
+                Text(submitText)
             }
         }
 
@@ -224,13 +294,12 @@ private fun AuthContent(
 
         TextButton(
             onClick = onToggleMode,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics { role = Role.Button },
             enabled = !isLoading
         ) {
-            Text(
-                if (isSignUpMode) stringResource(R.string.have_account) + " " + stringResource(R.string.login)
-                else stringResource(R.string.no_account) + " " + stringResource(R.string.auth_title_register)
-            )
+            Text(toggleText)
         }
 
         Spacer(Modifier.height(16.dp))

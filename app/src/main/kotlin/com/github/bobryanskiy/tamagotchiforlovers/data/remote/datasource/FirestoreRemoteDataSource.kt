@@ -115,15 +115,13 @@ class FirestoreRemoteDataSource @Inject constructor(
     override suspend fun updatePetLifeState(
         petId: String,
         status: String,
-        multiplier: Float,
-        recoveryTime: Long?,
+        deathCause: String?,
         updatedAt: Long
     ) {
         db.collection("pets").document(petId).update(
             mapOf(
                 PetKeys.LIFE_STATUS to status,
-                PetKeys.LIFE_DECAY_MULTIPLIER to multiplier,
-                PetKeys.LIFE_RECOVERY_END_TIME to recoveryTime,
+                PetKeys.LIFE_DEATH_STATUS to deathCause,
                 PetKeys.STATS_UPDATED_AT to updatedAt
             )
         ).await()

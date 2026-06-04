@@ -33,16 +33,36 @@ class CriticalStateReceiver : BroadcastReceiver() {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
-        val petId = intent.getStringExtra(EXTRA_PET_ID) ?: return
+        val pendingResult = goAsync()
+
+        val petId = intent.getStringExtra(EXTRA_PET_ID)
+        if (petId == null) {
+            pendingResult.finish()
+            return
+        }
+
+        logger.d(TAG, "📥 onReceive for pet: $petId")
 
         receiverScope.launch {
             try {
                 when (val result = petRepository.getPetById(petId)) {
                     is DomainResult.Success -> {
-                        val pet = result.data ?: return@launch
+                        val pet = result.data
+                        if (pet == null) {
+                            logger.w(TAG, "Pet $petId not found in DB")
+                            return@launch
+                        }
+
                         val notification = prepareNotificationUseCase(pet)
+                        if (!notification.shouldShow) {
+                            logger.d(TAG, "⏭️ Notification not needed for ${pet.profile.name}")
+                            return@launch
+                        }
+
                         val title = notificationStringResolver.resolveTitle(notification)
                         val message = notificationStringResolver.resolveMessage(notification)
+
+                        logger.d(TAG, "🔔 Showing notification: $title")
 
                         notificationHelper.showPetNotification(
                             NotificationHelper.NotificationData(
@@ -54,13 +74,18 @@ class CriticalStateReceiver : BroadcastReceiver() {
                                 status = notification.status
                             )
                         )
+
+                        logger.d(TAG, "✅ Notification shown successfully")
                     }
                     is DomainResult.Failure -> {
-                        logger.w(TAG, "Failed to get pet $petId")
+                        logger.w(TAG, "Failed to get pet $petId: ${result.error}")
                     }
                 }
             } catch (e: Exception) {
                 logger.e(TAG, "Receiver error", e)
+            } finally {
+                // ✅ ОБЯЗАТЕЛЬНО: завершаем ресивер после работы
+                pendingResult.finish()
             }
         }
     }

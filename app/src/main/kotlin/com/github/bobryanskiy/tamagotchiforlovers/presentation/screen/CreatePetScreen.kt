@@ -25,6 +25,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -43,9 +51,19 @@ fun CreatePetScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val petName by viewModel.petName.collectAsStateWithLifecycle()
+
     val nameErrorResId = remember(petName) {
         if (petName.isNotEmpty()) ValidationUtils.getPetNameErrorResId(petName) else null
     }
+
+    val nameError = nameErrorResId?.let { stringResource(it) }
+    val charCountDesc = stringResource(R.string.character_count, petName.length, NameLimits.PET_NAME_MAX)
+    val titleText = stringResource(R.string.create_pet)
+    val backDesc = stringResource(R.string.back)
+    val descriptionText = stringResource(R.string.create_pet_description)
+    val labelText = stringResource(R.string.pet_name)
+    val creatingText = stringResource(R.string.creating_pet)
+    val createButtonText = stringResource(R.string.create_pet_button)
 
     LaunchedEffect(uiState) {
         if (uiState is CreatePetUiState.Success) {
@@ -56,23 +74,33 @@ fun CreatePetScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.create_pet)) },
+                title = {
+                    Text(
+                        titleText,
+                        modifier = Modifier.semantics { heading() }
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back))
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, backDesc)
                     }
                 }
             )
         }
     ) { padding ->
-
         CreatePetContent(
             modifier = Modifier.padding(padding).padding(24.dp),
             petName = petName,
             onNameChange = viewModel::onNameChange,
             onCreateClick = viewModel::createPet,
             isLoading = uiState is CreatePetUiState.Loading,
-            error = nameErrorResId
+            error = nameError,
+            descriptionText = descriptionText,
+            labelText = labelText,
+            charCountDesc = charCountDesc,
+            creatingText = creatingText,
+            createButtonText = createButtonText,
+            nameErrorResId = nameErrorResId
         )
     }
 }
@@ -84,7 +112,13 @@ private fun CreatePetContent(
     onNameChange: (String) -> Unit,
     onCreateClick: () -> Unit,
     isLoading: Boolean,
-    error: Int?
+    error: String?,
+    descriptionText: String,
+    labelText: String,
+    charCountDesc: String,
+    creatingText: String,
+    createButtonText: String,
+    nameErrorResId: Int?
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
@@ -94,38 +128,49 @@ private fun CreatePetContent(
         Spacer(Modifier.height(32.dp))
 
         Text(
-            text = stringResource(R.string.create_pet_description),
+            text = descriptionText,
             style = MaterialTheme.typography.bodyLarge
         )
 
         OutlinedTextField(
             value = petName,
             onValueChange = onNameChange,
-            label = { Text(stringResource(R.string.pet_name)) },
-            modifier = Modifier.fillMaxWidth(),
+            label = { Text(labelText) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics {
+                    error?.let { error(it) }
+                },
             singleLine = true,
+            isError = nameErrorResId != null,
             supportingText = {
-                Text("${petName.length} / ${NameLimits.PET_NAME_MAX}")
-            },
-            isError = error != null
+                Text(
+                    "${petName.length} / ${NameLimits.PET_NAME_MAX}",
+                    modifier = Modifier.semantics {
+                        contentDescription = charCountDesc
+                    }
+                )
+            }
         )
 
-        if (error != null) {
+        if (nameErrorResId != null) {
             Text(
-                text = stringResource(error),
+                text = stringResource(nameErrorResId),
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.error
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }
             )
         }
 
         Button(
             onClick = onCreateClick,
-            modifier = Modifier.fillMaxWidth(0.7f),
+            modifier = Modifier
+                .fillMaxWidth(0.7f)
+                .semantics { role = Role.Button },
             enabled = !isLoading && petName.isNotBlank()
         ) {
             Text(
-                text = if (isLoading) stringResource(R.string.creating_pet)
-                else stringResource(R.string.create_pet_button)
+                text = if (isLoading) creatingText else createButtonText
             )
         }
     }

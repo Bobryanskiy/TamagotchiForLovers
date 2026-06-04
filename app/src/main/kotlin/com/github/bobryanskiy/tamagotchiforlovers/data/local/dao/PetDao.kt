@@ -40,8 +40,7 @@ interface PetDao {
     @Query("""
         UPDATE pets SET 
             life_status = :status,
-            decay_multiplier = :multiplier, 
-            recovery_end_time = :recoveryTime,
+            death_cause = :deathCause,
             updated_at = :timestamp, 
             sync_status = 'PENDING'
         WHERE id = :petId
@@ -49,8 +48,7 @@ interface PetDao {
     suspend fun updateLifeState(
         petId: String,
         status: String,
-        multiplier: Float,
-        recoveryTime: Long?,
+        deathCause: String?,
         timestamp: Long
     )
 

@@ -21,10 +21,9 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
+        val migrations = allMigrations()
         return Room.databaseBuilder(context, AppDatabase::class.java, "tamagotchi_db")
-            .addMigrations(*allMigrations())
-            // В RELEASE обязательно false! Иначе пользователи потеряют данные.
-            .fallbackToDestructiveMigration(true)
+            .addMigrations(*migrations)
             .build()
     }
 
@@ -36,24 +35,58 @@ object DatabaseModule {
     @Singleton
     fun providePairDao(database: AppDatabase): PairDao = database.pairDao()
 
-    /**
-     * Массив всех миграций. Добавляй сюда новые при изменении схемы.
-     *
-     * Пример добавления:
-     * 1. Увеличь version в AppDatabase
-     * 2. Создай MIGRATION_X_Y
-     * 3. Добавь в этот массив
-     */
     private fun allMigrations(): Array<Migration> = arrayOf(
-        MIGRATION_4_5
+        MIGRATION_6_7
     )
 
-    /** Пример миграции 4 → 5 */
-    private val MIGRATION_4_5 = object : Migration(4, 5) {
+    private val MIGRATION_6_7 = object : Migration(6, 7) {
         override fun migrate(db: SupportSQLiteDatabase) {
-            // Если ничего не менялось, оставляем пустым.
-            // Если добавили колонку:
-            // db.execSQL("ALTER TABLE pets ADD COLUMN new_column INTEGER NOT NULL DEFAULT 0")
+            db.execSQL("""
+            CREATE TABLE IF NOT EXISTS `pets_new` (
+                `id` TEXT NOT NULL PRIMARY KEY,
+                `name` TEXT NOT NULL,
+                `owner_user_id` TEXT,
+                `current_pair_id` TEXT,
+                `created_at` INTEGER NOT NULL,
+                `abandoned_at` INTEGER,
+                `life_status` TEXT NOT NULL,
+                `death_cause` TEXT,
+                `hunger` INTEGER NOT NULL,
+                `energy` INTEGER NOT NULL,
+                `cleanliness` INTEGER NOT NULL,
+                `happiness` INTEGER NOT NULL,
+                `updated_at` INTEGER NOT NULL,
+                `sync_status` TEXT NOT NULL DEFAULT 'SYNCED'
+            )
+        """)
+
+            db.execSQL("""
+            INSERT INTO pets_new (
+                id, name, owner_user_id, current_pair_id, 
+                created_at, abandoned_at, life_status,
+                hunger, energy, cleanliness, happiness,
+                updated_at, sync_status
+            )
+            SELECT 
+                id, name, owner_user_id, current_pair_id,
+                created_at, abandoned_at,
+                CASE 
+                    WHEN life_status IN ('SICK', 'COLLAPSED', 'ESCAPED') THEN 'NORMAL'
+                    ELSE life_status
+                END,
+                hunger, energy, cleanliness, happiness,
+                updated_at, sync_status
+            FROM pets
+        """)
+
+            db.execSQL("DROP TABLE pets")
+
+            db.execSQL("ALTER TABLE pets_new RENAME TO pets")
+
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_pets_owner_user_id` ON `pets` (`owner_user_id` ASC)")
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_pets_current_pair_id` ON `pets` (`current_pair_id` ASC)")
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_pets_sync_status` ON `pets` (`sync_status` ASC)")
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_pets_updated_at` ON `pets` (`updated_at` ASC)")
         }
     }
 }

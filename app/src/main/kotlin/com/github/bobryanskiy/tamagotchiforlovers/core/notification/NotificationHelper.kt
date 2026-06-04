@@ -63,15 +63,7 @@ class NotificationHelper @Inject constructor(
             }
         }
 
-        val soundEnabled = settingsRepository.observeSoundEnabled()
-            .let { flow ->
-                var result = true
-                flow.collect {
-                    result = it
-                    return@collect
-                }
-                result
-            }
+        val soundEnabled = settingsRepository.observeSoundEnabled().first()
 
         val channelId = when {
             !data.isUrgent -> CHANNEL_ID_SILENT      // обычные — всегда тихо

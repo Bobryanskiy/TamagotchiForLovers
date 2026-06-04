@@ -29,7 +29,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -162,8 +161,7 @@ class PetRepositoryImpl @Inject constructor(
         local.updateLifeState(
             petId,
             state.status.name,
-            state.decayMultiplier,
-            state.recoveryEndTime,
+            state.deathCause?.name,
             now
         )
         local.markPending(petId)
@@ -173,8 +171,7 @@ class PetRepositoryImpl @Inject constructor(
                 remote.updatePetLifeState(
                     petId,
                     state.status.name,
-                    state.decayMultiplier,
-                    state.recoveryEndTime,
+                    state.deathCause?.name,
                     now
                 )
                 local.markSynced(petId)

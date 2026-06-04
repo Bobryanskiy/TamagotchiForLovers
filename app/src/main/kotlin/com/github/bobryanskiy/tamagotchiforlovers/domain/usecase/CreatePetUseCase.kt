@@ -24,6 +24,11 @@ class CreatePetUseCase @Inject constructor(
     private val clock: Clock,
     private val idGenerator: IdGenerator
 ) {
+    companion object {
+        private const val INITIAL_STAT_VALUE = 80
+    }
+
+
     suspend operator fun invoke(name: String): PetResult<String> {
         val trimmed = name.trim()
 
@@ -44,8 +49,13 @@ class CreatePetUseCase @Inject constructor(
                 createdAt = now,
                 abandonedAt = null
             ),
-            stats = PetStats(80, 80, 80, 80, now),
-            lifeState = PetLifeState(PetLifeStatus.NORMAL, null, 1.0f),
+            stats = PetStats(
+                INITIAL_STAT_VALUE,
+                INITIAL_STAT_VALUE,
+                INITIAL_STAT_VALUE,
+                INITIAL_STAT_VALUE,
+                now),
+            lifeState = PetLifeState(PetLifeStatus.NORMAL, null),
             syncStatus = SyncStatus.SYNCED
         )
 

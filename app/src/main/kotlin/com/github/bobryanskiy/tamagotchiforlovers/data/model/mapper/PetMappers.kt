@@ -5,6 +5,7 @@ import com.github.bobryanskiy.tamagotchiforlovers.data.remote.dto.LifeStateDto
 import com.github.bobryanskiy.tamagotchiforlovers.data.remote.dto.PetDto
 import com.github.bobryanskiy.tamagotchiforlovers.data.remote.dto.ProfileDto
 import com.github.bobryanskiy.tamagotchiforlovers.data.remote.dto.StatsDto
+import com.github.bobryanskiy.tamagotchiforlovers.domain.model.DeathCause
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pet
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetLifeState
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetLifeStatus
@@ -25,8 +26,7 @@ fun PetDto.toEntity(petId: String): PetEntity {
         currentPairId = p.currentPairId,
         createdAt = p.createdAt,
         lifeStatus = l.lifeStatus,
-        decayMultiplier = l.decayMultiplier,
-        recoveryEndTime = l.recoveryEndTime,
+        deathCause = l.deathCause,
         abandonedAt = p.abandonedAt,
         hunger = s.hunger,
         energy = s.energy,
@@ -59,8 +59,7 @@ fun PetEntity.toDomain(): Pet {
         ),
         lifeState = PetLifeState(
             status = PetLifeStatus.valueOf(lifeStatus),
-            decayMultiplier = decayMultiplier,
-            recoveryEndTime = recoveryEndTime
+            deathCause = deathCause?.let { DeathCause.valueOf(it) }
         )
     )
 }
@@ -79,8 +78,7 @@ fun PetEntity.toDto(): PetDto = PetDto(
     ),
     lifeState = LifeStateDto(
         lifeStatus = lifeStatus,
-        decayMultiplier = decayMultiplier,
-        recoveryEndTime = recoveryEndTime,
+        deathCause = deathCause
     )
 )
 
@@ -94,8 +92,7 @@ fun Pet.toEntity(): PetEntity = PetEntity(
     currentPairId = this.profile.currentPairId,
     createdAt = this.profile.createdAt,
     lifeStatus = this.lifeState.status.name,
-    decayMultiplier = this.lifeState.decayMultiplier,
-    recoveryEndTime = this.lifeState.recoveryEndTime,
+    deathCause = this.lifeState.deathCause?.name,
     abandonedAt = this.profile.abandonedAt,
     hunger = this.stats.hunger,
     energy = this.stats.energy,

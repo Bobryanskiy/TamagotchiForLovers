@@ -1,20 +1,48 @@
 package com.github.bobryanskiy.tamagotchiforlovers.presentation.screen
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -30,13 +58,35 @@ fun SettingsScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
+    val titleText = stringResource(R.string.settings_title)
+    val backDesc = stringResource(R.string.back)
+    val accountSection = stringResource(R.string.settings_section_account)
+    val languageTitle = stringResource(R.string.settings_language)
+    val languageSystem = stringResource(R.string.settings_language_system)
+    val notificationsSection = stringResource(R.string.settings_section_notifications)
+    val notificationsTitle = stringResource(R.string.settings_notifications)
+    val notificationsDesc = stringResource(R.string.settings_notifications_desc)
+    val soundTitle = stringResource(R.string.settings_sound)
+    val soundDesc = stringResource(R.string.settings_sound_desc)
+    val aboutSection = stringResource(R.string.settings_section_about)
+    val versionTitle = stringResource(R.string.settings_version)
+
+    val currentLanguageName = state.supportedLanguages
+        .find { it.code == state.currentLanguageCode }?.displayName
+        ?: languageSystem
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.settings_title)) },
+                title = {
+                    Text(
+                        titleText,
+                        modifier = Modifier.semantics { heading() }
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back))
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, backDesc)
                     }
                 }
             )
@@ -48,55 +98,49 @@ fun SettingsScreen(
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
         ) {
-            // ═══ Секция "Аккаунт" ═══
-            SettingsSectionHeader(stringResource(R.string.settings_section_account))
+            SettingsSectionHeader(accountSection)
 
             SettingsClickItem(
                 icon = Icons.Default.Language,
-                title = stringResource(R.string.settings_language),
-                subtitle = state.supportedLanguages
-                    .find { it.code == state.currentLanguageCode }?.displayName
-                    ?: stringResource(R.string.settings_language_system),
+                title = languageTitle,
+                subtitle = currentLanguageName,
                 onClick = viewModel::openLanguageDialog
             )
 
             HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
 
-            // ═══ Секция "Уведомления" ═══
-            SettingsSectionHeader(stringResource(R.string.settings_section_notifications))
+            SettingsSectionHeader(notificationsSection)
 
             SettingsSwitchItem(
                 icon = Icons.Default.Notifications,
-                title = stringResource(R.string.settings_notifications),
-                subtitle = stringResource(R.string.settings_notifications_desc),
+                title = notificationsTitle,
+                subtitle = notificationsDesc,
                 checked = state.notificationsEnabled,
                 onCheckedChange = viewModel::toggleNotifications
             )
 
             SettingsSwitchItem(
                 icon = Icons.AutoMirrored.Filled.VolumeUp,
-                title = stringResource(R.string.settings_sound),
-                subtitle = stringResource(R.string.settings_sound_desc),
+                title = soundTitle,
+                subtitle = soundDesc,
                 checked = state.soundEnabled,
                 onCheckedChange = viewModel::toggleSound,
-                enabled = state.notificationsEnabled  // отключено если уведомления выключены
+                enabled = state.notificationsEnabled
             )
 
             HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
 
-            // ═══ Секция "О приложении" ═══
-            SettingsSectionHeader(stringResource(R.string.settings_section_about))
+            SettingsSectionHeader(aboutSection)
 
             SettingsClickItem(
                 icon = Icons.Default.Info,
-                title = stringResource(R.string.settings_version),
+                title = versionTitle,
                 subtitle = state.appVersion,
-                onClick = { /* ничего, просто инфо */ }
+                onClick = { }
             )
         }
     }
 
-    // ═══ Диалог выбора языка ═══
     if (state.isLanguageDialogOpen) {
         LanguagePickerDialog(
             currentCode = state.currentLanguageCode,
@@ -107,17 +151,15 @@ fun SettingsScreen(
     }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// ПЕРЕИСПОЛЬЗУЕМЫЕ КОМПОНЕНТЫ
-// ═══════════════════════════════════════════════════════════════
-
 @Composable
 private fun SettingsSectionHeader(title: String) {
     Text(
         text = title,
         style = MaterialTheme.typography.titleSmall,
         color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp)
+        modifier = Modifier
+            .padding(start = 16.dp, top = 24.dp, bottom = 8.dp)
+            .semantics { heading() }
     )
 }
 
@@ -132,7 +174,10 @@ private fun SettingsClickItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 14.dp),
+            .padding(horizontal = 16.dp, vertical = 14.dp)
+            .semantics {
+                role = Role.Button
+            },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
@@ -169,11 +214,18 @@ private fun SettingsSwitchItem(
     onCheckedChange: (Boolean) -> Unit,
     enabled: Boolean = true
 ) {
+    val switchOnState = stringResource(R.string.switch_state_on)
+    val switchOffState = stringResource(R.string.switch_state_off)
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(enabled = enabled) { onCheckedChange(!checked) }
-            .padding(horizontal = 16.dp, vertical = 10.dp),
+            .padding(horizontal = 16.dp, vertical = 10.dp)
+            .semantics {
+                role = Role.Switch
+                stateDescription = if (checked) switchOnState else switchOffState
+            },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
@@ -215,31 +267,47 @@ private fun LanguagePickerDialog(
     onDismiss: () -> Unit,
     onSelect: (String) -> Unit
 ) {
+    val titleText = stringResource(R.string.settings_language)
+    val cancelText = stringResource(R.string.cancel)
+    val selectedDesc = stringResource(R.string.item_selected)
+    val selectedState = stringResource(R.string.switch_state_on)
+    val notSelectedState = stringResource(R.string.switch_state_off)
+
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.settings_language)) },
+        title = {
+            Text(
+                titleText,
+                modifier = Modifier.semantics { heading() }
+            )
+        },
         text = {
             Column {
                 languages.forEach { option ->
+                    val isSelected = option.code == currentCode
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable { onSelect(option.code) }
-                            .padding(vertical = 12.dp),
+                            .padding(vertical = 12.dp)
+                            .semantics {
+                                role = Role.RadioButton
+                                stateDescription = if (isSelected) selectedState else notSelectedState
+                            },
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
                             option.displayName,
                             style = MaterialTheme.typography.bodyLarge,
-                            color = if (option.code == currentCode)
+                            color = if (isSelected)
                                 MaterialTheme.colorScheme.primary
                             else MaterialTheme.colorScheme.onSurface
                         )
-                        if (option.code == currentCode) {
+                        if (isSelected) {
                             Icon(
                                 Icons.Default.Check,
-                                contentDescription = null,
+                                contentDescription = selectedDesc,
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         }
@@ -248,8 +316,11 @@ private fun LanguagePickerDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.cancel))
+            TextButton(
+                onClick = onDismiss,
+                modifier = Modifier.semantics { role = Role.Button }
+            ) {
+                Text(cancelText)
             }
         }
     )

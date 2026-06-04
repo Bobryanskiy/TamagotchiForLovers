@@ -25,6 +25,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -48,6 +56,14 @@ fun CreatePairScreen(
         if (pairName.isNotEmpty()) ValidationUtils.getPairNameErrorResId(pairName) else null
     }
 
+    val nameError = nameErrorResId?.let { stringResource(it) }
+    val charCountDesc = stringResource(R.string.character_count, pairName.length, NameLimits.PAIR_NAME_MAX)
+    val titleText = stringResource(R.string.create_pair_title)
+    val backDesc = stringResource(R.string.back)
+    val hintText = stringResource(R.string.host_pair_name_hint)
+    val labelText = stringResource(R.string.host_pair_name_label)
+    val buttonText = stringResource(R.string.host_pair_generate_key)
+
     LaunchedEffect(uiState) {
         if (uiState is CreatePairUiState.Success) {
             onPairCreated((uiState as CreatePairUiState.Success).pairId)
@@ -57,35 +73,59 @@ fun CreatePairScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.create_pair_title)) },
+                title = {
+                    Text(
+                        titleText,
+                        modifier = Modifier.semantics { heading() }
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back))
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, backDesc)
                     }
                 }
             )
         }
     ) { padding ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(padding).padding(24.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(stringResource(R.string.host_pair_name_hint), style = MaterialTheme.typography.headlineSmall)
+            Text(
+                hintText,
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.semantics { heading() }
+            )
             Spacer(Modifier.height(24.dp))
 
             OutlinedTextField(
                 value = pairName,
                 onValueChange = viewModel::onNameChange,
-                label = { Text(stringResource(R.string.host_pair_name_label)) },
-                modifier = Modifier.fillMaxWidth(),
+                label = { Text(labelText) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .semantics {
+                        nameError?.let { error(it) }
+                    },
                 singleLine = true,
                 isError = nameErrorResId != null,
                 supportingText = {
                     if (nameErrorResId != null) {
-                        Text(stringResource(nameErrorResId), color = MaterialTheme.colorScheme.error)
+                        Text(
+                            stringResource(nameErrorResId),
+                            color = MaterialTheme.colorScheme.error
+                        )
                     } else {
-                        Text("${pairName.length} / ${NameLimits.PAIR_NAME_MAX}")
+                        Text(
+                            "${pairName.length} / ${NameLimits.PAIR_NAME_MAX}",
+                            modifier = Modifier.semantics {
+                                contentDescription = charCountDesc
+                            }
+                        )
                     }
                 }
             )
@@ -94,10 +134,12 @@ fun CreatePairScreen(
 
             Button(
                 onClick = viewModel::createPair,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .semantics { role = Role.Button },
                 enabled = nameErrorResId == null && uiState !is CreatePairUiState.Loading
             ) {
-                Text(stringResource(R.string.host_pair_generate_key))
+                Text(buttonText)
             }
         }
     }

@@ -6,21 +6,34 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.util.NameLimits
 
 object ValidationUtils {
 
-    // ═══════════════════════════════════════════════════════════
-    // AUTH — существующие методы
-    // ═══════════════════════════════════════════════════════════
+    private val FIREBASE_EMAIL_REGEX = Regex(
+        """^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$"""
+    )
 
-    fun isValidEmail(email: String): Boolean =
-        email.isNotBlank() && Patterns.EMAIL_ADDRESS.matcher(email).matches()
+    private const val MAX_EMAIL_LENGTH = 254
+    private const val MAX_LOCAL_PART_LENGTH = 64
 
-    fun isValidPassword(password: String): Boolean =
-        password.length >= 6
+    fun isValidEmail(email: String): Boolean {
+        val trimmed = email.trim()
+        if (trimmed.length > MAX_EMAIL_LENGTH) return false
 
-    fun getEmailErrorResId(email: String): Int? = when {
-        email.isBlank() -> R.string.error_empty_email
-        !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> R.string.error_invalid_email_format
-        else -> null
+        val atIndex = trimmed.indexOf('@')
+        if (atIndex !in 1..MAX_LOCAL_PART_LENGTH) return false
+
+        return FIREBASE_EMAIL_REGEX.matches(trimmed)
     }
+
+    fun getEmailErrorResId(email: String): Int? {
+        val trimmed = email.trim()
+        return when {
+            trimmed.isBlank() -> R.string.error_empty_email
+            trimmed.length > MAX_EMAIL_LENGTH -> R.string.error_invalid_email_format
+            !FIREBASE_EMAIL_REGEX.matches(trimmed) -> R.string.error_invalid_email_format
+            else -> null
+        }
+    }
+
+    fun isValidPassword(password: String): Boolean = password.length >= 6
 
     fun getPasswordErrorResId(password: String): Int? = when {
         password.isBlank() -> R.string.error_empty_password
@@ -28,11 +41,6 @@ object ValidationUtils {
         else -> null
     }
 
-    // ═══════════════════════════════════════════════════════════
-    // NAMES — новые методы (возвращают ID строки ресурса)
-    // ═══════════════════════════════════════════════════════════
-
-    /** Возвращает R.string.* ошибки для имени питомца или null */
     fun getPetNameErrorResId(name: String): Int? = validateNameResId(
         value = name,
         minLen = NameLimits.PET_NAME_MIN,
@@ -43,7 +51,6 @@ object ValidationUtils {
         invalidCharsResId = R.string.error_pet_name_invalid_chars
     )
 
-    /** Возвращает R.string.* ошибки для названия пары или null */
     fun getPairNameErrorResId(name: String): Int? = validateNameResId(
         value = name,
         minLen = NameLimits.PAIR_NAME_MIN,
@@ -54,7 +61,6 @@ object ValidationUtils {
         invalidCharsResId = R.string.error_pair_name_invalid_chars
     )
 
-    /** Возвращает R.string.* ошибки для никнейма или null */
     fun getNicknameErrorResId(name: String): Int? = validateNameResId(
         value = name,
         minLen = NameLimits.NICKNAME_MIN,
@@ -65,14 +71,9 @@ object ValidationUtils {
         invalidCharsResId = R.string.error_nickname_invalid_chars
     )
 
-    // Удобные boolean-хелперы
     fun isValidPetName(name: String): Boolean = getPetNameErrorResId(name) == null
     fun isValidPairName(name: String): Boolean = getPairNameErrorResId(name) == null
     fun isValidNickname(name: String): Boolean = getNicknameErrorResId(name) == null
-
-    // ═══════════════════════════════════════════════════════════
-    // PRIVATE — общая логика валидации
-    // ═══════════════════════════════════════════════════════════
 
     private fun validateNameResId(
         value: String,
@@ -93,10 +94,6 @@ object ValidationUtils {
         }
     }
 
-    /**
-     * Разрешаем: буквы (включая кириллицу), цифры, пробелы, дефис, апостроф.
-     * Запрещаем: спецсимволы, emoji, управляющие символы.
-     */
     private fun containsForbiddenChars(value: String): Boolean {
         val allowed = Regex("^[\\p{L}\\p{N} '\\-]+$")
         return !allowed.matches(value)

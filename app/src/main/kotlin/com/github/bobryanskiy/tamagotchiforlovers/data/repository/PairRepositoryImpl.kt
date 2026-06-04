@@ -6,10 +6,10 @@ import com.github.bobryanskiy.tamagotchiforlovers.data.model.mapper.toDomain
 import com.github.bobryanskiy.tamagotchiforlovers.data.model.mapper.toEntity
 import com.github.bobryanskiy.tamagotchiforlovers.data.remote.dto.PairDto
 import com.github.bobryanskiy.tamagotchiforlovers.di.IoDispatcher
-import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetPair
 import com.github.bobryanskiy.tamagotchiforlovers.domain.error.PairError
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PairStatus
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PendingRequest
+import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetPair
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PairRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.PetRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.UserRepository
@@ -19,6 +19,7 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.util.Clock
 import com.github.bobryanskiy.tamagotchiforlovers.domain.util.NameLimits
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.Filter
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.ListenerRegistration
@@ -176,7 +177,6 @@ class PairRepositoryImpl @Inject constructor(
             "status" to PairStatus.PENDING.name,
             "created_at" to now,
             "updated_at" to now,
-            "ended_at" to null,
             "invite_key" to null,
             "pending_request" to null
         )

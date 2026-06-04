@@ -42,6 +42,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -64,20 +69,28 @@ fun ProfileScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var showLogoutDialog by remember { mutableStateOf(false) }
 
+    val titleText = stringResource(R.string.menu_profile)
+    val backDesc = stringResource(R.string.back)
+    val loadingDesc = stringResource(R.string.loading_profile)
+    val logoutTitle = stringResource(R.string.confirm_logout_title)
+    val logoutMessage = stringResource(R.string.confirm_logout_message)
+    val confirmLogoutText = stringResource(R.string.btn_confirm_logout)
+    val cancelText = stringResource(R.string.cancel)
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.menu_profile)) },
+                title = {
+                    Text(
+                        titleText,
+                        modifier = Modifier.semantics { heading() }
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back))
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, backDesc)
                     }
-                },
-//                actions = {
-//                    IconButton(onClick = onNavigateToSettings) {
-//                        Icon(Icons.Default.Settings, stringResource(R.string.settings_title))
-//                    }
-//                }
+                }
             )
         }
     ) { padding ->
@@ -87,7 +100,11 @@ fun ProfileScreen(
                     modifier = Modifier.fillMaxSize().padding(padding),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(
+                        modifier = Modifier.semantics {
+                            contentDescription = loadingDesc
+                        }
+                    )
                 }
             }
             is ProfileUiState.Content -> {
@@ -115,22 +132,31 @@ fun ProfileScreen(
     if (showLogoutDialog) {
         AlertDialog(
             onDismissRequest = { showLogoutDialog = false },
-            title = { Text(stringResource(R.string.confirm_logout_title)) },
-            text = { Text(stringResource(R.string.confirm_logout_message)) },
+            title = {
+                Text(
+                    logoutTitle,
+                    modifier = Modifier.semantics { heading() }
+                )
+            },
+            text = { Text(logoutMessage) },
             confirmButton = {
                 Button(
                     onClick = {
                         viewModel.logout()
                         showLogoutDialog = false
                         onNavigateToLogin()
-                    }
+                    },
+                    modifier = Modifier.semantics { role = Role.Button }
                 ) {
-                    Text(stringResource(R.string.btn_confirm_logout))
+                    Text(confirmLogoutText)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showLogoutDialog = false }) {
-                    Text(stringResource(R.string.cancel))
+                TextButton(
+                    onClick = { showLogoutDialog = false },
+                    modifier = Modifier.semantics { role = Role.Button }
+                ) {
+                    Text(cancelText)
                 }
             }
         )
@@ -148,61 +174,113 @@ private fun ProfileContent(
     onNavigateToSettings: () -> Unit,
     onNavigateToEditNickname: () -> Unit
 ) {
+    val ownerLabel = stringResource(R.string.profile_owner_label)
+    val guestUser = stringResource(R.string.guest_user)
+    val unknownUser = stringResource(R.string.unknown_user)
+    val activePetLabel = stringResource(R.string.profile_active_pet_label)
+    val statsLabel = stringResource(R.string.profile_pet_stats_label)
+    val hungerLabel = stringResource(R.string.stat_hunger)
+    val energyLabel = stringResource(R.string.stat_energy)
+    val cleanlinessLabel = stringResource(R.string.stat_cleanliness)
+    val happinessLabel = stringResource(R.string.stat_happiness)
+    val noPetText = stringResource(R.string.profile_no_pet)
+    val editNicknameText = stringResource(R.string.edit_nickname)
+    val settingsText = stringResource(R.string.settings_title)
+    val linkAccountText = stringResource(R.string.btn_link_account)
+    val logoutText = stringResource(R.string.btn_logout)
+
+    val ownerDescription = buildString {
+        append(ownerLabel)
+        append(": ")
+        append(
+            when {
+                isGuest -> guestUser
+                email != null -> email
+                else -> unknownUser
+            }
+        )
+    }
+
+    val petDescription = pet?.let {
+        buildString {
+            append(activePetLabel)
+            append(": ")
+            append(it.profile.name)
+            append(". ")
+            append(hungerLabel); append(": "); append("${it.stats.hunger}%. ")
+            append(energyLabel); append(": "); append("${it.stats.energy}%. ")
+            append(cleanlinessLabel); append(": "); append("${it.stats.cleanliness}%. ")
+            append(happinessLabel); append(": "); append("${it.stats.happiness}%")
+        }
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())  // ← скролл если много контента
+            .verticalScroll(rememberScrollState())
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // ═══ Карточка пользователя ═══
-        Card(modifier = Modifier.fillMaxWidth()) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics(mergeDescendants = true) {
+                    contentDescription = ownerDescription
+                }
+        ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = stringResource(R.string.profile_owner_label),
+                    text = ownerLabel,
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
                     text = when {
-                        isGuest -> stringResource(R.string.guest_user)
+                        isGuest -> guestUser
                         email != null -> email
-                        else -> stringResource(R.string.unknown_user)
+                        else -> unknownUser
                     },
                     style = MaterialTheme.typography.titleLarge
                 )
             }
         }
 
-        // ═══ Карточка активного питомца ═══
         if (pet != null) {
-            Card(modifier = Modifier.fillMaxWidth()) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .semantics(mergeDescendants = true) {
+                        petDescription?.let { contentDescription = it }
+                    }
+            ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = stringResource(R.string.profile_active_pet_label),
+                        text = activePetLabel,
                         style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.semantics { heading() }
                     )
                     Spacer(Modifier.height(4.dp))
                     Text(text = pet.profile.name, style = MaterialTheme.typography.titleLarge)
                     Spacer(Modifier.height(12.dp))
 
                     Text(
-                        text = stringResource(R.string.profile_pet_stats_label),
+                        text = statsLabel,
                         style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.semantics { heading() }
                     )
                     Spacer(Modifier.height(8.dp))
 
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        StatItem(stringResource(R.string.stat_hunger), "${pet.stats.hunger}%")
-                        StatItem(stringResource(R.string.stat_energy), "${pet.stats.energy}%")
+                        StatItem(hungerLabel, "${pet.stats.hunger}%")
+                        StatItem(energyLabel, "${pet.stats.energy}%")
                     }
                     Spacer(Modifier.height(8.dp))
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        StatItem(stringResource(R.string.stat_cleanliness), "${pet.stats.cleanliness}%")
-                        StatItem(stringResource(R.string.stat_happiness), "${pet.stats.happiness}%")
+                        StatItem(cleanlinessLabel, "${pet.stats.cleanliness}%")
+                        StatItem(happinessLabel, "${pet.stats.happiness}%")
                     }
                 }
             }
@@ -213,7 +291,7 @@ private fun ProfileContent(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = stringResource(R.string.profile_no_pet),
+                        text = noPetText,
                         style = MaterialTheme.typography.bodyLarge,
                         textAlign = TextAlign.Center
                     )
@@ -221,55 +299,57 @@ private fun ProfileContent(
             }
         }
 
-        // ═══ Кнопки управления аккаунтом ═══
-
-        // Редактировать никнейм (только для авторизованных)
         if (!isGuest) {
             OutlinedButton(
                 onClick = onNavigateToEditNickname,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .semantics { role = Role.Button }
             ) {
-                Icon(Icons.Default.Edit, null)
+                Icon(Icons.Default.Edit, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.edit_nickname))
+                Text(editNicknameText)
             }
         }
 
-        // ✅ КНОПКА НАСТРОЕК — здесь, в основном потоке кнопок
         OutlinedButton(
             onClick = onNavigateToSettings,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics { role = Role.Button }
         ) {
-            Icon(Icons.Default.Settings, null)
+            Icon(Icons.Default.Settings, contentDescription = null)
             Spacer(Modifier.width(8.dp))
-            Text(stringResource(R.string.settings_title))
+            Text(settingsText)
         }
 
-        // Растягиваем пустое место (чтобы кнопка выхода была внизу)
         Spacer(Modifier.weight(1f))
 
-        // ═══ Кнопка выхода / привязки — всегда внизу ═══
         if (isGuest) {
             Button(
                 onClick = onRequestLogin,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .semantics { role = Role.Button }
             ) {
-                Icon(Icons.AutoMirrored.Filled.Login, null)
+                Icon(Icons.AutoMirrored.Filled.Login, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.btn_link_account))
+                Text(linkAccountText)
             }
         } else {
             Button(
                 onClick = onRequestLogout,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .semantics { role = Role.Button },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.errorContainer,
                     contentColor = MaterialTheme.colorScheme.onErrorContainer
                 )
             ) {
-                Icon(Icons.AutoMirrored.Filled.ExitToApp, null)
+                Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.btn_logout))
+                Text(logoutText)
             }
         }
     }
@@ -277,7 +357,14 @@ private fun ProfileContent(
 
 @Composable
 private fun StatItem(label: String, value: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    val itemDescription = "$label: $value"
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.semantics(mergeDescendants = true) {
+            contentDescription = itemDescription
+        }
+    ) {
         Text(value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         Text(
             label,
@@ -293,32 +380,43 @@ private fun ErrorPlaceholder(
     messageResId: Int,
     onRetry: () -> Unit
 ) {
+    val errorDesc = stringResource(R.string.error_occurred)
+    val errorTitle = stringResource(R.string.profile_error_title)
+    val errorMessage = stringResource(messageResId)
+    val refreshText = stringResource(R.string.profile_btn_refresh)
+
     Column(
-        modifier = modifier.fillMaxSize().padding(24.dp),
+        modifier = modifier
+            .fillMaxSize()
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Icon(
             imageVector = Icons.Default.Warning,
-            contentDescription = null,
+            contentDescription = errorDesc,
             modifier = Modifier.size(64.dp),
             tint = MaterialTheme.colorScheme.error
         )
         Spacer(Modifier.height(16.dp))
         Text(
-            text = stringResource(R.string.profile_error_title),
-            style = MaterialTheme.typography.headlineSmall
+            text = errorTitle,
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier.semantics { heading() }
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            text = stringResource(messageResId),
+            text = errorMessage,
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Spacer(Modifier.height(24.dp))
-        Button(onClick = onRetry) {
-            Text(stringResource(R.string.profile_btn_refresh))
+        Button(
+            onClick = onRetry,
+            modifier = Modifier.semantics { role = Role.Button }
+        ) {
+            Text(refreshText)
         }
     }
 }

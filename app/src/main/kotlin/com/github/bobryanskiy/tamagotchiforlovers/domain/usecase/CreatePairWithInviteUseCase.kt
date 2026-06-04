@@ -7,6 +7,7 @@ import com.github.bobryanskiy.tamagotchiforlovers.domain.result.DomainResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.result.PairResult
 import com.github.bobryanskiy.tamagotchiforlovers.domain.util.Clock
 import com.github.bobryanskiy.tamagotchiforlovers.domain.util.NameLimits
+import com.github.bobryanskiy.tamagotchiforlovers.util.ValidationUtils.getPairNameErrorResId
 import javax.inject.Inject
 
 class CreatePairWithInviteUseCase @Inject constructor(
@@ -17,7 +18,8 @@ class CreatePairWithInviteUseCase @Inject constructor(
     suspend operator fun invoke(pairName: String, petId: String): PairResult<PairInviteData> {
         val trimmed = pairName.trim()
 
-        if (trimmed.length !in NameLimits.PAIR_NAME_MIN..NameLimits.PAIR_NAME_MAX) {
+        val errorResId = getPairNameErrorResId(trimmed)
+        if (errorResId != null) {
             return DomainResult.Failure(PairError.InvalidInput)
         }
 

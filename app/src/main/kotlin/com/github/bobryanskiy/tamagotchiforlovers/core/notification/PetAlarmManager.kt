@@ -1,4 +1,4 @@
-package com.github.bobryanskiy.tamagotchiforlovers.core.alarm
+package com.github.bobryanskiy.tamagotchiforlovers.core.notification
 
 import android.app.AlarmManager
 import android.app.PendingIntent
@@ -8,6 +8,8 @@ import android.os.Build
 import com.github.bobryanskiy.tamagotchiforlovers.BuildConfig
 import com.github.bobryanskiy.tamagotchiforlovers.core.logging.AppLogger
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pet
+import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetLifeStatus
+import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.BalanceConfigRepository
 import com.github.bobryanskiy.tamagotchiforlovers.domain.util.Clock
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.MainActivity
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.receiver.CriticalStateReceiver
@@ -19,45 +21,22 @@ import javax.inject.Singleton
 class PetAlarmManager @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val clock: Clock,
+    private val balanceConfigRepository: BalanceConfigRepository,
     private val logger: AppLogger
 ) {
     companion object {
         private const val TAG = "PetAlarmManager"
-        private const val CRITICAL_THRESHOLD = 15
-        private const val WARNING_THRESHOLD = 30
-
-        /** Сколько единиц стата теряется в минуту (примерно, при decay_multiplier=1.0) */
-        private const val DECAY_PER_MINUTE = 1.0
-
-        /** В DEBUG режиме аларм всегда через 30 секунд для быстрого теста */
-        private const val DEBUG_INTERVAL_MS = 30_000L
-
-        /** Если все статы высокие — профилактический аларм через 1 час */
-        private const val DEFAULT_INTERVAL_MS = 60 * 60 * 1000L
-
-        /** Минимум 1 минута между алармами (чтобы не спамить) */
-        private const val MIN_INTERVAL_MS = 60_000L
     }
 
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-    /**
-     * Планирует "умный" аларм на основе прогноза когда статы упадут.
-     *
-     * Логика:
-     * 1. В DEBUG — всегда через 30 секунд (для быстрого теста)
-     * 2. В PROD — рассчитываем когда худший стат достигнет WARNING (30) или CRITICAL (15)
-     * 3. Берём самое раннее время
-     * 4. Ставим setAlarmClock → появится иконка ⏰ в status bar
-     *
-     * @param pet — полный пет для анализа статов
-     * @param notificationsEnabled — флаг из SettingsRepository (передаётся из ViewModel)
-     */
     fun scheduleSmartAlarm(
         petId: String,
         pet: Pet,
         notificationsEnabled: Boolean
     ) {
+        val config = balanceConfigRepository.get()
+
         if (!notificationsEnabled) {
             cancelCheck(petId)
             return
@@ -78,18 +57,26 @@ class PetAlarmManager @Inject constructor(
         val currentTime = clock.currentTimeMillis()
 
         val triggerTime = if (BuildConfig.DEBUG) {
-            currentTime + DEBUG_INTERVAL_MS
+            currentTime + config.debugAlarmIntervalMs
         } else {
-            val warningTime = calculateTimeToThreshold(pet, WARNING_THRESHOLD, currentTime)
-            val criticalTime = calculateTimeToThreshold(pet, CRITICAL_THRESHOLD, currentTime)
+            val warningTime = calculateTimeToThreshold(
+                pet = pet,
+                threshold = config.warningThreshold,
+                currentTime = currentTime
+            )
+            val criticalTime = calculateTimeToThreshold(
+                pet = pet,
+                threshold = config.criticalThreshold,
+                currentTime = currentTime
+            )
 
             val smartInterval = (minOfNotNull(warningTime, criticalTime)
-                ?: (currentTime + DEFAULT_INTERVAL_MS)) - currentTime
+                ?: (currentTime + config.defaultAlarmIntervalMs)) - currentTime
 
-            currentTime + smartInterval.coerceAtLeast(MIN_INTERVAL_MS)
+            currentTime + smartInterval.coerceAtLeast(config.minAlarmIntervalMs)
         }
 
-        val interval = (triggerTime - currentTime).coerceAtLeast(MIN_INTERVAL_MS)
+        val interval = (triggerTime - currentTime).coerceAtLeast(config.minAlarmIntervalMs)
         val finalTriggerTime = currentTime + interval
 
         logger.d(TAG, "⏰ Smart alarm for $petId in ${interval / 1000}s")
@@ -125,46 +112,39 @@ class PetAlarmManager @Inject constructor(
         }
     }
 
-    /**
-     * Рассчитывает когда худший стат достигнет порога.
-     *
-     * @return timestamp когда это произойдёт, или null если все статы уже ниже порога
-     *         (значит аларм должен быть СЕЙЧАС, но мы всё равно вернём currentTime)
-     */
     private fun calculateTimeToThreshold(
         pet: Pet,
         threshold: Int,
         currentTime: Long
     ): Long {
+        val config = balanceConfigRepository.get()
         val stats = pet.stats
-        val decayMultiplier = pet.lifeState.decayMultiplier.toDouble().coerceAtLeast(1.0)
 
-        val worstStat = minOf(stats.hunger, stats.energy, stats.cleanliness, stats.happiness)
+        val hungerPointsToLose = (stats.hunger - threshold).coerceAtLeast(0)
+        val hungerSeconds = (hungerPointsToLose * config.secondsPerHungerPoint)
 
-        // Уже ниже порога — аларм должен быть сейчас
-        if (worstStat <= threshold) return currentTime
+        val energyPointsToLose = (stats.energy - threshold).coerceAtLeast(0)
+        val energySeconds = (energyPointsToLose * config.secondsPerEnergyPoint)
 
-        // Сколько единиц нужно потерять
-        val pointsToLose = worstStat - threshold
+        val cleanlinessPointsToLose = (stats.cleanliness - threshold).coerceAtLeast(0)
+        val cleanlinessSeconds = (cleanlinessPointsToLose * config.secondsPerCleanlinessPoint)
 
-        // Время в минутах с учётом множителя скорости (SICK = 1.5x быстрее)
-        val minutesToThreshold = pointsToLose / (DECAY_PER_MINUTE * decayMultiplier)
+        val happinessPointsToLose = (stats.happiness - threshold).coerceAtLeast(0)
+        val happinessSeconds = (happinessPointsToLose * config.secondsPerHappinessPoint)
 
-        return currentTime + (minutesToThreshold * 60 * 1000).toLong()
+        val minSeconds = minOf(hungerSeconds, energySeconds, cleanlinessSeconds, happinessSeconds)
+
+        logger.d(TAG, "petId: ${pet.id}, " +
+                "hunger=${hungerSeconds}s, energy=${energySeconds}s, " +
+                "clean=${cleanlinessSeconds}s, happy=${happinessSeconds}s")
+
+        return currentTime + (minSeconds * 1000)
     }
 
     private fun minOfNotNull(vararg values: Long?): Long? {
         return values.filterNotNull().minOrNull()
     }
 
-    /**
-     * Отменяет все алармы для пета.
-     * Вызывается при:
-     * - Отключении уведомлений
-     * - Терминальном состоянии (DEAD, ESCAPED)
-     * - Потере доступа к пету (кик, logout)
-     * - Удалении пета
-     */
     fun cancelCheck(petId: String) {
         val intent = Intent(context, CriticalStateReceiver::class.java).apply {
             action = "ACTION_CHECK_PET_$petId"

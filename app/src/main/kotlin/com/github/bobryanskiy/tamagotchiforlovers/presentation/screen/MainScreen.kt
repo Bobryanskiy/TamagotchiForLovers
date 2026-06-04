@@ -27,6 +27,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -46,15 +51,29 @@ fun MainScreen(
 ) {
     val authState by viewModel.authButtonState.collectAsStateWithLifecycle()
 
+    val appName = stringResource(R.string.app_name)
+    val settingsDesc = stringResource(R.string.settings_title)
+    val loginDesc = stringResource(R.string.login)
+    val profileDesc = stringResource(R.string.menu_profile)
+    val loadingDesc = stringResource(R.string.loading)
+    val welcomeMessage = stringResource(R.string.welcome_message)
+    val startGameText = stringResource(R.string.start_game)
+    val connectToPairText = stringResource(R.string.connect_to_pair)
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.app_name)) },
+                title = {
+                    Text(
+                        appName,
+                        modifier = Modifier.semantics { heading() }
+                    )
+                },
                 actions = {
                     IconButton(onClick = onNavigateToSettings) {
                         Icon(
                             Icons.Default.Settings,
-                            contentDescription = stringResource(R.string.settings_title)
+                            contentDescription = settingsDesc
                         )
                     }
 
@@ -63,7 +82,7 @@ fun MainScreen(
                             IconButton(onClick = onNavigateToAuth) {
                                 Icon(
                                     imageVector = Icons.Default.Person,
-                                    contentDescription = stringResource(R.string.login)
+                                    contentDescription = loginDesc
                                 )
                             }
                         }
@@ -71,13 +90,11 @@ fun MainScreen(
                             IconButton(onClick = onNavigateToProfile) {
                                 Icon(
                                     imageVector = Icons.Default.AccountCircle,
-                                    contentDescription = stringResource(R.string.menu_profile)
+                                    contentDescription = profileDesc
                                 )
                             }
                         }
-                        is AuthButtonState.Loading -> {
-                            // Ничего не показываем
-                        }
+                        is AuthButtonState.Loading -> {}
                     }
                 }
             )
@@ -89,14 +106,21 @@ fun MainScreen(
                     modifier = Modifier.fillMaxSize().padding(padding),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(
+                        modifier = Modifier.semantics {
+                            contentDescription = loadingDesc
+                        }
+                    )
                 }
             }
             else -> {
                 MainContent(
                     modifier = Modifier.padding(padding).padding(24.dp),
                     onStartGame = onNavigateToGame,
-                    onPairConnect = onNavigateToPairConnect
+                    onPairConnect = onNavigateToPairConnect,
+                    welcomeMessage = welcomeMessage,
+                    startGameText = startGameText,
+                    connectToPairText = connectToPairText
                 )
             }
         }
@@ -107,7 +131,10 @@ fun MainScreen(
 private fun MainContent(
     modifier: Modifier = Modifier,
     onStartGame: () -> Unit,
-    onPairConnect: () -> Unit
+    onPairConnect: () -> Unit,
+    welcomeMessage: String,
+    startGameText: String,
+    connectToPairText: String
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
@@ -117,22 +144,27 @@ private fun MainContent(
         Spacer(modifier = Modifier.height(32.dp))
 
         Text(
-            text = stringResource(R.string.welcome_message),
-            style = MaterialTheme.typography.headlineSmall
+            text = welcomeMessage,
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier.semantics { heading() }
         )
 
         Button(
             onClick = onStartGame,
-            modifier = Modifier.fillMaxWidth(0.7f)
+            modifier = Modifier
+                .fillMaxWidth(0.7f)
+                .semantics { role = Role.Button }
         ) {
-            Text(stringResource(R.string.start_game))
+            Text(startGameText)
         }
 
         OutlinedButton(
             onClick = onPairConnect,
-            modifier = Modifier.fillMaxWidth(0.7f)
+            modifier = Modifier
+                .fillMaxWidth(0.7f)
+                .semantics { role = Role.Button }
         ) {
-            Text(stringResource(R.string.connect_to_pair))
+            Text(connectToPairText)
         }
     }
 }

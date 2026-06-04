@@ -83,7 +83,7 @@ class RenamePetViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            when (val result = petRepository.updatePetName(petId, name)) {
+            when (petRepository.updatePetName(petId, name)) {
                 is DomainResult.Success -> _uiState.value = RenamePetUiState.Success
                 is DomainResult.Failure -> _uiState.value = RenamePetUiState.Error(R.string.error_unknown)
             }

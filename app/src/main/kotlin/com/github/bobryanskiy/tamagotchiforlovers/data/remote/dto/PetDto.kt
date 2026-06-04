@@ -5,10 +5,9 @@ import com.google.firebase.firestore.PropertyName
 data class PetDto(
     @get:PropertyName("profile") @set:PropertyName("profile") var profile: ProfileDto? = null,
     @get:PropertyName("stats") @set:PropertyName("stats") var stats: StatsDto? = null,
-    @get:PropertyName("life_state") @set:PropertyName("life_state") var lifeState: LifeStateDto? = null,
-    @get:PropertyName("sync_status") @set:PropertyName("sync_status") var syncStatus: String = "SYNCED"
+    @get:PropertyName("life_state") @set:PropertyName("life_state") var lifeState: LifeStateDto? = null
 ) {
-    constructor() : this(null, null, null, "SYNCED")
+    constructor() : this(null, null, null)
 }
 
 data class ProfileDto(
@@ -33,8 +32,7 @@ data class StatsDto(
 
 data class LifeStateDto(
     @get:PropertyName("life_status") @set:PropertyName("life_status") var lifeStatus: String = "NORMAL",
-    @get:PropertyName("decay_multiplier") @set:PropertyName("decay_multiplier") var decayMultiplier: Float = 1.0f,
-    @get:PropertyName("recovery_end_time") @set:PropertyName("recovery_end_time") var recoveryEndTime: Long? = null
+    @get:PropertyName("death_cause") @set:PropertyName("death_cause") var deathCause: String? = null
 ) {
-    constructor() : this("NORMAL", 1.0f, null)
+    constructor() : this("NORMAL", null)
 }

@@ -6,6 +6,8 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.room)
     alias(libs.plugins.kotlin.serialization)
+
+    alias(libs.plugins.detekt)
 }
 
 android {
@@ -18,8 +20,10 @@ android {
         applicationId = "com.github.bobryanskiy.tamagotchiforlovers"
         minSdk = 26
         targetSdk = 37
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = getVersionCode()
+        versionName = getVersionName()
+
+        vectorDrawables.useSupportLibrary = true
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -71,10 +75,26 @@ android {
         compose = true
         buildConfig = true
     }
+
+    lint {
+        baseline = file("lint-baseline.xml")
+        abortOnError = true
+        checkReleaseBuilds = true
+        warningsAsErrors = true
+    }
 }
 
 room {
     schemaDirectory("$projectDir/schemas")
+}
+
+detekt {
+    config.setFrom(files("$rootDir/config/detekt/detekt.yml"))
+    buildUponDefaultConfig = true
+    allRules = false
+    baseline = file("$rootDir/config/detekt/baseline.xml")
+    parallel = true
+    ignoreFailures = false
 }
 
 dependencies {
@@ -117,12 +137,51 @@ dependencies {
 
     implementation(libs.timber)
 
+    detektPlugins(libs.detekt)
     testImplementation(libs.junit)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.coroutines.test)
+    testImplementation(libs.turbine)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    androidTestImplementation(libs.mockito.core)
+    androidTestImplementation(libs.mockito.kotlin)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+}
+
+fun getVersionCode(): Int {
+    return try {
+        val tag = "git describe --tags --abbrev=0".runCommand()
+        tag.removePrefix("v").split(".").let { parts ->
+            val major = parts.getOrNull(0)?.toIntOrNull() ?: 0
+            val minor = parts.getOrNull(1)?.toIntOrNull() ?: 0
+            val patch = parts.getOrNull(2)?.toIntOrNull() ?: 0
+            major * 10000 + minor * 100 + patch  // 1.2.3 → 10203
+        }
+    } catch (e: Exception) {
+        1  // Fallback для локальной разработки
+    }
+}
+
+fun getVersionName(): String {
+    return try {
+        "git describe --tags --abbrev=0".runCommand().removePrefix("v")
+    } catch (e: Exception) {
+        "1.0.0-dev"  // Fallback для локальной разработки
+    }
+}
+
+fun String.runCommand(): String {
+    return ProcessBuilder("/bin/sh", "-c", this)
+        .redirectErrorStream(true)
+        .start()
+        .inputStream
+        .bufferedReader()
+        .readText()
+        .trim()
 }
 

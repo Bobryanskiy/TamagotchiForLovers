@@ -10,7 +10,7 @@ interface LocalPetDataSource {
     suspend fun getPendingPets(): List<PetEntity>
     suspend fun markSynced(petId: String)
     suspend fun updateStats(petId: String, hunger: Int, energy: Int, cleanliness: Int, happiness: Int, timestamp: Long)
-    suspend fun updateLifeState(petId: String, status: String, multiplier: Float, recoveryTime: Long?, timestamp: Long)
+    suspend fun updateLifeState(petId: String, status: String, deathCause: String?, timestamp: Long)
     suspend fun updatePairId(petId: String, pairId: String?, timestamp: Long)
     suspend fun updateName(petId: String, name: String, timestamp: Long)
     suspend fun deletePet(petId: String)

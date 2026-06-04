@@ -1,6 +1,7 @@
 package com.github.bobryanskiy.tamagotchiforlovers.presentation.screen
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -14,6 +15,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -27,6 +30,7 @@ import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -44,26 +48,45 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.progressBarRangeInfo
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.bobryanskiy.tamagotchiforlovers.BuildConfig
 import com.github.bobryanskiy.tamagotchiforlovers.R
+import com.github.bobryanskiy.tamagotchiforlovers.domain.model.DeathCause
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.Pet
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetAction
-import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.CalculateLiveStatsUseCase
 import com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.MathTaskGeneratorUseCase
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.PairButtonState
 import com.github.bobryanskiy.tamagotchiforlovers.presentation.viewmodel.PetUiState
@@ -88,22 +111,34 @@ fun PetScreen(
     val dialogState by viewModel.dialogState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     var showMenu by remember { mutableStateOf(false) }
-    var currentTimeMs by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    val haptic = LocalHapticFeedback.current
+    val resources = LocalResources.current
 
-    val context = LocalContext.current
+    val appName = stringResource(R.string.app_name)
+    val menuProfileDesc = stringResource(R.string.menu_profile)
+    val settingsDesc = stringResource(R.string.pet_cd_settings)
+    val testNotifText = "🔔 Test notification"
+    val renameMenuText = stringResource(R.string.menu_rename)
+    val deleteMenuText = stringResource(R.string.menu_delete)
+    val loadingPetDesc = stringResource(R.string.loading_pet_data)
+    val gameOverTitle = stringResource(R.string.game_over_title)
+    val gameOverButtonText = stringResource(R.string.game_over_button)
+    val newRequestsDesc = stringResource(R.string.new_requests_available)
+    val createPairDesc = stringResource(R.string.pet_cd_create_pair)
+    val waitingPairDesc = stringResource(R.string.pet_cd_waiting_pair)
+    val hasPendingDesc = stringResource(R.string.has_pending_requests)
+    val activePairDesc = stringResource(R.string.pet_cd_active_pair)
 
-    LaunchedEffect(Unit) {
-        while (true) {
-            delay(10_000L)
-            currentTimeMs = System.currentTimeMillis()
-        }
+    LaunchedEffect(viewModel) {
+        viewModel.start()
     }
 
     LaunchedEffect(Unit) {
         viewModel.uiEvent.collect { event ->
             when (event) {
                 is UiEvent.ShowError -> {
-                    val message = context.applicationContext.getString(event.messageResId)
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    val message = resources.getString(event.messageResId)
                     snackbarHostState.showSnackbar(message)
                 }
             }
@@ -116,9 +151,9 @@ fun PetScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = (uiState as? PetUiState.Content)?.pet?.profile?.name
-                            ?: stringResource(R.string.app_name),
-                        style = MaterialTheme.typography.titleLarge
+                        text = (uiState as? PetUiState.Content)?.pet?.profile?.name ?: appName,
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.semantics { heading() }
                     )
                 },
                 actions = {
@@ -127,40 +162,45 @@ fun PetScreen(
                         petId = petId,
                         onCreatePair = onNavigateToCreatePair,
                         onOpenWaiting = onNavigateToPairWaiting,
-                        onOpenActive = onNavigateToPairActive
+                        onOpenActive = onNavigateToPairActive,
+                        createPairDesc = createPairDesc,
+                        waitingPairDesc = waitingPairDesc,
+                        hasPendingDesc = hasPendingDesc,
+                        activePairDesc = activePairDesc,
+                        newRequestsDesc = newRequestsDesc
                     )
 
                     IconButton(onClick = { onNavigateToProfile() }) {
-                        Icon(Icons.Default.Person, stringResource(R.string.menu_profile))
+                        Icon(Icons.Default.Person, menuProfileDesc)
                     }
 
                     IconButton(onClick = { showMenu = true }) {
-                        Icon(Icons.Default.MoreVert, stringResource(R.string.pet_cd_settings))
+                        Icon(Icons.Default.MoreVert, settingsDesc)
                     }
 
                     DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                         if (BuildConfig.DEBUG) {
                             DropdownMenuItem(
-                                text = { Text("🔔 Test notification", color = MaterialTheme.colorScheme.tertiary) },
+                                text = { Text(testNotifText, color = MaterialTheme.colorScheme.tertiary) },
                                 onClick = {
                                     showMenu = false
                                     viewModel.triggerAlarmManually()
                                 },
-                                leadingIcon = { Icon(Icons.Default.Notifications, null) }
+                                leadingIcon = { Icon(Icons.Default.Notifications, contentDescription = null) }
                             )
                         }
                         DropdownMenuItem(
-                            text = { Text(stringResource(R.string.menu_rename)) },
+                            text = { Text(renameMenuText) },
                             onClick = {
                                 showMenu = false
                                 onRenamePet(petId)
                             },
-                            leadingIcon = { Icon(Icons.Default.Edit, null) }
+                            leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null) }
                         )
                         DropdownMenuItem(
                             text = {
                                 Text(
-                                    stringResource(R.string.menu_delete),
+                                    deleteMenuText,
                                     color = MaterialTheme.colorScheme.error
                                 )
                             },
@@ -171,7 +211,7 @@ fun PetScreen(
                             leadingIcon = {
                                 Icon(
                                     Icons.Default.Delete,
-                                    null,
+                                    contentDescription = null,
                                     tint = MaterialTheme.colorScheme.error
                                 )
                             }
@@ -184,28 +224,52 @@ fun PetScreen(
         when (val state = uiState) {
             is PetUiState.Loading -> {
                 Box(Modifier.fillMaxSize().padding(padding), Alignment.Center) {
-                    androidx.compose.material3.CircularProgressIndicator()
+                    CircularProgressIndicator(
+                        modifier = Modifier.semantics {
+                            contentDescription = loadingPetDesc
+                        }
+                    )
                 }
             }
             is PetUiState.Content -> {
-                val livePet = remember(state.pet, currentTimeMs) {
-                    CalculateLiveStatsUseCase()(state.pet, currentTimeMs)
-                }
                 PetContent(
                     modifier = Modifier.padding(padding),
-                    pet = livePet,
+                    pet = state.pet,
                     onActionRequested = viewModel::onActionRequested
                 )
             }
             is PetUiState.GameOver -> {
+                val deathMessageResId = when (state.pet.lifeState.deathCause) {
+                    DeathCause.HUNGER -> R.string.death_cause_hunger
+                    DeathCause.EXHAUSTION -> R.string.death_cause_exhaustion
+                    DeathCause.DISEASE -> R.string.death_cause_disease
+                    DeathCause.ESCAPED -> R.string.death_cause_escaped
+                    null -> R.string.death_cause_unknown
+                }
+
+                val deathMessage = stringResource(deathMessageResId, state.pet.profile.name)
+
                 Box(Modifier.fillMaxSize().padding(padding), Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(24.dp)
+                    ) {
                         Text(
-                            stringResource(R.string.game_over_title),
-                            style = MaterialTheme.typography.headlineMedium
+                            text = stringResource(R.string.game_over_title),
+                            style = MaterialTheme.typography.headlineMedium,
+                            modifier = Modifier.semantics { heading() }
                         )
                         Spacer(Modifier.height(16.dp))
-                        Button(onClick = onNavigateToMain) {
+                        Text(
+                            text = deathMessage,
+                            style = MaterialTheme.typography.bodyLarge,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(Modifier.height(24.dp))
+                        Button(
+                            onClick = onNavigateToMain,
+                            modifier = Modifier.semantics { role = Role.Button }
+                        ) {
                             Text(stringResource(R.string.game_over_button))
                         }
                     }
@@ -231,29 +295,51 @@ private fun PairButton(
     petId: String,
     onCreatePair: (String) -> Unit,
     onOpenWaiting: (String) -> Unit,
-    onOpenActive: (String) -> Unit
+    onOpenActive: (String) -> Unit,
+    createPairDesc: String,
+    waitingPairDesc: String,
+    hasPendingDesc: String,
+    activePairDesc: String,
+    newRequestsDesc: String
 ) {
     when (state) {
         is PairButtonState.Loading -> {}
         is PairButtonState.NoPair -> {
             IconButton(onClick = { onCreatePair(petId) }) {
-                Icon(Icons.Default.Link, stringResource(R.string.pet_cd_create_pair))
+                Icon(Icons.Default.Link, createPairDesc)
             }
         }
         is PairButtonState.WaitingApproval -> {
             IconButton(onClick = { onOpenWaiting(state.pairId) }) {
                 if (state.hasPendingRequests) {
-                    BadgedBox(badge = { Badge { Text("!") } }) {
-                        Icon(Icons.Default.Link, stringResource(R.string.pet_cd_waiting_pair))
+                    BadgedBox(
+                        badge = {
+                            Badge {
+                                Text(
+                                    "!",
+                                    modifier = Modifier.semantics {
+                                        contentDescription = newRequestsDesc
+                                    }
+                                )
+                            }
+                        }
+                    ) {
+                        Icon(
+                            Icons.Default.Link,
+                            waitingPairDesc,
+                            modifier = Modifier.semantics {
+                                stateDescription = hasPendingDesc
+                            }
+                        )
                     }
                 } else {
-                    Icon(Icons.Default.Link, stringResource(R.string.pet_cd_waiting_pair))
+                    Icon(Icons.Default.Link, waitingPairDesc)
                 }
             }
         }
         is PairButtonState.Active -> {
             IconButton(onClick = { onOpenActive(state.pairId) }) {
-                Icon(Icons.Default.Favorite, stringResource(R.string.pet_cd_active_pair))
+                Icon(Icons.Default.Favorite, activePairDesc)
             }
         }
     }
@@ -266,15 +352,45 @@ private fun PetContent(
     onActionRequested: (PetAction) -> Unit
 ) {
     var isAnimating by remember { mutableStateOf(false) }
-    var lastUpdateAt by remember { mutableLongStateOf(pet.stats.updatedAt) }
+    var lastStats by remember { mutableStateOf(pet.stats) }
 
-    LaunchedEffect(pet.stats.updatedAt) {
-        if (pet.stats.updatedAt != lastUpdateAt) {
-            lastUpdateAt = pet.stats.updatedAt
+    val statsTitleText = stringResource(R.string.stats_section_title)
+    val actionsTitleText = stringResource(R.string.actions_title)
+    val hungerText = stringResource(R.string.stat_hunger)
+    val energyText = stringResource(R.string.stat_energy)
+    val cleanlinessText = stringResource(R.string.stat_cleanliness)
+    val happinessText = stringResource(R.string.stat_happiness)
+    val feedText = stringResource(R.string.action_feed)
+    val playText = stringResource(R.string.action_play)
+    val cleanText = stringResource(R.string.action_clean)
+    val restText = stringResource(R.string.action_rest)
+
+    val petStatusDescription = remember(pet, hungerText, energyText, cleanlinessText, happinessText) {
+        buildString {
+            append("${pet.profile.name}. ")
+            append("$hungerText: ${pet.stats.hunger}%. ")
+            append("$energyText: ${pet.stats.energy}%. ")
+            append("$cleanlinessText: ${pet.stats.cleanliness}%. ")
+            append("$happinessText: ${pet.stats.happiness}%")
+        }
+    }
+
+    LaunchedEffect(pet.stats) {
+        val prev = lastStats
+        val current = pet.stats
+
+        val statsImproved = current.hunger > prev.hunger
+                || current.energy > prev.energy
+                || current.cleanliness > prev.cleanliness
+                || current.happiness > prev.happiness
+
+        if (statsImproved) {
             isAnimating = true
             delay(1500)
             isAnimating = false
         }
+
+        lastStats = current
     }
 
     BoxWithConstraints(
@@ -290,34 +406,43 @@ private fun PetContent(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(spacing)
         ) {
-
             Image(
                 painter = painterResource(
                     id = if (isAnimating) R.drawable.ic_hse_bird_action
                     else R.drawable.ic_hse_bird_idle
                 ),
-                contentDescription = stringResource(R.string.pet_cd_mascot),
-                modifier = Modifier.size(mascotSize),
+                contentDescription = petStatusDescription,
+                modifier = Modifier
+                    .size(mascotSize)
+                    .semantics {
+                        role = Role.Image
+                        contentDescription = petStatusDescription
+                    },
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
+            )
+
+            Text(
+                statsTitleText,
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.semantics { heading() }
             )
 
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(spacing)
             ) {
-                StatCard(stringResource(R.string.stat_hunger), pet.stats.hunger, "🍖")
-                StatCard(stringResource(R.string.stat_energy), pet.stats.energy, "⚡")
-                StatCard(stringResource(R.string.stat_cleanliness), pet.stats.cleanliness, "✨")
-                StatCard(stringResource(R.string.stat_happiness), pet.stats.happiness, "😄")
+                StatCard(hungerText, pet.stats.hunger, "🍖")
+                StatCard(energyText, pet.stats.energy, "⚡")
+                StatCard(cleanlinessText, pet.stats.cleanliness, "✨")
+                StatCard(happinessText, pet.stats.happiness, "😄")
             }
 
-            // Заголовок действий
             Text(
-                stringResource(R.string.actions_title),
-                style = MaterialTheme.typography.titleMedium
+                actionsTitleText,
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.semantics { heading() }
             )
 
-            // Кнопки действий — фиксированная высота
             Column(
                 verticalArrangement = Arrangement.spacedBy(spacing * 0.5f),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -326,15 +451,15 @@ private fun PetContent(
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    ActionBtn(PetAction.Feed, "🍖", stringResource(R.string.action_feed), onActionRequested)
-                    ActionBtn(PetAction.Play, "🎮", stringResource(R.string.action_play), onActionRequested)
+                    ActionBtn(PetAction.Feed, "🍖", feedText, onActionRequested)
+                    ActionBtn(PetAction.Play, "🎮", playText, onActionRequested)
                 }
                 Row(
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    ActionBtn(PetAction.Clean, "🧼", stringResource(R.string.action_clean), onActionRequested)
-                    ActionBtn(PetAction.Rest, "😴", stringResource(R.string.action_rest), onActionRequested)
+                    ActionBtn(PetAction.Clean, "🧼", cleanText, onActionRequested)
+                    ActionBtn(PetAction.Rest, "😴", restText, onActionRequested)
                 }
             }
 
@@ -355,49 +480,110 @@ private fun MathTaskDialog(
     var userAnswer by remember { mutableStateOf("") }
     var isError by remember { mutableStateOf(false) }
 
+    val focusRequester = remember { FocusRequester() }
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    val titleText = stringResource(R.string.task_title)
+    val descriptionText = stringResource(R.string.task_description, getActionText(action))
+    val labelText = stringResource(R.string.task_input_label)
+    val errorText = stringResource(R.string.task_error)
+    val checkingDesc = stringResource(R.string.checking_answer)
+    val checkButtonText = stringResource(R.string.task_button_check)
+    val cancelText = stringResource(R.string.cancel)
+
+    val checkAnswer = {
+        val answer = userAnswer.toIntOrNull()
+        if (answer == currentTask.correctAnswer) {
+            onTaskCompleted()
+        } else {
+            isError = true
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        delay(200)
+        focusRequester.requestFocus()
+        keyboardController?.show()
+    }
+
+
     AlertDialog(
         onDismissRequest = { if (!isProcessing) onDismiss() },
-        title = { Text(stringResource(R.string.task_title)) },
+        title = {
+            Text(
+                titleText,
+                modifier = Modifier.semantics { heading() }
+            )
+        },
         text = {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    stringResource(R.string.task_description, getActionText(action)),
+                    descriptionText,
                     style = MaterialTheme.typography.bodyLarge
                 )
                 Spacer(Modifier.height(16.dp))
-                Text(currentTask.question, style = MaterialTheme.typography.headlineMedium)
+                Text(
+                    currentTask.question,
+                    style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier.semantics {
+                        liveRegion = LiveRegionMode.Polite
+                    }
+                )
                 Spacer(Modifier.height(16.dp))
                 OutlinedTextField(
                     value = userAnswer,
                     onValueChange = { userAnswer = it; isError = false },
-                    label = { Text(stringResource(R.string.task_input_label)) },
+                    label = { Text(labelText) },
+                    modifier = Modifier
+                        .focusRequester(focusRequester)
+                        .semantics {
+                        if (isError) {
+                            error(errorText)
+                        }
+                    },
                     isError = isError,
-                    singleLine = true
-                )
-                if (isError) Text(
-                    stringResource(R.string.task_error),
-                    color = MaterialTheme.colorScheme.error
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onDone = { checkAnswer() }
+                    ),
+                    supportingText = if (isError) {
+                        {
+                            Text(
+                                errorText,
+                                color = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Assertive }
+                            )
+                        }
+                    } else null
                 )
             }
         },
         confirmButton = {
             Button(
-                onClick = {
-                    val answer = userAnswer.toIntOrNull()
-                    if (answer == currentTask.correctAnswer) {
-                        onTaskCompleted()
-                    } else {
-                        isError = true
+                onClick = { checkAnswer() },
+                modifier = Modifier.semantics {
+                    role = Role.Button
+                    if (isProcessing) {
+                        stateDescription = checkingDesc
                     }
                 },
                 enabled = !isProcessing && userAnswer.isNotBlank()
             ) {
-                Text(stringResource(R.string.task_button_check))
+                Text(checkButtonText)
             }
         },
         dismissButton = {
-            if (!isProcessing) TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.cancel))
+            if (!isProcessing) {
+                TextButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.semantics { role = Role.Button }
+                ) {
+                    Text(cancelText)
+                }
             }
         }
     )
@@ -413,18 +599,46 @@ private fun getActionText(action: PetAction): String = when (action) {
 
 @Composable
 private fun StatCard(label: String, value: Int, icon: String) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    val cardDescription = "$label: $value%"
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .focusable()
+            .semantics(mergeDescendants = true) {
+                contentDescription = cardDescription
+                progressBarRangeInfo = ProgressBarRangeInfo(
+                    current = value / 100f,
+                    range = 0f..1f,
+                    steps = 100
+                )
+                liveRegion = LiveRegionMode.Polite
+            }
+    ) {
         Row(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(icon, fontSize = 20.sp)
+            Text(
+                icon,
+                fontSize = 20.sp,
+                modifier = Modifier.clearAndSetSemantics { }
+            )
             Spacer(Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(label, style = MaterialTheme.typography.labelMedium)
                 LinearProgressIndicator(
                     progress = { value / 100f },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .semantics(mergeDescendants = true) {
+                            contentDescription = cardDescription
+                            progressBarRangeInfo = ProgressBarRangeInfo(
+                                current = value / 100f,
+                                range = 0f..1f,
+                                steps = 100
+                            )
+                        },
                     color = when {
                         value > 60 -> MaterialTheme.colorScheme.primary
                         value > 30 -> MaterialTheme.colorScheme.tertiary
@@ -433,7 +647,11 @@ private fun StatCard(label: String, value: Int, icon: String) {
                 )
             }
             Spacer(Modifier.width(12.dp))
-            Text("$value%", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge)
+            Text(
+                "$value%",
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.bodyLarge
+            )
         }
     }
 }
@@ -443,12 +661,20 @@ private fun ActionBtn(action: PetAction, icon: String, label: String, onClick: (
     Button(
         onClick = { onClick(action) },
         modifier = Modifier
-            .width(100.dp)
-            .height(70.dp),
+            .width(110.dp)
+            .height(70.dp)
+            .semantics {
+                role = Role.Button
+                contentDescription = label
+            },
         contentPadding = PaddingValues(4.dp)
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(icon, fontSize = 22.sp)
+            Text(
+                icon,
+                fontSize = 22.sp,
+                modifier = Modifier.clearAndSetSemantics { }
+            )
             Text(label, fontSize = 11.sp, maxLines = 1)
         }
     }

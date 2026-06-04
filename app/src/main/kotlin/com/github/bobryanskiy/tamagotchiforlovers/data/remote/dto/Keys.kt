@@ -33,8 +33,7 @@ object PetKeys {
     // --- Life State ---
     const val LIFE_STATE = "life_state"
     const val LIFE_STATUS = "${LIFE_STATE}.life_status"
-    const val LIFE_DECAY_MULTIPLIER = "${LIFE_STATE}.decay_multiplier"
-    const val LIFE_RECOVERY_END_TIME = "${LIFE_STATE}.recovery_end_time"
+    const val LIFE_DEATH_STATUS = "${LIFE_STATE}.death_cause"
 
     // --- System / Sync ---
     const val SYNC_STATUS = "sync_status"

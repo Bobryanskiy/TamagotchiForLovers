@@ -2,8 +2,8 @@ package com.github.bobryanskiy.tamagotchiforlovers.core.string
 
 import android.content.Context
 import androidx.annotation.StringRes
-import dagger.hilt.android.qualifiers.ApplicationContext
 import com.github.bobryanskiy.tamagotchiforlovers.domain.provider.StringResourceProvider
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 

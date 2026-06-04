@@ -23,8 +23,7 @@ data class PetEntity(
     @ColumnInfo(name = "abandoned_at") val abandonedAt: Long?,
 
     @ColumnInfo(name = "life_status") val lifeStatus: String,
-    @ColumnInfo(name = "decay_multiplier") val decayMultiplier: Float,
-    @ColumnInfo(name = "recovery_end_time") val recoveryEndTime: Long?,
+    @ColumnInfo(name = "death_cause") val deathCause: String?,
 
     @ColumnInfo(name = "hunger") val hunger: Int,
     @ColumnInfo(name = "energy") val energy: Int,
@@ -47,8 +46,7 @@ data class PetEntity(
             currentPairId = null,
             createdAt = System.currentTimeMillis(),
             lifeStatus = "NORMAL",
-            decayMultiplier = 1.0f,
-            recoveryEndTime = null,
+            deathCause = null,
             abandonedAt = null,
             hunger = 80,
             energy = 80,

@@ -1,36 +1,33 @@
 package com.github.bobryanskiy.tamagotchiforlovers.domain.usecase
 
+import com.github.bobryanskiy.tamagotchiforlovers.domain.model.DeathCause
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetLifeState
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetLifeStatus
 import com.github.bobryanskiy.tamagotchiforlovers.domain.model.PetStats
-import java.util.concurrent.TimeUnit
+import com.github.bobryanskiy.tamagotchiforlovers.domain.repository.BalanceConfigRepository
 import javax.inject.Inject
 
-class EvaluatePetCriticalStateUseCase @Inject constructor() {
+class EvaluatePetCriticalStateUseCase @Inject constructor(
+    private val balanceConfigRepository: BalanceConfigRepository
+) {
     operator fun invoke(stats: PetStats, currentTime: Long): PetLifeState {
-        val minStat = minOf(stats.hunger, stats.energy, stats.cleanliness, stats.happiness)
+        val config = balanceConfigRepository.get()
 
-        return when {
-            minStat <= 0 -> PetLifeState(
+        val deathCause = when {
+            stats.hunger <= config.deathThreshold -> DeathCause.HUNGER
+            stats.energy <= config.deathThreshold -> DeathCause.EXHAUSTION
+            stats.cleanliness <= config.deathThreshold -> DeathCause.DISEASE
+            stats.happiness <= config.deathThreshold -> DeathCause.ESCAPED
+            else -> null
+        }
+
+        if (deathCause != null) {
+            return PetLifeState(
                 status = PetLifeStatus.DEAD,
-                recoveryEndTime = null,
-                decayMultiplier = 0f
-            )
-            minStat <= 10 -> PetLifeState(
-                status = PetLifeStatus.COLLAPSED,
-                recoveryEndTime = currentTime + 30 * 60 * 1000,
-                decayMultiplier = 2.0f
-            )
-            minStat <= 25 -> PetLifeState(
-                status = PetLifeStatus.SICK,
-                recoveryEndTime = currentTime + 60 * 60 * 1000,
-                decayMultiplier = 1.5f
-            )
-            else -> PetLifeState(
-                status = PetLifeStatus.NORMAL,
-                recoveryEndTime = null,
-                decayMultiplier = 1.0f
+                deathCause = deathCause
             )
         }
+
+        return PetLifeState(status = PetLifeStatus.NORMAL)
     }
 }
