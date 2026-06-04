@@ -2,35 +2,52 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
+    <ID>CyclomaticComplexMethod:AuthScreen.kt$@Composable private fun AuthContent( modifier: Modifier = Modifier, email: String, password: String, passwordVisible: Boolean, isSignUpMode: Boolean, isLoading: Boolean, emailErrorResId: Int?, passwordErrorResId: Int?, onEmailChange: (String) -&gt; Unit, onPasswordChange: (String) -&gt; Unit, onToggleMode: () -&gt; Unit, onTogglePasswordVisibility: () -&gt; Unit, onSubmit: () -&gt; Unit )</ID>
     <ID>InstanceOfCheckForException:PairRepositoryImpl.kt$PairRepositoryImpl$e is CancellationException</ID>
     <ID>LongMethod:AppNavGraph.kt$@Composable fun AppNavGraph( modifier: Modifier = Modifier, navController: NavHostController, appViewModel: AppViewModel, )</ID>
+    <ID>LongMethod:AuthScreen.kt$@Composable private fun AuthContent( modifier: Modifier = Modifier, email: String, password: String, passwordVisible: Boolean, isSignUpMode: Boolean, isLoading: Boolean, emailErrorResId: Int?, passwordErrorResId: Int?, onEmailChange: (String) -&gt; Unit, onPasswordChange: (String) -&gt; Unit, onToggleMode: () -&gt; Unit, onTogglePasswordVisibility: () -&gt; Unit, onSubmit: () -&gt; Unit )</ID>
     <ID>LongMethod:AuthScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun AuthScreen( navController: NavHostController, onNavigateBack: () -&gt; Unit, viewModel: AuthViewModel = hiltViewModel() )</ID>
+    <ID>LongMethod:CreatePairScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun CreatePairScreen( onNavigateBack: () -&gt; Unit, onPairCreated: (String) -&gt; Unit, viewModel: CreatePairViewModel = hiltViewModel() )</ID>
+    <ID>LongMethod:EditNicknameScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun EditNicknameScreen( onNavigateBack: () -&gt; Unit, viewModel: EditNicknameViewModel = hiltViewModel() )</ID>
     <ID>LongMethod:PairActiveScreen.kt$@Composable private fun PairActiveContent( state: PairActiveUiState.Content, onRename: () -&gt; Unit, onKick: () -&gt; Unit, onEndSession: () -&gt; Unit, onLeave: () -&gt; Unit )</ID>
+    <ID>LongMethod:PairActiveScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun PairActiveScreen( onNavigateBack: () -&gt; Unit, onSessionEnded: () -&gt; Unit, viewModel: PairActiveViewModel = hiltViewModel() )</ID>
     <ID>LongMethod:PairWaitingScreen.kt$@Composable private fun PairWaitingContent( state: PairWaitingUiState.Waiting, currentTime: Long, nicknames: Map&lt;String, String?&gt;, onCopyCode: () -&gt; Unit, onRegenerateCode: () -&gt; Unit, onAccept: (String) -&gt; Unit, onReject: (String) -&gt; Unit )</ID>
+    <ID>LongMethod:PetScreen.kt$@Composable private fun MathTaskDialog( action: PetAction, isProcessing: Boolean, onDismiss: () -&gt; Unit, onTaskCompleted: () -&gt; Unit, taskGenerator: MathTaskGeneratorUseCase )</ID>
+    <ID>LongMethod:PetScreen.kt$@Composable private fun PetContent( modifier: Modifier = Modifier, pet: Pet, onActionRequested: (PetAction) -&gt; Unit )</ID>
     <ID>LongMethod:PetScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun PetScreen( petId: String, onNavigateToCreatePair: (String) -&gt; Unit, onNavigateToPairWaiting: (String) -&gt; Unit, onNavigateToPairActive: (String) -&gt; Unit, onNavigateToProfile: () -&gt; Unit, onNavigateToMain: () -&gt; Unit, onRenamePet: (String) -&gt; Unit, viewModel: PetViewModel = hiltViewModel() )</ID>
     <ID>LongMethod:ProfileScreen.kt$@Composable private fun ProfileContent( modifier: Modifier = Modifier, email: String?, isGuest: Boolean, pet: Pet?, onRequestLogout: () -&gt; Unit, onRequestLogin: () -&gt; Unit, onNavigateToSettings: () -&gt; Unit, onNavigateToEditNickname: () -&gt; Unit )</ID>
-    <ID>LongParameterList:AuthScreen.kt$( modifier: Modifier = Modifier, email: String, password: String, passwordVisible: Boolean, isSignUpMode: Boolean, isLoading: Boolean, emailErrorResId: Int?, passwordErrorResId: Int?, onEmailChange: (String) -&gt; Unit, onPasswordChange: (String) -&gt; Unit, onToggleMode: () -&gt; Unit, onSubmit: () -&gt; Unit )</ID>
-    <ID>MagicNumber:LinkAccountUseCase.kt$LinkAccountUseCase$5000L</ID>
+    <ID>LongMethod:ProfileScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun ProfileScreen( onNavigateBack: () -&gt; Unit, onNavigateToLogin: () -&gt; Unit, onNavigateToSettings: () -&gt; Unit, onNavigateToEditNickname: () -&gt; Unit, viewModel: ProfileViewModel = hiltViewModel() )</ID>
+    <ID>LongMethod:RenamePetScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun RenamePetScreen( onNavigateBack: () -&gt; Unit, onRenamed: () -&gt; Unit, viewModel: RenamePetViewModel = hiltViewModel() )</ID>
+    <ID>LongMethod:SettingsScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun SettingsScreen( onNavigateBack: () -&gt; Unit, viewModel: SettingsViewModel = hiltViewModel() )</ID>
+    <ID>LongParameterList:AuthScreen.kt$( modifier: Modifier = Modifier, email: String, password: String, passwordVisible: Boolean, isSignUpMode: Boolean, isLoading: Boolean, emailErrorResId: Int?, passwordErrorResId: Int?, onEmailChange: (String) -&gt; Unit, onPasswordChange: (String) -&gt; Unit, onToggleMode: () -&gt; Unit, onTogglePasswordVisibility: () -&gt; Unit, onSubmit: () -&gt; Unit )</ID>
+    <ID>LongParameterList:CreatePetScreen.kt$( modifier: Modifier = Modifier, petName: String, onNameChange: (String) -&gt; Unit, onCreateClick: () -&gt; Unit, isLoading: Boolean, error: String?, descriptionText: String, labelText: String, charCountDesc: String, creatingText: String, createButtonText: String, nameErrorResId: Int? )</ID>
+    <ID>LongParameterList:PetScreen.kt$( state: PairButtonState, petId: String, onCreatePair: (String) -&gt; Unit, onOpenWaiting: (String) -&gt; Unit, onOpenActive: (String) -&gt; Unit, createPairDesc: String, waitingPairDesc: String, hasPendingDesc: String, activePairDesc: String, newRequestsDesc: String )</ID>
+    <ID>LongParameterList:PetViewModel.kt$PetViewModel$( savedStateHandle: SavedStateHandle, private val petRepository: PetRepository, private val pairRepository: PairRepository, private val applyActionUseCase: ApplyPetActionUseCase, private val checkPetLifeDecayUseCase: CheckPetLifeDecayUseCase, private val accessController: PetAccessController, private val notificationsCoordinator: PetNotificationsCoordinator, private val calculateLiveStatsUseCase: CalculateLiveStatsUseCase, private val clock: Clock, val taskGenerator: MathTaskGeneratorUseCase, private val logger: AppLogger, @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher )</ID>
+    <ID>MagicNumber:LinkAccountUseCase.kt$LinkAccountUseCase$60_000L</ID>
     <ID>MagicNumber:PairWaitingScreen.kt$60</ID>
-    <ID>MagicNumber:PetAlarmManager.kt$PetAlarmManager$60</ID>
     <ID>MagicNumber:PetDto.kt$StatsDto$80</ID>
     <ID>MagicNumber:SyncScheduler.kt$SyncScheduler$10</ID>
     <ID>MagicNumber:ValidationUtils.kt$ValidationUtils$6</ID>
     <ID>MatchingDeclarationName:PetActionMapper.kt$PetActionType</ID>
     <ID>MatchingDeclarationName:PreviewAnnotations.kt$Previews</ID>
+    <ID>MaxLineLength:ValidationUtils.kt$ValidationUtils$"""^[a-zA-Z0-9.!#$%&amp;'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$"""</ID>
+    <ID>NestedBlockDepth:PetViewModel.kt$PetViewModel$private suspend fun startLifeStateDecayChecker()</ID>
+    <ID>NewLineAtEndOfFile:EvaluatePetCriticalStateUseCase.kt$com.github.bobryanskiy.tamagotchiforlovers.domain.usecase.EvaluatePetCriticalStateUseCase.kt</ID>
     <ID>ReturnCount:AcceptJoinRequestUseCase.kt$AcceptJoinRequestUseCase$suspend operator fun invoke( pairId: String, guestId: String, callerId: String ): PairResult&lt;Unit&gt;</ID>
     <ID>ReturnCount:ApplyPetActionUseCase.kt$ApplyPetActionUseCase$suspend operator fun invoke(petId: String, action: PetAction): PetResult&lt;Unit&gt;</ID>
     <ID>ReturnCount:EndSessionUseCase.kt$EndSessionUseCase$suspend operator fun invoke(pairId: String, callerId: String): PairResult&lt;Unit&gt;</ID>
     <ID>ReturnCount:KickPartnerUseCase.kt$KickPartnerUseCase$suspend operator fun invoke(pairId: String, callerId: String): PairResult&lt;Unit&gt;</ID>
     <ID>ReturnCount:LeaveSessionUseCase.kt$LeaveSessionUseCase$suspend operator fun invoke(pairId: String, userId: String): PairResult&lt;Unit&gt;</ID>
-    <ID>ReturnCount:PreparePetNotificationUseCase.kt$PreparePetNotificationUseCase$operator fun invoke(pet: Pet): PetNotification</ID>
     <ID>ReturnCount:RejectJoinRequestUseCase.kt$RejectJoinRequestUseCase$suspend operator fun invoke( pairId: String, guestId: String, callerId: String ): PairResult&lt;Unit&gt;</ID>
     <ID>ReturnCount:VerifyPetAccessUseCase.kt$VerifyPetAccessUseCase$suspend operator fun invoke(pet: Pet): AccessResult</ID>
     <ID>SpreadOperator:DatabaseModule.kt$DatabaseModule$(*migrations)</ID>
+    <ID>ThrowsCount:PetViewModel.kt$PetViewModel$fun start()</ID>
     <ID>TooGenericExceptionThrown:ObservePendingRequestsUseCaseTest.kt$ObservePendingRequestsUseCaseTest$throw RuntimeException("network error")</ID>
     <ID>UnusedParameter:JoinPairViewModel.kt$JoinPairViewModel$fallbackName: String</ID>
     <ID>UnusedPrivateProperty:PetRepositoryImpl.kt$PetRepositoryImpl$private val scope = CoroutineScope(SupervisorJob() + io)</ID>
     <ID>UnusedPrivateProperty:PetRepositoryImpl.kt$PetRepositoryImpl$val syncJob = launch { if (!authRepository.isLoggedIn()) { logger.d(TAG, "User not authenticated, skipping Firestore sync for $petId") return@launch } try { remote.observePet(petId).collect { dto -&gt; if (dto == null) { // Пет удалён в облаке — удаляем локально local.deletePet(petId) logger.d(TAG, "🗑️ Pet deleted in cloud, removed locally: $petId") return@collect } val remoteEntity = dto.toEntity(petId).copy(syncStatus = "SYNCED") val localEntity = local.getPet(petId) // Применяем только если remote новее if (localEntity == null || remoteEntity.updatedAt &gt; localEntity.updatedAt) { local.savePet(remoteEntity) logger.d(TAG, "🔄 Synced from Firestore: ${remoteEntity.updatedAt} &gt; ${localEntity?.updatedAt}") } else { logger.d(TAG, "⏭️ Local is newer, skipping: ${localEntity.updatedAt} &gt;= ${remoteEntity.updatedAt}") } } } catch (e: CancellationException) { throw e // Нормальное поведение при отмене } catch (e: Exception) { logger.e(TAG, "Firestore observe error for $petId", e) } }</ID>
+    <ID>UnusedPrivateProperty:PetScreen.kt$val gameOverButtonText = stringResource(R.string.game_over_button)</ID>
+    <ID>UnusedPrivateProperty:PetScreen.kt$val gameOverTitle = stringResource(R.string.game_over_title)</ID>
     <ID>UseCheckOrError:AuthRepositoryImpl.kt$AuthRepositoryImpl$throw IllegalStateException("User created but uid is null")</ID>
     <ID>UseCheckOrError:PetRepositoryImpl.kt$PetRepositoryImpl$throw IllegalStateException("Pet $petId not found in local DB")</ID>
     <ID>UseCheckOrError:PetSyncManager.kt$PetSyncManager$throw IllegalStateException("Pet disappeared")</ID>

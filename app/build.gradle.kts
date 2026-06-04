@@ -111,7 +111,7 @@ detekt {
     config.setFrom(files("$rootDir/config/detekt/detekt.yml"))
     buildUponDefaultConfig = true
     allRules = false
-    baseline = file("$rootDir/config/detekt/baseline.xml")
+    baseline = file("$projectDir/detekt-baseline.xml")
     parallel = true
     ignoreFailures = false
 }
