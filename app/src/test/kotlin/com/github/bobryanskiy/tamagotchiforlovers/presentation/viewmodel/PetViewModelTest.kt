@@ -28,6 +28,8 @@ class PetViewModelTest {
             logger = mock(),
             calculateLiveStatsUseCase = mock(),
             clock = mock(),
+            sessionRepository = mock(),
+            userRepository = mock(),
             ioDispatcher = testDispatcher
         )
     }
